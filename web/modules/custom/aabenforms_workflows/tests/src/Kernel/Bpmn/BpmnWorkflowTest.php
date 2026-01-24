@@ -3,7 +3,6 @@
 namespace Drupal\Tests\aabenforms_workflows\Kernel\Bpmn;
 
 use Drupal\KernelTests\KernelTestBase;
-use Drupal\eca\Entity\Eca;
 
 /**
  * Tests BPMN.iO workflow import and export.
@@ -40,7 +39,7 @@ class BpmnWorkflowTest extends KernelTestBase {
    * Tests BPMN modeller availability.
    */
   public function testBpmnModellerAvailable() {
-    // Verify BPMN.iO modeller is enabled
+    // Verify BPMN.iO modeller is enabled.
     $moduleHandler = \Drupal::moduleHandler();
     $this->assertTrue($moduleHandler->moduleExists('bpmn_io'), 'BPMN.iO module is enabled');
     $this->assertTrue($moduleHandler->moduleExists('modeler_api'), 'Modeler API module is enabled');
@@ -52,7 +51,7 @@ class BpmnWorkflowTest extends KernelTestBase {
   public function testBpmnWorkflowCreation() {
     // Placeholder test for BPMN workflow creation
     // In actual implementation, this would test creating an ECA model
-    // with the bpmn_io modeller
+    // with the bpmn_io modeller.
     $this->assertTrue(TRUE, 'BPMN workflow creation placeholder');
   }
 

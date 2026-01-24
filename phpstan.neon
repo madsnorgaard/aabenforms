@@ -7,7 +7,3 @@ parameters:
   scanDirectories:
     - web/core
     - web/modules/contrib
-  ignoreErrors:
-    # Drupal-specific patterns that can be safely ignored
-    - '#Access to an undefined property Drupal\\#'
-    - '#Call to an undefined method Drupal\\#'

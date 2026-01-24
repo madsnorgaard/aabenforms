@@ -42,7 +42,7 @@ class WorkflowActionsTest extends KernelTestBase {
    * Tests ECA module integration placeholder.
    */
   public function testEcaModuleIntegration() {
-    // Placeholder test - verify ECA modules load correctly
+    // Placeholder test - verify ECA modules load correctly.
     $moduleHandler = \Drupal::moduleHandler();
     $this->assertTrue($moduleHandler->moduleExists('eca'), 'ECA module is enabled');
     $this->assertTrue($moduleHandler->moduleExists('aabenforms_workflows'), 'ÅbenForms Workflows module is enabled');

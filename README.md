@@ -3,8 +3,12 @@
 **Headless Drupal 11 backend for Danish municipal workflow automation**
 
 [![Drupal](https://img.shields.io/badge/Drupal-11.3.2-blue)](https://www.drupal.org)
-[![PHP](https://img.shields.io/badge/PHP-8.3-purple)](https://www.php.net)
+[![PHP](https://img.shields.io/badge/PHP-8.4-purple)](https://www.php.net)
 [![License](https://img.shields.io/badge/License-GPL--2.0-green)](LICENSE)
+
+[![CI](https://github.com/madsnorgaard/aabenforms/actions/workflows/ci.yml/badge.svg)](https://github.com/madsnorgaard/aabenforms/actions/workflows/ci.yml)
+[![Coding Standards](https://github.com/madsnorgaard/aabenforms/actions/workflows/coding-standards.yml/badge.svg)](https://github.com/madsnorgaard/aabenforms/actions/workflows/coding-standards.yml)
+[![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/madsnorgaard/aabenforms/main/.github/badges/coverage.json)](https://github.com/madsnorgaard/aabenforms/actions/workflows/ci.yml)
 
 ## Overview
 
@@ -144,9 +148,10 @@ For detailed information, see:
 | Component | Version | Purpose |
 |-----------|---------|---------|
 | Drupal Core | 11.3.2 | CMS |
-| PHP | 8.3 | Runtime |
+| PHP | 8.4 | Runtime |
 | MariaDB | 10.11 | Database |
-| ECA | 2.1.18 | Workflow engine |
+| ECA | 3.0.10 | Workflow engine |
+| BPMN.iO | 3.0.4 | Visual workflow modeller |
 | Webform | 6.3.0-beta7 | Forms |
 | Domain | 2.0.0-rc1 | Multi-tenancy |
 | Gin | 3.0.0 | Admin theme |

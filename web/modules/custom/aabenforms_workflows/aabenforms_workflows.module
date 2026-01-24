@@ -12,9 +12,10 @@ use Drupal\Core\Routing\RouteMatchInterface;
 /**
  * Implements hook_help().
  */
-function aabenforms_workflows_help($route_name, RouteMatchInterface $route_match) {
+function aabenforms_workflows_help(string $route_name, RouteMatchInterface $route_match): ?string {
   switch ($route_name) {
     case 'help.page.aabenforms_workflows':
       return '<p>' . t('ECA workflow integration and templates for ÅbenForms.') . '</p>';
   }
+  return NULL;
 }

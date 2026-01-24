@@ -17,7 +17,7 @@ class PlatformUtilitiesTest extends UnitTestCase {
    */
   public function testGetPlatformName() {
     // This is a placeholder test that will pass
-    // Replace with actual service implementation tests
+    // Replace with actual service implementation tests.
     $this->assertTrue(TRUE, 'ÅbenForms Core unit test placeholder');
   }
 
@@ -25,7 +25,7 @@ class PlatformUtilitiesTest extends UnitTestCase {
    * Tests another placeholder function.
    */
   public function testExampleFunction() {
-    // Example test showing PHPUnit assertions
+    // Example test showing PHPUnit assertions.
     $this->assertEquals('expected', 'expected');
     $this->assertNotEmpty('value');
   }

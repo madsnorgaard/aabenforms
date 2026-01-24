@@ -21,6 +21,55 @@ ddev test-coverage
 # Then open: backend/coverage/index.html
 ```
 
+## Code Coverage
+
+Code coverage shows which lines of code are executed during tests. ÅbenForms has comprehensive coverage reporting:
+
+### Local Coverage Reports
+
+```bash
+# Generate HTML coverage report
+ddev test-coverage
+
+# Open the report in your browser
+# File: backend/coverage/index.html
+```
+
+The HTML report shows:
+- Overall coverage percentage
+- Coverage by module
+- Line-by-line coverage with color coding (green = covered, red = not covered)
+- Complexity metrics
+
+### GitHub Actions Coverage
+
+Every push to `main` automatically:
+1. Runs all tests with coverage enabled
+2. Generates coverage report and uploads as artifact
+3. Updates coverage badge in README
+4. Shows coverage breakdown in GitHub Step Summary
+
+**View coverage in GitHub:**
+- **Badge**: Check README.md for live coverage percentage
+- **Artifacts**: Download full HTML report from Actions tab
+- **Step Summary**: See per-module breakdown in workflow runs
+
+### Coverage Goals
+
+| Module | Target | Current |
+|--------|--------|---------|
+| aabenforms_core | 70%+ | Check badge |
+| aabenforms_tenant | 70%+ | Check badge |
+| aabenforms_workflows | 60%+ | Check badge |
+| Danish integrations | 80%+ | Future |
+
+### Improving Coverage
+
+1. **Find uncovered code**: Open HTML report, look for red lines
+2. **Write tests**: Add unit/kernel tests for uncovered code
+3. **Run coverage locally**: Verify improvement with `ddev test-coverage`
+4. **Push changes**: Coverage badge updates automatically
+
 ## Prerequisites
 
 - DDEV environment running: `ddev start`

@@ -40,7 +40,7 @@ class TenantDetectionTest extends KernelTestBase {
    * Tests tenant detection placeholder.
    */
   public function testTenantDetection() {
-    // Placeholder test - verify modules load correctly
+    // Placeholder test - verify modules load correctly.
     $moduleHandler = \Drupal::moduleHandler();
     $this->assertTrue($moduleHandler->moduleExists('aabenforms_tenant'), 'ÅbenForms Tenant module is enabled');
     $this->assertTrue($moduleHandler->moduleExists('domain'), 'Domain module is enabled');

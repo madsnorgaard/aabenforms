@@ -12,9 +12,10 @@ use Drupal\Core\Routing\RouteMatchInterface;
 /**
  * Implements hook_help().
  */
-function aabenforms_core_help($route_name, RouteMatchInterface $route_match) {
+function aabenforms_core_help(string $route_name, RouteMatchInterface $route_match): ?string {
   switch ($route_name) {
     case 'help.page.aabenforms_core':
       return '<p>' . t('Core services and utilities for the ÅbenForms platform.') . '</p>';
   }
+  return NULL;
 }

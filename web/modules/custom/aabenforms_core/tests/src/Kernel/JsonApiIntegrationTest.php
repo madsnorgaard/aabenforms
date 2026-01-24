@@ -38,7 +38,7 @@ class JsonApiIntegrationTest extends KernelTestBase {
    * Tests JSON:API resource availability placeholder.
    */
   public function testJsonApiResourcesAvailable() {
-    // Placeholder test - verify module loads correctly
+    // Placeholder test - verify module loads correctly.
     $moduleHandler = \Drupal::moduleHandler();
     $this->assertTrue($moduleHandler->moduleExists('aabenforms_core'), 'ÅbenForms Core module is enabled');
     $this->assertTrue($moduleHandler->moduleExists('jsonapi'), 'JSON:API module is enabled');
