@@ -58,4 +58,13 @@
       <directory>./web/modules/custom/*/tests/src/FunctionalJavascript</directory>
     </testsuite>
   </testsuites>
+  <source>
+    <include>
+      <directory suffix=".php">./web/modules/custom</directory>
+      <directory suffix=".module">./web/modules/custom</directory>
+    </include>
+    <exclude>
+      <directory>./web/modules/custom/*/tests</directory>
+    </exclude>
+  </source>
 </phpunit>

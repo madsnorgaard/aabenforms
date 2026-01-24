@@ -12,9 +12,10 @@ use Drupal\Core\Routing\RouteMatchInterface;
 /**
  * Implements hook_help().
  */
-function aabenforms_tenant_help($route_name, RouteMatchInterface $route_match) {
+function aabenforms_tenant_help(string $route_name, RouteMatchInterface $route_match): ?string {
   switch ($route_name) {
     case 'help.page.aabenforms_tenant':
       return '<p>' . t('Multi-tenancy support with domain-based routing for ÅbenForms.') . '</p>';
   }
+  return NULL;
 }

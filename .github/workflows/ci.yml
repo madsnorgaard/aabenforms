@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php-versions: ['8.3']
+        php-versions: ['8.4']
         dependency-version: [prefer-lowest, prefer-stable]
 
     steps:
@@ -78,7 +78,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: 8.3
+          php-version: 8.4
           extensions: mbstring, xml, ctype, iconv, intl, pdo_mysql, dom, filter, gd, json, pdo, mysql
           tools: composer:v2
           coverage: xdebug
@@ -100,17 +100,78 @@ jobs:
       - name: Create browser output directory
         run: mkdir -p /tmp/browser_output && chmod 777 /tmp/browser_output
 
-      - name: Run PHPUnit - Unit Tests
-        run: vendor/bin/phpunit --testsuite=unit --testdox
+      - name: Run PHPUnit with Coverage
+        run: |
+          XDEBUG_MODE=coverage vendor/bin/phpunit \
+            --coverage-text \
+            --coverage-cobertura=coverage/cobertura.xml \
+            --coverage-html=coverage/html \
+            --testdox
         env:
           SIMPLETEST_DB: mysql://root:root@127.0.0.1/drupal_test
           SIMPLETEST_BASE_URL: http://localhost
 
-      - name: Run PHPUnit - Kernel Tests
-        run: vendor/bin/phpunit --testsuite=kernel --testdox
-        env:
-          SIMPLETEST_DB: mysql://root:root@127.0.0.1/drupal_test
-          SIMPLETEST_BASE_URL: http://localhost
+      - name: Generate Coverage Summary
+        id: coverage
+        run: |
+          # Extract coverage percentage from cobertura XML
+          COVERAGE=$(php -r "
+            \$xml = simplexml_load_file('coverage/cobertura.xml');
+            \$metrics = \$xml->xpath('//coverage');
+            \$lines = (float)\$metrics[0]['lines-covered'];
+            \$total = (float)\$metrics[0]['lines-valid'];
+            \$percent = (\$total > 0) ? round((\$lines / \$total) * 100, 2) : 0;
+            echo \$percent;
+          ")
+          echo "percentage=$COVERAGE" >> $GITHUB_OUTPUT
+          echo "### 📊 Code Coverage: ${COVERAGE}%" >> $GITHUB_STEP_SUMMARY
+
+          # Add detailed module breakdown
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "#### Module Coverage" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Parse coverage by module from text output
+          echo "| Module | Coverage |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|----------|" >> $GITHUB_STEP_SUMMARY
+
+          for module in aabenforms_core aabenforms_tenant aabenforms_workflows; do
+            MODULE_COVERAGE=$(grep -A 5 "web/modules/custom/$module" coverage/cobertura.xml | grep -oP 'line-rate="\K[0-9.]+' | head -1 || echo "0")
+            PERCENT=$(php -r "echo round($MODULE_COVERAGE * 100, 2);")
+            echo "| $module | ${PERCENT}% |" >> $GITHUB_STEP_SUMMARY
+          done
+
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/html
+          retention-days: 30
+
+      - name: Coverage Badge
+        run: |
+          mkdir -p .github/badges
+          COVERAGE=${{ steps.coverage.outputs.percentage }}
+          COLOR="red"
+          if (( $(echo "$COVERAGE >= 80" | bc -l) )); then
+            COLOR="brightgreen"
+          elif (( $(echo "$COVERAGE >= 60" | bc -l) )); then
+            COLOR="yellow"
+          elif (( $(echo "$COVERAGE >= 40" | bc -l) )); then
+            COLOR="orange"
+          fi
+
+          # Create badge JSON for shields.io
+          echo "{\"schemaVersion\": 1, \"label\": \"coverage\", \"message\": \"${COVERAGE}%\", \"color\": \"${COLOR}\"}" > .github/badges/coverage.json
+
+      - name: Commit Coverage Badge
+        if: github.ref == 'refs/heads/main'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add .github/badges/coverage.json || true
+          git diff --staged --quiet || git commit -m "Update coverage badge [skip ci]"
+          git push || true
 
   summary:
     name: CI Summary
@@ -135,6 +196,9 @@ jobs:
           else
             echo "❌ PHPUnit tests failed" >> $GITHUB_STEP_SUMMARY
           fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📊 **View detailed coverage report in artifacts**" >> $GITHUB_STEP_SUMMARY
 
       - name: Overall result
         if: needs.validate-composer.result == 'failure' || needs.phpunit.result == 'failure'
