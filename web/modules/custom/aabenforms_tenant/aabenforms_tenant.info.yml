@@ -1,0 +1,10 @@
+name: ÅbenForms Tenant
+type: module
+description: 'Multi-tenancy support with domain-based routing'
+core_version_requirement: ^11
+package: ÅbenForms
+
+dependencies:
+  - aabenforms_core:aabenforms_core
+  - domain:domain
+  - domain:domain_access

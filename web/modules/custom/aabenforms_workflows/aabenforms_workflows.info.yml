@@ -1,0 +1,10 @@
+name: ÅbenForms Workflows
+type: module
+description: 'ECA workflow integration and templates'
+core_version_requirement: ^11
+package: ÅbenForms
+
+dependencies:
+  - aabenforms_core:aabenforms_core
+  - eca:eca
+  - webform:webform
