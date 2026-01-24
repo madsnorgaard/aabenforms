@@ -16,6 +16,7 @@ on:
       - 'composer.json'
       - 'composer.lock'
       - 'phpunit.xml'
+      - '.github/workflows/ci.yml'
 
 jobs:
   validate-composer:
