@@ -1,0 +1,20 @@
+<?php
+
+/**
+ * @file
+ * ÅbenForms Tenant module.
+ *
+ * Provides multi-tenancy support with domain-based routing.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function aabenforms_tenant_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.aabenforms_tenant':
+      return '<p>' . t('Multi-tenancy support with domain-based routing for ÅbenForms.') . '</p>';
+  }
+}

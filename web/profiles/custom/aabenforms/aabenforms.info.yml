@@ -1,0 +1,50 @@
+name: ÅbenForms
+type: profile
+description: 'Danish municipal workflow automation platform'
+core_version_requirement: ^11
+distribution:
+  name: ÅbenForms
+
+install:
+  # Core modules
+  - node
+  - block
+  - views
+  - field
+  - text
+  - options
+  - user
+  - system
+  - filter
+  - file
+
+  # JSON:API
+  - jsonapi
+  - jsonapi_extras
+  - serialization
+
+  # Workflow engine
+  - eca
+
+  # Forms
+  - webform
+
+  # Multi-tenancy
+  - domain
+  - domain_access
+
+  # Security & GDPR
+  - encrypt
+  - key
+  - real_aes
+
+  # Admin UI
+  - gin_toolbar
+
+  # Custom modules
+  - aabenforms_core
+
+themes:
+  - gin
+
+default_theme: gin

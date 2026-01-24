@@ -1,0 +1,9 @@
+name: ÅbenForms Core
+type: module
+description: 'Core services and utilities for the ÅbenForms platform'
+core_version_requirement: ^11
+package: ÅbenForms
+
+dependencies:
+  - drupal:jsonapi
+  - drupal:serialization
