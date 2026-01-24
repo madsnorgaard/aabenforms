@@ -8,6 +8,9 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'web/modules/custom/**'
+      - '.github/workflows/coding-standards.yml'
 
 jobs:
   phpcs:
