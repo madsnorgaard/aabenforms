@@ -1,0 +1,60 @@
+name: 'ÅbenForms Municipality'
+description: 'Complete municipality setup with Danish government integrations (MitID, CPR, DAWA, Digital Post, SBSYS)'
+type: 'ÅbenForms'
+recipes:
+  # Start with base platform
+  - ../aabenforms_base
+
+install:
+  # Multi-tenancy (optional, enable for SaaS)
+  - aabenforms_tenant
+  - domain
+  - domain_access
+
+  # Security & GDPR
+  - aabenforms_gdpr
+  - encrypt
+  - key
+  - real_aes
+
+  # Danish government integrations
+  - aabenforms_mitid     # MitID authentication
+  - aabenforms_cpr       # CPR lookup (SF1520)
+  - aabenforms_dawa      # Address autocomplete
+  - aabenforms_digital_post  # Digital Post (SF1601)
+  - aabenforms_sbsys     # SBSYS case management
+
+  # Extended workflow features
+  - eca_endpoint         # REST API triggers
+  - eca_queue            # Async task processing
+
+config:
+  import:
+    # Import all Danish integration configs
+    aabenforms_mitid: '*'
+    aabenforms_cpr: '*'
+    aabenforms_dawa: '*'
+    aabenforms_digital_post: '*'
+    aabenforms_sbsys: '*'
+
+    # Import sample workflows
+    eca: 'eca.model.building_permit_workflow'
+
+    # Import sample webforms
+    webform: 'webform.webform.building_permit'
+    webform: 'webform.webform.citizen_contact'
+
+  actions:
+    # Update site name
+    - system.site:
+        name: 'Kommune Portal'
+        slogan: 'Digitale selvbetjeningsløsninger'
+
+content:
+  # Sample tenant configuration
+  node:
+    - type: tenant
+      title: 'Hovedtenant'
+      field_domain: 'aabenforms.dk'
+      field_municipality_name: 'ÅbenForms Demo'
+      field_cvr: '12345678'
