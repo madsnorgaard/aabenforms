@@ -1,0 +1,42 @@
+name: 'ÅbenForms Business'
+description: 'Business workflow automation with MitID Erhverv and internal process management'
+type: 'ÅbenForms'
+recipes:
+  - ../aabenforms_base
+
+install:
+  # GDPR compliance
+  - aabenforms_gdpr
+  - encrypt
+  - key
+
+  # Business authentication
+  - aabenforms_mitid     # MitID Erhverv support
+
+  # Optional business integrations
+  - aabenforms_cvr       # Company lookup
+
+  # Document generation
+  - entity_print
+  - dompdf
+
+  # Extended features
+  - eca_queue            # Async processing for bulk operations
+
+config:
+  import:
+    aabenforms_mitid: '*'
+
+    # Import business workflow templates
+    eca: 'eca.model.employee_onboarding'
+    eca: 'eca.model.expense_approval'
+    eca: 'eca.model.vacation_request'
+
+    # Import business webforms
+    webform: 'webform.webform.employee_onboarding'
+    webform: 'webform.webform.expense_claim'
+
+  actions:
+    - system.site:
+        name: 'Virksomhedsportal'
+        slogan: 'Interne workflow-løsninger'

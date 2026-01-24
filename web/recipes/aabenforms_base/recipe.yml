@@ -1,0 +1,51 @@
+name: 'ÅbenForms Base'
+description: 'Base ÅbenForms platform with core modules and minimal configuration'
+type: 'Site'
+recipes:
+  # Core Drupal functionality
+  - core/recipes/standard
+
+install:
+  # ÅbenForms platform core
+  - aabenforms_core
+  - aabenforms_workflows
+
+  # Workflow engine
+  - eca
+  - eca_base
+  - eca_content
+  - eca_user
+  - eca_form
+  - eca_ui
+  - eca_modeller_bpmn
+  - eca_workflow
+
+  # Forms
+  - webform
+
+  # Admin theme
+  - gin
+  - gin_toolbar
+
+config:
+  import:
+    # Import base configurations
+    aabenforms_core: '*'
+
+  # Configure system settings
+  actions:
+    # Set site name
+    - system.site:
+        name: 'ÅbenForms'
+        slogan: 'Modern workflow automation for Danish municipalities'
+
+    # Set default theme
+    - system.theme:
+        default: 'gin'
+        admin: 'gin'
+
+    # Configure Gin theme
+    - gin.settings:
+        preset_accent_color: 'blue'
+        preset_focus_color: 'gin'
+        enable_darkmode: true
