@@ -136,8 +136,8 @@ jobs:
           $module = $argv[1];
           $xml = simplexml_load_file('coverage/cobertura.xml');
 
-          // Find the package for this module
-          $packages = $xml->xpath("//package[contains(@name, 'web/modules/custom/$module')]");
+          // Find the package for this module - package names start with module name
+          $packages = $xml->xpath("//package[starts-with(@name, '$module/')]");
 
           if (!empty($packages)) {
             $lineRate = (float)$packages[0]['line-rate'];
