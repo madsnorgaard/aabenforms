@@ -1,0 +1,143 @@
+name: CI
+
+on:
+  pull_request:
+    paths:
+      - 'web/modules/custom/**'
+      - 'composer.json'
+      - 'composer.lock'
+      - 'phpunit.xml'
+      - '.github/workflows/ci.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'web/modules/custom/**'
+      - 'composer.json'
+      - 'composer.lock'
+      - 'phpunit.xml'
+
+jobs:
+  validate-composer:
+    name: Validate Composer
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-versions: ['8.3']
+        dependency-version: [prefer-lowest, prefer-stable]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-versions }}
+          tools: composer:v2
+          coverage: none
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Validate Composer files
+        run: |
+          composer validate --strict composer.json
+          composer update --${{ matrix.dependency-version }} --prefer-dist --no-interaction --no-progress
+
+  phpunit:
+    name: PHPUnit Tests
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mariadb:10.11
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: drupal_test
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+        ports:
+          - 3306:3306
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.3
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_mysql, dom, filter, gd, json, pdo, mysql
+          tools: composer:v2
+          coverage: xdebug
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install Dependencies
+        run: composer install --no-interaction --no-progress
+
+      - name: Create browser output directory
+        run: mkdir -p /tmp/browser_output && chmod 777 /tmp/browser_output
+
+      - name: Run PHPUnit - Unit Tests
+        run: vendor/bin/phpunit --testsuite=unit --testdox
+        env:
+          SIMPLETEST_DB: mysql://root:root@127.0.0.1/drupal_test
+          SIMPLETEST_BASE_URL: http://localhost
+
+      - name: Run PHPUnit - Kernel Tests
+        run: vendor/bin/phpunit --testsuite=kernel --testdox
+        env:
+          SIMPLETEST_DB: mysql://root:root@127.0.0.1/drupal_test
+          SIMPLETEST_BASE_URL: http://localhost
+
+  summary:
+    name: CI Summary
+    runs-on: ubuntu-latest
+    needs: [validate-composer, phpunit]
+    if: always()
+
+    steps:
+      - name: Check job results
+        run: |
+          echo "## CI Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ needs.validate-composer.result }}" == "success" ]; then
+            echo "✅ Composer validation passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Composer validation failed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "${{ needs.phpunit.result }}" == "success" ]; then
+            echo "✅ PHPUnit tests passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ PHPUnit tests failed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Overall result
+        if: needs.validate-composer.result == 'failure' || needs.phpunit.result == 'failure'
+        run: |
+          echo "❌ CI checks failed"
+          exit 1

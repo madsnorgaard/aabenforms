@@ -1,0 +1,48 @@
+#!/bin/bash
+
+## Description: Local update script for ÅbenForms
+## Usage: local_update [tenant]
+## Example: ddev local_update
+## Example: ddev local_update aarhus.aabenforms.ddev.site
+
+echo "====================================="
+echo "Installing Composer dependencies..."
+echo "====================================="
+composer install
+
+# Check which tenant to update based on argument or default to main
+TENANT="${1:-main}"
+
+if [ "$TENANT" = "main" ] || [ "$TENANT" = "all" ]; then
+    echo ""
+    echo "====================================="
+    echo "Updating main site (aabenforms.ddev.site)..."
+    echo "====================================="
+    drush cr
+    drush updb -y
+    drush cr
+    drush cim -y
+    drush cr
+    drush deploy:hook -y || true
+    drush cr
+fi
+
+# Support for multi-tenant updates when domains are configured
+if [ "$TENANT" != "main" ] && [ "$TENANT" != "all" ]; then
+    echo ""
+    echo "====================================="
+    echo "Updating tenant site ($TENANT)..."
+    echo "====================================="
+    drush --uri="$TENANT" cr
+    drush --uri="$TENANT" updb -y
+    drush --uri="$TENANT" cr
+    drush --uri="$TENANT" cim -y
+    drush --uri="$TENANT" cr
+    drush --uri="$TENANT" deploy:hook -y || true
+    drush --uri="$TENANT" cr
+fi
+
+echo ""
+echo "====================================="
+echo "Update complete!"
+echo "====================================="

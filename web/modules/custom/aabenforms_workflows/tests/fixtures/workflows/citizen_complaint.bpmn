@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  id="citizen_complaint_workflow"
+                  targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="Process_CitizenComplaint" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_SubmitComplaint" name="Submit Complaint">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:task id="Task_ValidateSubmission" name="Validate CPR">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Task_AssignCaseworker" name="Assign Caseworker">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Task_SendConfirmation" name="Send Digital Post">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:endEvent id="EndEvent_ComplaintReceived" name="Complaint Received">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_SubmitComplaint" targetRef="Task_ValidateSubmission"/>
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_ValidateSubmission" targetRef="Task_AssignCaseworker"/>
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_AssignCaseworker" targetRef="Task_SendConfirmation"/>
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Task_SendConfirmation" targetRef="EndEvent_ComplaintReceived"/>
+  </bpmn:process>
+</bpmn:definitions>
