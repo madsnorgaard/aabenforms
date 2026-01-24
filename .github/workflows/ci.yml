@@ -115,7 +115,7 @@ jobs:
       - name: Generate Coverage Summary
         id: coverage
         run: |
-          # Create PHP script to parse coverage
+          # Create PHP script to parse overall coverage
           cat > parse_coverage.php << 'PHPEOF'
           <?php
           $xml = simplexml_load_file('coverage/cobertura.xml');
@@ -130,22 +130,36 @@ jobs:
           echo "percentage=$COVERAGE" >> $GITHUB_OUTPUT
           echo "### 📊 Code Coverage: ${COVERAGE}%" >> $GITHUB_STEP_SUMMARY
 
+          # Create PHP script to parse module coverage
+          cat > parse_module.php << 'PHPEOF'
+          <?php
+          $module = $argv[1];
+          $xml = simplexml_load_file('coverage/cobertura.xml');
+
+          // Find the package for this module
+          $packages = $xml->xpath("//package[contains(@name, 'web/modules/custom/$module')]");
+
+          if (!empty($packages)) {
+            $lineRate = (float)$packages[0]['line-rate'];
+            echo round($lineRate * 100, 2);
+          } else {
+            echo "0.00";
+          }
+          PHPEOF
+
           # Add detailed module breakdown
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "#### Module Coverage" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-
-          # Parse coverage by module from text output
           echo "| Module | Coverage |" >> $GITHUB_STEP_SUMMARY
           echo "|--------|----------|" >> $GITHUB_STEP_SUMMARY
 
           for module in aabenforms_core aabenforms_tenant aabenforms_workflows; do
-            MODULE_COVERAGE=$(grep -A 5 "web/modules/custom/$module" coverage/cobertura.xml | grep -oP 'line-rate="\K[0-9.]+' | head -1 || echo "0")
-            PERCENT=$(php -r "echo round(${MODULE_COVERAGE} * 100, 2);")
+            PERCENT=$(php parse_module.php "$module")
             echo "| $module | ${PERCENT}% |" >> $GITHUB_STEP_SUMMARY
           done
 
-          rm parse_coverage.php
+          rm parse_coverage.php parse_module.php
 
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v4
