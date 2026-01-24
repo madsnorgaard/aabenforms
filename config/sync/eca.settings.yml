@@ -1,0 +1,11 @@
+_core:
+  default_config_hash: 8yUL-KW2A7ZGsEtqPUEAS2RSrIoVAlErPW2VHJFm35E
+log_level: 3
+documentation_domain: 'https://ecaguide.org'
+user: ''
+service_user: ''
+dependency_calculation:
+  - bundle
+  - field_storage
+  - field_config
+  - new_field_config

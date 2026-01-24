@@ -1,0 +1,23 @@
+uuid: 3358f4ed-2aff-4f0c-a15f-38a0f1323e1d
+langcode: en
+status: true
+dependencies:
+  module:
+    - user
+  enforced:
+    module:
+      - domain_access
+_core:
+  default_config_hash: npFnESyHHX2T6y4-CyFsir4jk7EhGt6_cn_lwcUPs6A
+id: user.field_domain_all_affiliates
+field_name: field_domain_all_affiliates
+entity_type: user
+type: boolean
+settings: {  }
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

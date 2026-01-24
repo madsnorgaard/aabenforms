@@ -63,3 +63,6 @@ Thumbs.db
 /.phpunit.cache/
 /web/sites/simpletest/
 /sites/simpletest/browser_output/
+
+# Reports and planning documents (internal)
+/reports/

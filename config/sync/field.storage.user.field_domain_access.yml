@@ -1,0 +1,25 @@
+uuid: 9c37294c-dc3a-4694-bfa2-1d618a598309
+langcode: en
+status: true
+dependencies:
+  module:
+    - domain
+    - user
+  enforced:
+    module:
+      - domain_access
+_core:
+  default_config_hash: VQ8MqlapqrEiCu_rircuCTMq_BnHCZF6SQemk-zHXKs
+id: user.field_domain_access
+field_name: field_domain_access
+entity_type: user
+type: entity_reference
+settings:
+  target_type: domain
+module: core
+locked: false
+cardinality: -1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

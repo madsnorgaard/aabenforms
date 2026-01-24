@@ -1,0 +1,30 @@
+uuid: f02f0874-0b55-411a-957b-e34720894730
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.user.field_domain_access
+  module:
+    - domain_access
+    - user
+third_party_settings:
+  domain_access:
+    add_current_domain: true
+id: user.user.field_domain_access
+field_name: field_domain_access
+entity_type: user
+bundle: user
+label: 'Domain Access'
+description: 'Select the affiliate domain(s) for this user'
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:domain'
+  handler_settings:
+    target_bundles: null
+    sort:
+      field: weight
+      direction: ASC
+field_type: entity_reference

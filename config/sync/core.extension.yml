@@ -1,0 +1,49 @@
+_core:
+  default_config_hash: 4GIX5Esnc_umpXUBj4IIocRX7Mt5fPhm4AgXfE3E56E
+module:
+  aabenforms_core: 0
+  aabenforms_tenant: 0
+  aabenforms_workflows: 0
+  block: 0
+  bpmn_io: 0
+  breakpoint: 0
+  content_moderation: 0
+  domain: 0
+  eca: 0
+  eca_base: 0
+  eca_cm: 0
+  eca_content: 0
+  eca_ui: 0
+  eca_user: 0
+  eca_workflow: 0
+  encrypt: 0
+  field: 0
+  file: 0
+  filter: 0
+  gin_toolbar: 0
+  jsonapi: 0
+  jsonapi_extras: 0
+  key: 0
+  modeler_api: 0
+  mysql: 0
+  node: 0
+  options: 0
+  path_alias: 0
+  real_aes: 0
+  serialization: 0
+  system: 0
+  text: 0
+  toolbar: 0
+  update: 0
+  user: 0
+  webform: 0
+  webform_ui: 0
+  workflows: 0
+  eca_form: 1
+  views: 10
+  domain_access: 20
+  aabenforms: 1000
+theme:
+  claro: 0
+  gin: 0
+profile: aabenforms
