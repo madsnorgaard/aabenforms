@@ -14,7 +14,7 @@ class PlatformUtilitiesTest extends UnitTestCase {
   /**
    * Tests basic functionality placeholder.
    *
-   * TODO: Implement actual service tests when PlatformUtilities service exists.
+   * @todo Implement actual service tests when PlatformUtilities service exists.
    */
   public function testGetPlatformName() {
     // This is a placeholder test that will pass.
