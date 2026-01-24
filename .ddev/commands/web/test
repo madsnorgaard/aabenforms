@@ -1,0 +1,8 @@
+#!/bin/bash
+
+## Description: Run PHPUnit tests
+## Usage: test [phpunit-args]
+## Example: ddev test --group aabenforms_core
+## Example: ddev test --testsuite=unit
+
+cd /var/www/html && vendor/bin/phpunit "$@"

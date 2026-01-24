@@ -31,9 +31,10 @@
 /.gitattributes
 /.ht.router.php
 
-# Ignore DDEV (keep .ddev/config.yaml)
+# Ignore DDEV (keep .ddev/config.yaml and commands)
 /.ddev/*
 !/.ddev/config.yaml
+!/.ddev/commands/
 
 # Ignore database dumps
 *.sql
@@ -56,3 +57,9 @@ Thumbs.db
 
 # Keep config sync directory
 !/config/sync/
+
+# Test output directories
+/coverage/
+/.phpunit.cache/
+/web/sites/simpletest/
+/sites/simpletest/browser_output/

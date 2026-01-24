@@ -1,0 +1,10 @@
+#!/bin/bash
+
+## Description: Run PHPUnit tests with coverage report
+## Usage: test-coverage
+## Example: ddev test-coverage
+
+cd /var/www/html && \
+  XDEBUG_MODE=coverage vendor/bin/phpunit \
+  --coverage-html /var/www/html/coverage \
+  --coverage-text
