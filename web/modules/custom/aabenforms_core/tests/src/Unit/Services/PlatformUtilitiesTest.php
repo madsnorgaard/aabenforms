@@ -5,7 +5,8 @@ namespace Drupal\Tests\aabenforms_core\Unit\Services;
 use Drupal\Tests\UnitTestCase;
 
 /**
- * @coversDefaultClass \Drupal\aabenforms_core\Service\PlatformUtilities
+ * Placeholder unit tests for ÅbenForms Core services.
+ *
  * @group aabenforms_core
  */
 class PlatformUtilitiesTest extends UnitTestCase {
@@ -13,10 +14,10 @@ class PlatformUtilitiesTest extends UnitTestCase {
   /**
    * Tests basic functionality placeholder.
    *
-   * @covers ::getPlatformName
+   * TODO: Implement actual service tests when PlatformUtilities service exists.
    */
   public function testGetPlatformName() {
-    // This is a placeholder test that will pass
+    // This is a placeholder test that will pass.
     // Replace with actual service implementation tests.
     $this->assertTrue(TRUE, 'ÅbenForms Core unit test placeholder');
   }
