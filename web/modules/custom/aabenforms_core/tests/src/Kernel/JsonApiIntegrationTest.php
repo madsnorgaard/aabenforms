@@ -17,6 +17,7 @@ class JsonApiIntegrationTest extends KernelTestBase {
   protected static $modules = [
     'system',
     'user',
+    'file',
     'jsonapi',
     'serialization',
     'aabenforms_core',
@@ -28,6 +29,8 @@ class JsonApiIntegrationTest extends KernelTestBase {
   protected function setUp(): void {
     parent::setUp();
     $this->installEntitySchema('user');
+    $this->installEntitySchema('file');
+    $this->installSchema('file', ['file_usage']);
     $this->installConfig(['aabenforms_core']);
   }
 

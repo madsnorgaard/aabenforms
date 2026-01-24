@@ -19,7 +19,7 @@ This backend provides:
 | Component | Version | Purpose |
 |-----------|---------|---------|
 | Drupal Core | 11.3.2 | CMS foundation |
-| PHP | 8.3 | Runtime |
+| PHP | 8.4 | Runtime |
 | MariaDB | 10.11 | Database (consistent local→production) |
 | DDEV | Latest | Local development |
 | Composer | 2.x | Dependency management |

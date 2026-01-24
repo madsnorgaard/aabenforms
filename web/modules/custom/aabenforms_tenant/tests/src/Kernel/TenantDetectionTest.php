@@ -17,7 +17,10 @@ class TenantDetectionTest extends KernelTestBase {
   protected static $modules = [
     'system',
     'user',
+    'field',
+    'node',
     'domain',
+    'domain_access',
     'aabenforms_core',
     'aabenforms_tenant',
   ];
@@ -28,8 +31,9 @@ class TenantDetectionTest extends KernelTestBase {
   protected function setUp(): void {
     parent::setUp();
     $this->installEntitySchema('user');
+    $this->installEntitySchema('node');
     $this->installEntitySchema('domain');
-    $this->installConfig(['domain', 'aabenforms_tenant']);
+    $this->installConfig(['system', 'field', 'node', 'domain', 'domain_access', 'aabenforms_tenant']);
   }
 
   /**

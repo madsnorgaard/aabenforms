@@ -17,6 +17,8 @@ class WorkflowActionsTest extends KernelTestBase {
   protected static $modules = [
     'system',
     'user',
+    'field',
+    'file',
     'eca',
     'eca_base',
     'webform',
@@ -30,7 +32,9 @@ class WorkflowActionsTest extends KernelTestBase {
   protected function setUp(): void {
     parent::setUp();
     $this->installEntitySchema('user');
-    $this->installEntitySchema('webform_submission');
+    $this->installEntitySchema('file');
+    $this->installSchema('file', ['file_usage']);
+    $this->installSchema('webform', ['webform']);
     $this->installConfig(static::$modules);
   }
 
