@@ -511,7 +511,8 @@ class AuditLoggerTest extends UnitTestCase {
 
     // Verify hash is correct and not plaintext.
     $this->assertNotEquals($cpr, $expectedHash);
-    $this->assertEquals(64, strlen($expectedHash)); // SHA-256 is 64 hex chars.
+    // SHA-256 is 64 hex chars.
+    $this->assertEquals(64, strlen($expectedHash));
   }
 
   /**
