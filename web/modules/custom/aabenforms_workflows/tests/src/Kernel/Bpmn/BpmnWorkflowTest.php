@@ -22,7 +22,6 @@ class BpmnWorkflowTest extends KernelTestBase {
     'eca_base',
     'bpmn_io',
     'modeler_api',
-    'aabenforms_core',
     'aabenforms_workflows',
   ];
 
@@ -32,7 +31,7 @@ class BpmnWorkflowTest extends KernelTestBase {
   protected function setUp(): void {
     parent::setUp();
     $this->installEntitySchema('user');
-    $this->installConfig(static::$modules);
+    $this->installConfig(['system', 'user', 'eca', 'eca_base', 'bpmn_io', 'aabenforms_workflows']);
   }
 
   /**

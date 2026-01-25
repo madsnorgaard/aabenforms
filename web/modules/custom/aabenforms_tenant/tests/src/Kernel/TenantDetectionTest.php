@@ -21,6 +21,8 @@ class TenantDetectionTest extends KernelTestBase {
     'node',
     'domain',
     'domain_access',
+    'key',
+    'encrypt',
     'aabenforms_core',
     'aabenforms_tenant',
   ];
