@@ -9,7 +9,7 @@
  * - CPR number extraction from id_token
  * - Flow-scoped session management
  * - Person data extraction from MitID claims
- * - NSIS assurance level tracking
+ * - NSIS assurance level tracking.
  */
 
 use Drupal\Core\Routing\RouteMatchInterface;

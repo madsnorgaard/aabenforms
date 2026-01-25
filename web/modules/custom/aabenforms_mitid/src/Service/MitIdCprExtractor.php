@@ -42,7 +42,7 @@ class MitIdCprExtractor {
    */
   public function __construct(
     AuditLogger $audit_logger,
-    LoggerChannelFactoryInterface $logger_factory
+    LoggerChannelFactoryInterface $logger_factory,
   ) {
     $this->auditLogger = $audit_logger;
     $this->logger = $logger_factory->get('aabenforms_mitid');
@@ -77,7 +77,7 @@ class MitIdCprExtractor {
       // Clean CPR (remove hyphens if present)
       $cpr = preg_replace('/[^0-9]/', '', $cpr);
 
-      // Audit log the CPR extraction
+      // Audit log the CPR extraction.
       $this->auditLogger->logCprLookup(
         $cpr,
         'mitid_token_extraction',
@@ -90,7 +90,8 @@ class MitIdCprExtractor {
       );
 
       $this->logger->info('CPR extracted from MitID token: {cpr} (assurance: {acr})', [
-        'cpr' => substr($cpr, 0, 6) . 'XXXX', // Masked in logs
+      // Masked in logs.
+        'cpr' => substr($cpr, 0, 6) . 'XXXX',
         'acr' => $claims['acr'] ?? 'unknown',
       ]);
     }
@@ -116,21 +117,22 @@ class MitIdCprExtractor {
     $claims = $this->parseJwt($id_token);
 
     $personData = [
-      // Identity
+      // Identity.
       'cpr' => $this->extractCpr($id_token),
       'mitid_uuid' => $claims['sub'] ?? NULL,
 
-      // Name
+      // Name.
       'name' => $claims['name'] ?? NULL,
       'given_name' => $claims['given_name'] ?? NULL,
       'family_name' => $claims['family_name'] ?? NULL,
 
-      // Additional data
+      // Additional data.
       'birthdate' => $claims['birthdate'] ?? NULL,
       'email' => $claims['email'] ?? NULL,
 
-      // Authentication metadata
-      'assurance_level' => $claims['acr'] ?? NULL, // NSIS level (substantial/high)
+      // Authentication metadata.
+    // NSIS level (substantial/high)
+      'assurance_level' => $claims['acr'] ?? NULL,
       'auth_time' => $claims['auth_time'] ?? NULL,
       'issuer' => $claims['iss'] ?? NULL,
 
@@ -188,10 +190,10 @@ class MitIdCprExtractor {
    *   The decoded data.
    */
   protected function base64UrlDecode(string $data): string {
-    // Replace URL-safe characters
+    // Replace URL-safe characters.
     $base64 = strtr($data, '-_', '+/');
 
-    // Add padding if needed
+    // Add padding if needed.
     $padding = strlen($base64) % 4;
     if ($padding > 0) {
       $base64 .= str_repeat('=', 4 - $padding);
@@ -213,7 +215,7 @@ class MitIdCprExtractor {
     try {
       $claims = $this->parseJwt($id_token);
 
-      // Check required claims
+      // Check required claims.
       $requiredClaims = ['iss', 'sub', 'aud', 'exp', 'iat'];
       foreach ($requiredClaims as $claim) {
         if (!isset($claims[$claim])) {
@@ -222,7 +224,7 @@ class MitIdCprExtractor {
         }
       }
 
-      // Check expiration
+      // Check expiration.
       $exp = $claims['exp'] ?? 0;
       if ($exp < time()) {
         $this->logger->warning('MitID token has expired (exp: {exp}, now: {now})', [
@@ -234,7 +236,8 @@ class MitIdCprExtractor {
 
       // Check issued at (not in future)
       $iat = $claims['iat'] ?? 0;
-      if ($iat > time() + 60) { // Allow 60s clock skew
+      // Allow 60s clock skew.
+      if ($iat > time() + 60) {
         $this->logger->warning('MitID token issued in future (iat: {iat}, now: {now})', [
           'iat' => $iat,
           'now' => time(),

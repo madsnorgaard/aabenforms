@@ -72,23 +72,6 @@ jobs:
         ports:
           - 3306:3306
 
-      keycloak:
-        image: quay.io/keycloak/keycloak:23.0
-        env:
-          KEYCLOAK_ADMIN: admin
-          KEYCLOAK_ADMIN_PASSWORD: admin
-          KC_HTTP_PORT: 8080
-          KC_HOSTNAME_STRICT: false
-          KC_HOSTNAME_STRICT_HTTPS: false
-          KC_HTTP_ENABLED: true
-        ports:
-          - 8080:8080
-
-      wiremock:
-        image: wiremock/wiremock:3.3.1
-        ports:
-          - 8081:8080
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -115,64 +98,6 @@ jobs:
       - name: Install Dependencies
         run: composer install --no-interaction --no-progress
 
-      - name: Install jq (JSON processor)
-        run: sudo apt-get update && sudo apt-get install -y jq
-
-      - name: Wait for Mock Services
-        run: |
-          echo "Waiting for Keycloak..."
-          timeout 120 bash -c 'until curl -sf http://localhost:8080/health || curl -sf http://localhost:8080; do sleep 2; done'
-          echo "✅ Keycloak is ready"
-
-          echo "Waiting for WireMock..."
-          timeout 60 bash -c 'until curl -sf http://localhost:8081/__admin/health; do sleep 2; done'
-          echo "✅ WireMock is ready"
-
-      - name: Import Keycloak Realm (Danish Test Users)
-        run: |
-          # Check if realm exists first
-          REALM_EXISTS=$(curl -sf http://localhost:8080/realms/danish-gov-test/.well-known/openid-configuration && echo "yes" || echo "no")
-
-          if [ "$REALM_EXISTS" = "no" ]; then
-            echo "Importing Keycloak realm with 10 Danish test users..."
-            # Get admin token
-            TOKEN=$(curl -sf -X POST http://localhost:8080/realms/master/protocol/openid-connect/token \
-              -H "Content-Type: application/x-www-form-urlencoded" \
-              -d "username=admin" \
-              -d "password=admin" \
-              -d "grant_type=password" \
-              -d "client_id=admin-cli" | jq -r '.access_token')
-
-            # Import realm
-            curl -X POST http://localhost:8080/admin/realms \
-              -H "Authorization: Bearer $TOKEN" \
-              -H "Content-Type: application/json" \
-              -d @.ddev/mocks/keycloak/realms/danish-gov-test.json || echo "Realm import failed (may already exist)"
-          else
-            echo "✅ Realm already exists"
-          fi
-
-          # Verify OIDC endpoint is accessible
-          curl -f http://localhost:8080/realms/danish-gov-test/.well-known/openid-configuration
-          echo "✅ MitID mock is available"
-
-      - name: Configure WireMock Mappings (Serviceplatformen)
-        run: |
-          echo "Loading WireMock mappings for Serviceplatformen..."
-          # Load all SF1520 CPR lookup stubs
-          for mapping in .ddev/mocks/wiremock/mappings/*.json; do
-            if [ -f "$mapping" ]; then
-              echo "Loading: $(basename $mapping)"
-              curl -X POST http://localhost:8081/__admin/mappings \
-                -H "Content-Type: application/json" \
-                -d @"$mapping" || echo "Failed to load: $mapping"
-            fi
-          done
-
-          # Verify mappings are loaded
-          MAPPING_COUNT=$(curl -sf http://localhost:8081/__admin/mappings | jq '.mappings | length')
-          echo "✅ Loaded $MAPPING_COUNT WireMock mappings"
-
       - name: Create browser output directory
         run: mkdir -p /tmp/browser_output && chmod 777 /tmp/browser_output
 
@@ -186,10 +111,6 @@ jobs:
         env:
           SIMPLETEST_DB: mysql://root:root@127.0.0.1/drupal_test
           SIMPLETEST_BASE_URL: http://localhost
-          KEYCLOAK_URL: http://localhost:8080
-          KEYCLOAK_REALM: danish-gov-test
-          SERVICEPLATFORMEN_URL: http://localhost:8081
-          MOCK_MODE: 'true'
 
       - name: Generate Coverage Summary
         id: coverage
@@ -298,12 +219,6 @@ jobs:
 
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "📊 **View detailed coverage report in artifacts**" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 🇩🇰 Mock Services" >> $GITHUB_STEP_SUMMARY
-          echo "Tests ran against Danish government mock services:" >> $GITHUB_STEP_SUMMARY
-          echo "- **MitID Mock** (Keycloak): 10 test users (freja.nielsen, mikkel.jensen, etc.)" >> $GITHUB_STEP_SUMMARY
-          echo "- **Serviceplatformen Mock** (WireMock): SF1520 CPR lookup stubs" >> $GITHUB_STEP_SUMMARY
-          echo "- **Test Data**: Realistic Danish names, addresses, CPR numbers" >> $GITHUB_STEP_SUMMARY
 
       - name: Overall result
         if: needs.validate-composer.result == 'failure' || needs.phpunit.result == 'failure'
