@@ -19,7 +19,7 @@ use Psr\Log\LoggerInterface;
  * - Structured exception handling (ServiceplatformenException)
  * - Drupal logger integration
  * - Configurable per-environment service URLs
- * - Response validation and error extraction
+ * - Response validation and error extraction.
  *
  * Supports:
  * - SF1520: CPR person lookup
@@ -89,7 +89,7 @@ class ServiceplatformenClient {
     ConfigFactoryInterface $config_factory,
     CacheBackendInterface $cache,
     LoggerChannelFactoryInterface $logger_factory,
-    ClientInterface $http_client
+    ClientInterface $http_client,
   ) {
     $this->configFactory = $config_factory;
     $this->cache = $cache;
@@ -175,7 +175,8 @@ class ServiceplatformenClient {
     catch (ServiceplatformenException $e) {
       // Retry on transient errors (timeout, connection).
       if ($e->isRetryable() && $attempt < self::MAX_RETRIES) {
-        $delay = self::RETRY_DELAY * pow(2, $attempt - 1); // Exponential backoff.
+        // Exponential backoff.
+        $delay = self::RETRY_DELAY * pow(2, $attempt - 1);
 
         $this->logger->warning('Serviceplatformen request failed (attempt {attempt}/{max}), retrying in {delay}s: {error}', [
           'service' => $service,
@@ -250,7 +251,8 @@ class ServiceplatformenClient {
     catch (RequestException $e) {
       // HTTP error - check if retryable.
       $statusCode = $e->getResponse()?->getStatusCode() ?? 0;
-      $retryable = in_array($statusCode, [408, 503, 504]); // Timeout, service unavailable, gateway timeout.
+      // Timeout, service unavailable, gateway timeout.
+      $retryable = in_array($statusCode, [408, 503, 504]);
 
       throw new ServiceplatformenException(
         'Serviceplatformen request failed: ' . $e->getMessage(),
@@ -288,7 +290,7 @@ class ServiceplatformenClient {
    *   The SOAP XML envelope.
    */
   protected function buildSoapEnvelope(string $service, string $operation, array $params): string {
-    // TODO: Implement SOAP envelope building.
+    // @todo Implement SOAP envelope building.
     // This will be service-specific (SF1520 vs. SF1530 vs. SF1601 have different schemas).
     // For now, return placeholder.
     return '<?xml version="1.0" encoding="UTF-8"?><soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope"></soap:Envelope>';
@@ -318,7 +320,7 @@ class ServiceplatformenClient {
         throw new \RuntimeException('SOAP Fault: ' . $faultString);
       }
 
-      // TODO: Parse response body (service-specific).
+      // @todo Parse response body (service-specific).
       // For now, return placeholder.
       return ['success' => TRUE, 'data' => []];
 

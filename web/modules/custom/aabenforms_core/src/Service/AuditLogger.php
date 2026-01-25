@@ -80,7 +80,7 @@ class AuditLogger {
     AccountProxyInterface $current_user,
     RequestStack $request_stack,
     TimeInterface $time,
-    LoggerChannelFactoryInterface $logger_factory
+    LoggerChannelFactoryInterface $logger_factory,
   ) {
     $this->database = $database;
     $this->currentUser = $current_user;
@@ -158,7 +158,8 @@ class AuditLogger {
     $entry = [
       'uid' => $this->currentUser->id(),
       'action' => $action,
-      'identifier_hash' => hash('sha256', $identifier), // Hash for privacy.
+    // Hash for privacy.
+      'identifier_hash' => hash('sha256', $identifier),
       'purpose' => $purpose,
       'status' => $status,
       'ip_address' => $ip_address,

@@ -8,7 +8,7 @@
  * - ServiceplatformenClient: SOAP client for SF1500 services
  * - EncryptionService: Field-level AES-256 encryption for sensitive data
  * - AuditLogger: GDPR-compliant audit logging for CPR/CVR lookups
- * - TenantResolver: Multi-tenant domain detection
+ * - TenantResolver: Multi-tenant domain detection.
  */
 
 use Drupal\Core\Routing\RouteMatchInterface;
