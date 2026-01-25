@@ -13,7 +13,7 @@ use Psr\Log\LoggerInterface;
  * Provides GDPR-compliant encryption for:
  * - CPR numbers (Danish social security numbers)
  * - Personal data in workflow instances
- * - Sensitive form submissions
+ * - Sensitive form submissions.
  *
  * Uses Drupal's Encrypt module with Real AES encryption provider.
  *
@@ -61,7 +61,7 @@ class EncryptionService {
   public function __construct(
     EncryptionProfileManagerInterface $profile_manager,
     KeyRepositoryInterface $key_repository,
-    LoggerChannelFactoryInterface $logger_factory
+    LoggerChannelFactoryInterface $logger_factory,
   ) {
     $this->profileManager = $profile_manager;
     $this->keyRepository = $key_repository;

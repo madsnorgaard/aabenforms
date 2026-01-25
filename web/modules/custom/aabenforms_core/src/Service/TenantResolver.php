@@ -58,7 +58,7 @@ class TenantResolver {
   public function __construct(
     DomainNegotiatorInterface $domain_negotiator,
     ConfigFactoryInterface $config_factory,
-    LoggerChannelFactoryInterface $logger_factory
+    LoggerChannelFactoryInterface $logger_factory,
   ) {
     $this->domainNegotiator = $domain_negotiator;
     $this->configFactory = $config_factory;

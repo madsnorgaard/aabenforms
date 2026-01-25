@@ -53,7 +53,7 @@ class ServiceplatformenException extends \RuntimeException {
     string $operation,
     bool $retryable = FALSE,
     int $code = 0,
-    ?\Throwable $previous = NULL
+    ?\Throwable $previous = NULL,
   ) {
     parent::__construct($message, $code, $previous);
     $this->service = $service;
