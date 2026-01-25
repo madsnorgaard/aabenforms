@@ -69,7 +69,7 @@ jobs:
 - Prototyping before production access
 
 ### 4. Vendor Development
-- Commercial products (XFlow, FLIS) can use for dev
+- Commercial and open-source solutions can use for dev
 - Reduces time-to-market (no waiting for test credentials)
 - Standardized test data across ecosystem
 
@@ -554,29 +554,29 @@ print_r(\$person);
 
 ---
 
-### For Other OS2 Projects
+### For Other Danish Government Projects
 
-**OS2Forms Example**:
+**Example Docker Compose Setup**:
 ```yaml
 # docker-compose.override.yml
 services:
   mitid-mock:
-    image: os2community/mitid-mock:latest
+    image: keycloak/keycloak:latest
     ports:
       - "8080:8080"
 
   serviceplatformen-mock:
-    image: os2community/serviceplatformen-mock:latest
+    image: wiremock/wiremock:latest
     ports:
       - "8081:8081"
 ```
 
-**Configuration**:
+**Example Configuration**:
 ```php
-// settings.local.php
-$config['os2forms_mitid.settings']['issuer'] = 'http://localhost:8080';
-$config['os2forms_cpr.settings']['serviceplatformen_url'] = 'http://localhost:8081';
-$config['os2forms_cpr.settings']['mock_mode'] = TRUE;
+// settings.local.php (adapt to your module structure)
+$config['your_module.mitid']['issuer'] = 'http://localhost:8080';
+$config['your_module.serviceplatformen']['url'] = 'http://localhost:8081';
+$config['your_module.serviceplatformen']['mock_mode'] = TRUE;
 ```
 
 ---
@@ -682,21 +682,21 @@ jobs:
 
 ### Target Organizations
 
-1. **OS2 Community**
-   - OS2Forms (form workflows)
-   - OS2KITOS (IT contracts)
-   - OS2mo (organization hierarchy)
-   - OS2MO (master data)
+1. **Open Source Community**
+   - Form workflow solutions
+   - IT management systems
+   - Organization management tools
+   - Master data platforms
 
 2. **KOMBIT**
    - Serviceplatformen documentation
    - Reference implementation
 
-3. **Commercial Vendors**
-   - XFlow
-   - FLIS
-   - KMD
-   - Fujitsu
+3. **Commercial & OSS Vendors**
+   - Form management solutions
+   - Document management systems
+   - Case management platforms
+   - Integration vendors
 
 4. **Municipalities**
    - Aarhus Kommune
@@ -750,10 +750,10 @@ jobs:
 ### Phase 3: Community & Refinement (Weeks 9-12)
 
 **Deliverables**:
-- ✅ OS2 community presentation
+- ✅ Community presentation
 - ✅ Contribution guidelines
 - ✅ API reference documentation
-- ✅ Example projects (OS2Forms, custom apps)
+- ✅ Example integrations
 - ✅ Performance optimization
 
 **Timeline**: 4 weeks
@@ -762,11 +762,11 @@ jobs:
 ### Phase 4: Ecosystem Integration (Weeks 13+)
 
 **Deliverables**:
-- Integration with OS2Forms
-- Integration with OS2KITOS
+- Integration with form management systems
+- Integration with IT management platforms
 - Municipal pilot programs
 - Vendor adoption
-- Conference presentations (KOMBIT Forum, OS2 Day)
+- Conference presentations (KOMBIT Forum, municipal events)
 
 **Timeline**: Ongoing
 **Resources**: Community-driven

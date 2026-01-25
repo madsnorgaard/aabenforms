@@ -25,8 +25,6 @@ use Psr\Log\LoggerInterface;
  * - SF1520: CPR person lookup
  * - SF1530: CVR company lookup
  * - SF1601: Digital Post (NgDP)
- *
- * @see /reference/os2forms/serviceplatformen/src/Service/SoapClient.php
  */
 class ServiceplatformenClient {
 
