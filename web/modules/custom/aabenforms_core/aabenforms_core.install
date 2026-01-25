@@ -1,0 +1,99 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the ÅbenForms Core module.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function aabenforms_core_schema() {
+  $schema['aabenforms_audit_log'] = [
+    'description' => 'Audit log for sensitive data access (CPR/CVR lookups, workflow access).',
+    'fields' => [
+      'id' => [
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Primary Key: Unique audit log entry ID.',
+      ],
+      'uid' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The {users}.uid of the user who performed the action (0 for workflow/anonymous).',
+      ],
+      'action' => [
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+        'description' => 'The action type (cpr_lookup, cvr_lookup, workflow_access, etc.).',
+      ],
+      'identifier_hash' => [
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+        'description' => 'SHA-256 hash of the identifier queried (CPR, CVR, workflow ID).',
+      ],
+      'purpose' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'description' => 'The purpose of the access (e.g., workflow name, form ID).',
+      ],
+      'status' => [
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'description' => 'Result status (success, failure, protected_person, etc.).',
+      ],
+      'ip_address' => [
+        'type' => 'varchar',
+        'length' => 45,
+        'not null' => FALSE,
+        'description' => 'IP address of the request (IPv4 or IPv6).',
+      ],
+      'context' => [
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+        'description' => 'Additional context data as JSON.',
+      ],
+      'timestamp' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Unix timestamp when the action occurred.',
+      ],
+    ],
+    'primary key' => ['id'],
+    'indexes' => [
+      'action' => ['action'],
+      'uid' => ['uid'],
+      'timestamp' => ['timestamp'],
+      'identifier_hash' => ['identifier_hash'],
+    ],
+  ];
+
+  return $schema;
+}
+
+/**
+ * Implements hook_install().
+ */
+function aabenforms_core_install() {
+  \Drupal::messenger()->addStatus(t('ÅbenForms Core module installed successfully. Configure Serviceplatformen settings at Administration » Configuration » ÅbenForms » Core Settings.'));
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function aabenforms_core_uninstall() {
+  // Remove all module configuration.
+  \Drupal::configFactory()->getEditable('aabenforms_core.settings')->delete();
+
+  // Note: Audit log table is automatically removed by Drupal's schema system.
+  \Drupal::messenger()->addStatus(t('ÅbenForms Core module uninstalled. All configuration and audit logs have been removed.'));
+}

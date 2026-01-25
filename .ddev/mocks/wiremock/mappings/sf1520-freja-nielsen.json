@@ -1,0 +1,19 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPathPattern": "/sf1520.*",
+    "bodyPatterns": [
+      {
+        "matchesXPath": "//CPRNumber[text()='0101904521']"
+      }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "text/xml;charset=UTF-8"
+    },
+    "bodyFileName": "sf1520-response-freja-nielsen.xml",
+    "transformers": ["response-template"]
+  }
+}

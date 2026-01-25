@@ -1,0 +1,110 @@
+# ÅbenForms Mock Services for DDEV
+#
+# This file adds Danish government mock services to your DDEV environment:
+# - Keycloak (MitID + UNI-Login mock)
+# - WireMock (Serviceplatformen mock: SF1520, SF1530, SF1601)
+# - Prism (DAWA address API mock)
+#
+# Usage:
+#   ddev start        # Automatically starts all services
+#   ddev mocks-status # Check if mocks are running
+#   ddev mocks-logs   # View mock service logs
+
+services:
+  # Keycloak - MitID OIDC Mock + UNI-Login SAML Mock
+  keycloak:
+    container_name: ddev-${DDEV_SITENAME}-keycloak
+    image: quay.io/keycloak/keycloak:23.0
+    restart: unless-stopped
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HTTP_PORT: 8080
+      KC_HOSTNAME_STRICT: false
+      KC_HOSTNAME_STRICT_HTTPS: false
+      KC_HTTP_ENABLED: true
+      KC_HEALTH_ENABLED: true
+    volumes:
+      # Import Danish test realm on startup
+      - ./mocks/keycloak/realms/danish-gov-test.json:/opt/keycloak/data/import/danish-gov-test.json
+      - ./mocks/keycloak/themes:/opt/keycloak/themes
+    command:
+      - start-dev
+      - --import-realm
+      - --http-relative-path=/
+    ports:
+      - "8080:8080"
+    networks:
+      - default
+      - ddev_default
+    labels:
+      com.ddev.site-name: ${DDEV_SITENAME}
+      com.ddev.approot: ${DDEV_APPROOT}
+    # Healthcheck disabled for simplicity - test manually at http://localhost:8080
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://localhost:8080/health/ready"]
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 5
+
+  # WireMock - Serviceplatformen SOAP Mock (SF1520, SF1530, SF1601)
+  wiremock:
+    container_name: ddev-${DDEV_SITENAME}-wiremock
+    image: wiremock/wiremock:3.3.1
+    restart: unless-stopped
+    volumes:
+      # SOAP stub mappings
+      - ./mocks/wiremock/mappings:/home/wiremock/mappings
+      # Response templates (XML files)
+      - ./mocks/wiremock/__files:/home/wiremock/__files
+    command:
+      - --global-response-templating
+      - --verbose
+    ports:
+      - "8081:8080"
+    networks:
+      - default
+      - ddev_default
+    labels:
+      com.ddev.site-name: ${DDEV_SITENAME}
+      com.ddev.approot: ${DDEV_APPROOT}
+    # Healthcheck disabled - test manually at http://localhost:8081/__admin
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://localhost:8080/__admin/health"]
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 5
+
+  # Prism - DAWA Address API Mock (OpenAPI-based)
+  # DISABLED for now - will add once OpenAPI spec is ready
+  # prism:
+  #   container_name: ddev-${DDEV_SITENAME}-prism
+  #   image: stoplight/prism:4
+  #   restart: unless-stopped
+  #   volumes:
+  #     - ./mocks/prism/dawa-openapi.yaml:/tmp/dawa-openapi.yaml
+  #   command:
+  #     - mock
+  #     - -h
+  #     - 0.0.0.0
+  #     - --port
+  #     - "4010"
+  #     - /tmp/dawa-openapi.yaml
+  #   ports:
+  #     - "8082:4010"
+  #   networks:
+  #     - default
+  #     - ddev_default
+  #   labels:
+  #     com.ddev.site-name: ${DDEV_SITENAME}
+  #     com.ddev.approot: ${DDEV_APPROOT}
+  #   healthcheck:
+  #     test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:4010"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+
+networks:
+  ddev_default:
+    external: true
+    name: ddev_default

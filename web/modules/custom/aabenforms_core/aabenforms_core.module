@@ -4,7 +4,11 @@
  * @file
  * ÅbenForms Core module.
  *
- * Provides base services and utilities for the ÅbenForms platform.
+ * Provides foundation services for Danish government integrations:
+ * - ServiceplatformenClient: SOAP client for SF1500 services
+ * - EncryptionService: Field-level AES-256 encryption for sensitive data
+ * - AuditLogger: GDPR-compliant audit logging for CPR/CVR lookups
+ * - TenantResolver: Multi-tenant domain detection
  */
 
 use Drupal\Core\Routing\RouteMatchInterface;
@@ -12,10 +16,26 @@ use Drupal\Core\Routing\RouteMatchInterface;
 /**
  * Implements hook_help().
  */
-function aabenforms_core_help(string $route_name, RouteMatchInterface $route_match): ?string {
+function aabenforms_core_help($route_name, RouteMatchInterface $route_match) {
   switch ($route_name) {
     case 'help.page.aabenforms_core':
-      return '<p>' . t('Core services and utilities for the ÅbenForms platform.') . '</p>';
+      $output = '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('ÅbenForms Core provides foundation services for Danish government service integrations. This module is required by all other ÅbenForms modules.') . '</p>';
+      $output .= '<h3>' . t('Features') . '</h3>';
+      $output .= '<dl>';
+      $output .= '<dt>' . t('Serviceplatformen Integration') . '</dt>';
+      $output .= '<dd>' . t('SOAP client for connecting to Danish government services (SF1520 CPR lookup, SF1530 CVR lookup, SF1601 Digital Post).') . '</dd>';
+      $output .= '<dt>' . t('Field Encryption') . '</dt>';
+      $output .= '<dd>' . t('AES-256 encryption for sensitive personal data (CPR numbers) to ensure GDPR compliance.') . '</dd>';
+      $output .= '<dt>' . t('Audit Logging') . '</dt>';
+      $output .= '<dd>' . t('Comprehensive logging of all sensitive data access for compliance and security auditing.') . '</dd>';
+      $output .= '<dt>' . t('Multi-Tenancy') . '</dt>';
+      $output .= '<dd>' . t('Integration with Domain module for tenant-specific configuration and data isolation.') . '</dd>';
+      $output .= '</dl>';
+      $output .= '<h3>' . t('Configuration') . '</h3>';
+      $output .= '<p>' . t('Configure Serviceplatformen connection settings at <a href=":url">Administration » Configuration » ÅbenForms » Core Settings</a>.', [
+        ':url' => \Drupal::url('aabenforms_core.admin.settings'),
+      ]) . '</p>';
+      return $output;
   }
-  return NULL;
 }

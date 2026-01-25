@@ -1,0 +1,6 @@
+services:
+  aabenforms_webform.cpr_validator:
+    class: Drupal\aabenforms_webform\Service\CprValidator
+
+  aabenforms_webform.cvr_validator:
+    class: Drupal\aabenforms_webform\Service\CvrValidator

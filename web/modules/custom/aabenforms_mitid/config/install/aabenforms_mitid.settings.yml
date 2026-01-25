@@ -1,0 +1,35 @@
+# Default configuration for ÅbenForms MitID module.
+
+# MitID OIDC Configuration (Test Environment)
+oidc:
+  # Test environment (MitID Test Tool)
+  issuer: 'https://pp.mitid.dk/oidc'
+  authorization_endpoint: 'https://pp.mitid.dk/oidc/authorize'
+  token_endpoint: 'https://pp.mitid.dk/oidc/token'
+  userinfo_endpoint: 'https://pp.mitid.dk/oidc/userinfo'
+  
+  # Client credentials (must be configured per tenant)
+  client_id: ''
+  client_secret: ''
+  
+  # Scopes
+  scopes:
+    - 'openid'
+    - 'mitid'
+    - 'cpr'
+  
+  # Redirect URI (will be auto-generated if empty)
+  redirect_uri: ''
+
+# Session configuration
+session:
+  expiration: 900  # 15 minutes
+  storage: 'tempstore'  # or 'redis' for production
+
+# Security
+security:
+  validate_tokens: true
+  required_assurance_level: 'substantial'  # or 'high'
+  
+# Production flag
+production: false

@@ -1,9 +1,11 @@
-name: ÅbenForms Core
+name: 'ÅbenForms Core'
 type: module
-description: 'Core services and utilities for the ÅbenForms platform'
+description: 'Foundation module providing core services for Danish government integrations (Serviceplatformen, encryption, audit logging).'
+package: 'ÅbenForms'
 core_version_requirement: ^11
-package: ÅbenForms
+php: ^8.3
 
 dependencies:
-  - drupal:jsonapi
-  - drupal:serialization
+  - drupal:key
+  - drupal:encrypt
+  - drupal:real_aes
