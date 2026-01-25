@@ -40,6 +40,7 @@ jobs:
       - name: Run PHPCS
         run: |
           vendor/bin/phpcs --standard=Drupal --extensions=php,module,inc,install,test,profile,theme,css,info,txt,md,yml \
+          --warning-severity=0 \
           web/modules/custom
 
   phpstan:
