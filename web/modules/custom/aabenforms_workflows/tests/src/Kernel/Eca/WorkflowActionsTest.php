@@ -22,6 +22,9 @@ class WorkflowActionsTest extends KernelTestBase {
     'eca',
     'eca_base',
     'webform',
+    'key',
+    'encrypt',
+    'domain',
     'aabenforms_core',
     'aabenforms_workflows',
   ];

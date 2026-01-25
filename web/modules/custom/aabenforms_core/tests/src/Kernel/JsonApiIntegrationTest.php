@@ -20,6 +20,9 @@ class JsonApiIntegrationTest extends KernelTestBase {
     'file',
     'jsonapi',
     'serialization',
+    'key',
+    'encrypt',
+    'domain',
     'aabenforms_core',
   ];
 
