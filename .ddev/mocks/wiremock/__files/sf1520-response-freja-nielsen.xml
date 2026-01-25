@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns="http://kombit.dk/xml/schemas/PersonBaseDataExtended/1/">
+  <soapenv:Header/>
+  <soapenv:Body>
+    <ns:GetPersonBaseDataExtendedResponse>
+      <ns:PersonBaseDataExtended>
+        <ns:PersonGivenName>Freja</ns:PersonGivenName>
+        <ns:PersonMiddleName></ns:PersonMiddleName>
+        <ns:PersonSurnameName>Nielsen</ns:PersonSurnameName>
+        <ns:PersonCprNumber>0101904521</ns:PersonCprNumber>
+        <ns:PersonBirthDate>1990-01-01</ns:PersonBirthDate>
+        <ns:PersonGenderCode>K</ns:PersonGenderCode>
+        <ns:PersonAddressStructured>
+          <ns:StreetName>Frederiksberg Allé</ns:StreetName>
+          <ns:StreetBuildingIdentifier>42</ns:StreetBuildingIdentifier>
+          <ns:FloorIdentifier>2</ns:FloorIdentifier>
+          <ns:SuiteIdentifier>th</ns:SuiteIdentifier>
+          <ns:PostCodeIdentifier>2000</ns:PostCodeIdentifier>
+          <ns:DistrictName>Frederiksberg</ns:DistrictName>
+          <ns:DistrictSubdivisionIdentifier>København</ns:DistrictSubdivisionIdentifier>
+          <ns:CountryIdentificationCode>DK</ns:CountryIdentificationCode>
+        </ns:PersonAddressStructured>
+        <ns:PersonCivilStatus>G</ns:PersonCivilStatus>
+        <ns:PersonNationalityCode>5100</ns:PersonNationalityCode>
+        <ns:PersonProtection>false</ns:PersonProtection>
+        <ns:PersonStatusCode>01</ns:PersonStatusCode>
+        <ns:PersonStatusDate>1990-01-01</ns:PersonStatusDate>
+      </ns:PersonBaseDataExtended>
+    </ns:GetPersonBaseDataExtendedResponse>
+  </soapenv:Body>
+</soapenv:Envelope>

@@ -1,0 +1,421 @@
+{
+  "id": "danish-gov-test",
+  "realm": "danish-gov-test",
+  "displayName": "Danish Government Test Realm",
+  "displayNameHtml": "<div class=\"kc-logo-text\"><span>🇩🇰 Danish Government Test</span></div>",
+  "enabled": true,
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": false,
+  "duplicateEmailsAllowed": true,
+  "resetPasswordAllowed": false,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": false,
+
+  "defaultSignatureAlgorithm": "RS256",
+  "accessTokenLifespan": 3600,
+
+  "internationalizationEnabled": true,
+  "supportedLocales": ["da", "en"],
+  "defaultLocale": "da",
+
+  "clients": [
+    {
+      "clientId": "aabenforms-backend",
+      "name": "ÅbenForms Backend (Drupal)",
+      "description": "ÅbenForms Drupal backend OIDC client",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "aabenforms-backend-secret-change-in-production",
+      "redirectUris": [
+        "http://localhost:3000/*",
+        "http://aabenforms.ddev.site/*",
+        "https://aabenforms.ddev.site/*"
+      ],
+      "webOrigins": [
+        "http://localhost:3000",
+        "http://aabenforms.ddev.site",
+        "https://aabenforms.ddev.site"
+      ],
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "attributes": {
+        "access.token.lifespan": "3600"
+      },
+      "protocolMappers": [
+        {
+          "name": "cpr",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "cpr",
+            "claim.name": "cpr",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        },
+        {
+          "name": "cvr",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "cvr",
+            "claim.name": "cvr",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        },
+        {
+          "name": "organization_name",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "organization_name",
+            "claim.name": "organization_name",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true"
+          }
+        },
+        {
+          "name": "birthdate",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "birthdate",
+            "claim.name": "birthdate",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        },
+        {
+          "name": "assurance_level",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "assurance_level",
+            "claim.name": "acr",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "aabenforms-frontend",
+      "name": "ÅbenForms Frontend (Nuxt)",
+      "description": "ÅbenForms Nuxt 3 frontend OIDC client",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "redirectUris": [
+        "http://localhost:3000/*",
+        "http://localhost:3001/*",
+        "https://aabenforms-frontend.ddev.site/*"
+      ],
+      "webOrigins": [
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "https://aabenforms-frontend.ddev.site"
+      ],
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false
+    }
+  ],
+
+  "users": [
+    {
+      "username": "freja.nielsen",
+      "firstName": "Freja",
+      "lastName": "Nielsen",
+      "email": "freja.nielsen@example.dk",
+      "emailVerified": true,
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "test1234",
+          "temporary": false
+        }
+      ],
+      "attributes": {
+        "cpr": ["0101904521"],
+        "birthdate": ["1990-01-01"],
+        "given_name": ["Freja"],
+        "family_name": ["Nielsen"],
+        "assurance_level": ["http://eidas.europa.eu/LoA/substantial"],
+        "description": ["Typical citizen - Common Danish name, Copenhagen resident"]
+      },
+      "realmRoles": ["user"]
+    },
+    {
+      "username": "mikkel.jensen",
+      "firstName": "Mikkel",
+      "lastName": "Jensen",
+      "email": "mikkel.jensen@example.dk",
+      "emailVerified": true,
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "test1234",
+          "temporary": false
+        }
+      ],
+      "attributes": {
+        "cpr": ["1502856234"],
+        "birthdate": ["1985-02-15"],
+        "given_name": ["Mikkel"],
+        "family_name": ["Jensen"],
+        "assurance_level": ["http://eidas.europa.eu/LoA/substantial"],
+        "description": ["Typical citizen - Most common Danish surname"]
+      },
+      "realmRoles": ["user"]
+    },
+    {
+      "username": "sofie.hansen",
+      "firstName": "Sofie",
+      "lastName": "Hansen",
+      "email": "sofie.hansen@example.dk",
+      "emailVerified": true,
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "test1234",
+          "temporary": false
+        }
+      ],
+      "attributes": {
+        "cpr": ["2506924015"],
+        "birthdate": ["1992-06-25"],
+        "given_name": ["Sofie"],
+        "family_name": ["Hansen"],
+        "assurance_level": ["http://eidas.europa.eu/LoA/substantial"],
+        "description": ["Young parent with children"]
+      },
+      "realmRoles": ["user"]
+    },
+    {
+      "username": "lars.andersen",
+      "firstName": "Lars",
+      "lastName": "Andersen",
+      "email": "lars.andersen@example.dk",
+      "emailVerified": true,
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "test1234",
+          "temporary": false
+        }
+      ],
+      "attributes": {
+        "cpr": ["0803755210"],
+        "birthdate": ["1975-03-08"],
+        "given_name": ["Lars"],
+        "family_name": ["Andersen"],
+        "assurance_level": ["http://eidas.europa.eu/LoA/substantial"],
+        "description": ["Middle-aged citizen, Aarhus resident"]
+      },
+      "realmRoles": ["user"]
+    },
+    {
+      "username": "emma.pedersen",
+      "firstName": "Emma",
+      "lastName": "Pedersen",
+      "email": "emma.pedersen@example.dk",
+      "emailVerified": true,
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "test1234",
+          "temporary": false
+        }
+      ],
+      "attributes": {
+        "cpr": ["1010005206"],
+        "birthdate": ["2000-10-10"],
+        "given_name": ["Emma"],
+        "family_name": ["Pedersen"],
+        "assurance_level": ["http://eidas.europa.eu/LoA/substantial"],
+        "description": ["Young adult, recent graduate"]
+      },
+      "realmRoles": ["user"]
+    },
+    {
+      "username": "karen.christensen",
+      "firstName": "Karen",
+      "lastName": "Christensen",
+      "email": "karen@test-aps.dk",
+      "emailVerified": true,
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "test1234",
+          "temporary": false
+        }
+      ],
+      "attributes": {
+        "cpr": ["1205705432"],
+        "cvr": ["12345678"],
+        "birthdate": ["1970-05-12"],
+        "given_name": ["Karen"],
+        "family_name": ["Christensen"],
+        "organization_name": ["Test ApS"],
+        "assurance_level": ["http://eidas.europa.eu/LoA/high"],
+        "description": ["Business owner - MitID Erhverv user with CVR"]
+      },
+      "realmRoles": ["user", "business"]
+    },
+    {
+      "username": "protected.person",
+      "firstName": "[BESKYTTET]",
+      "lastName": "[BESKYTTET]",
+      "email": "protected@example.dk",
+      "emailVerified": true,
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "test1234",
+          "temporary": false
+        }
+      ],
+      "attributes": {
+        "cpr": ["0101804321"],
+        "birthdate": ["1980-01-01"],
+        "given_name": ["[BESKYTTET]"],
+        "family_name": ["[BESKYTTET]"],
+        "protected": ["true"],
+        "assurance_level": ["http://eidas.europa.eu/LoA/substantial"],
+        "description": ["Protected person - Name and address hidden (navne- og adressebeskyttelse)"]
+      },
+      "realmRoles": ["user"]
+    },
+    {
+      "username": "morten.rasmussen",
+      "firstName": "Morten",
+      "lastName": "Rasmussen",
+      "email": "morten.rasmussen@example.dk",
+      "emailVerified": true,
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "test1234",
+          "temporary": false
+        }
+      ],
+      "attributes": {
+        "cpr": ["2209674523"],
+        "birthdate": ["1967-09-22"],
+        "given_name": ["Morten"],
+        "family_name": ["Rasmussen"],
+        "assurance_level": ["http://eidas.europa.eu/LoA/substantial"],
+        "description": ["Senior citizen, retiree"]
+      },
+      "realmRoles": ["user"]
+    },
+    {
+      "username": "ida.mortensen",
+      "firstName": "Ida",
+      "lastName": "Mortensen",
+      "email": "ida.mortensen@example.dk",
+      "emailVerified": true,
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "test1234",
+          "temporary": false
+        }
+      ],
+      "attributes": {
+        "cpr": ["0507985634"],
+        "birthdate": ["1998-07-05"],
+        "given_name": ["Ida"],
+        "family_name": ["Mortensen"],
+        "assurance_level": ["http://eidas.europa.eu/LoA/substantial"],
+        "description": ["Young professional, Odense resident"]
+      },
+      "realmRoles": ["user"]
+    },
+    {
+      "username": "peter.larsen",
+      "firstName": "Peter",
+      "lastName": "Larsen",
+      "email": "peter.larsen@example.dk",
+      "emailVerified": true,
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "test1234",
+          "temporary": false
+        }
+      ],
+      "attributes": {
+        "cpr": ["1811826547"],
+        "birthdate": ["1982-11-18"],
+        "given_name": ["Peter"],
+        "family_name": ["Larsen"],
+        "assurance_level": ["http://eidas.europa.eu/LoA/substantial"],
+        "description": ["Typical male citizen, common Danish name"]
+      },
+      "realmRoles": ["user"]
+    }
+  ],
+
+  "roles": {
+    "realm": [
+      {
+        "name": "user",
+        "description": "Standard user role"
+      },
+      {
+        "name": "business",
+        "description": "Business user with CVR"
+      },
+      {
+        "name": "caseworker",
+        "description": "Municipality caseworker"
+      }
+    ]
+  },
+
+  "scopeMappings": [],
+
+  "clientScopeMappings": {},
+
+  "defaultDefaultClientScopes": [
+    "role_list",
+    "profile",
+    "email",
+    "roles",
+    "web-origins",
+    "acr"
+  ],
+
+  "browserFlow": "browser",
+  "directGrantFlow": "direct grant"
+}

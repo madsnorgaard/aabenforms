@@ -1,0 +1,15 @@
+#!/bin/bash
+
+## Description: View logs from Danish government mock services
+## Usage: ddev mocks-logs [service]
+## Example: ddev mocks-logs keycloak
+
+SERVICE=${1:-}
+
+if [ -z "$SERVICE" ]; then
+  echo "=== Mock Services Logs (press Ctrl+C to exit) ==="
+  docker compose -f .ddev/docker-compose.mocks.yaml logs -f keycloak wiremock prism
+else
+  echo "=== $SERVICE Logs (press Ctrl+C to exit) ==="
+  docker compose -f .ddev/docker-compose.mocks.yaml logs -f "$SERVICE"
+fi

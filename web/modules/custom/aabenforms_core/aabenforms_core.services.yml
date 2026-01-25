@@ -1,0 +1,31 @@
+services:
+  aabenforms_core.serviceplatformen_client:
+    class: Drupal\aabenforms_core\Service\ServiceplatformenClient
+    arguments:
+      - '@config.factory'
+      - '@cache.default'
+      - '@logger.factory'
+      - '@http_client'
+
+  aabenforms_core.encryption_service:
+    class: Drupal\aabenforms_core\Service\EncryptionService
+    arguments:
+      - '@encrypt.encryption_profile.manager'
+      - '@key.repository'
+      - '@logger.factory'
+
+  aabenforms_core.audit_logger:
+    class: Drupal\aabenforms_core\Service\AuditLogger
+    arguments:
+      - '@database'
+      - '@current_user'
+      - '@request_stack'
+      - '@datetime.time'
+      - '@logger.factory'
+
+  aabenforms_core.tenant_resolver:
+    class: Drupal\aabenforms_core\Service\TenantResolver
+    arguments:
+      - '@domain.negotiator'
+      - '@config.factory'
+      - '@logger.factory'

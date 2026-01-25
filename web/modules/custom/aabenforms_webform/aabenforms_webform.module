@@ -1,0 +1,34 @@
+<?php
+
+/**
+ * @file
+ * ÅbenForms Webform Elements module.
+ *
+ * Provides custom Webform elements for Danish government forms:
+ * - CprField: CPR number with modulus-11 validation
+ * - CvrField: CVR number with format validation
+ * - DawaAddress: Danish address autocomplete
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function aabenforms_webform_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.aabenforms_webform':
+      $output = '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('ÅbenForms Webform Elements provides custom form fields for Danish government data. These elements include built-in validation for Danish formats (CPR, CVR) and integration with Danish services (DAWA address autocomplete).') . '</p>';
+      $output .= '<h3>' . t('Available Elements') . '</h3>';
+      $output .= '<dl>';
+      $output .= '<dt>' . t('CPR Field') . '</dt>';
+      $output .= '<dd>' . t('Collects Danish CPR numbers (DDMMYYXXXX format) with modulus-11 check digit validation.') . '</dd>';
+      $output .= '<dt>' . t('CVR Field') . '</dt>';
+      $output .= '<dd>' . t('Collects Danish CVR numbers (8-digit format) with validation.') . '</dd>';
+      $output .= '<dt>' . t('DAWA Address') . '</dt>';
+      $output .= '<dd>' . t('Danish address autocomplete powered by DAWA (Danmarks Adressers Web API).') . '</dd>';
+      $output .= '</dl>';
+      return $output;
+  }
+}

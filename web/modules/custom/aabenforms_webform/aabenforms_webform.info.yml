@@ -1,0 +1,10 @@
+name: 'ÅbenForms Webform Elements'
+type: module
+description: 'Custom Webform elements for Danish government forms (CPR, CVR, DAWA address fields).'
+package: 'ÅbenForms'
+core_version_requirement: ^11
+php: ^8.3
+
+dependencies:
+  - drupal:webform
+  - aabenforms_core:aabenforms_core

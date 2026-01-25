@@ -1,0 +1,51 @@
+#!/bin/bash
+
+## Description: Check status of Danish government mock services
+## Usage: ddev mocks-status
+## Example: ddev mocks-status
+
+echo "=== Danish Government Mock Services Status ==="
+echo ""
+
+# Check Keycloak (MitID Mock)
+echo "🔑 Keycloak (MitID + UNI-Login):"
+if curl -s http://localhost:8080/health/ready > /dev/null 2>&1; then
+  echo "   ✅ Running on http://localhost:8080"
+  echo "   📊 Admin UI: http://localhost:8080/admin (admin/admin)"
+  echo "   🔗 Realm: danish-gov-test"
+else
+  echo "   ❌ Not running"
+fi
+echo ""
+
+# Check WireMock (Serviceplatformen Mock)
+echo "🌐 WireMock (Serviceplatformen):"
+if curl -s http://localhost:8081/__admin/health > /dev/null 2>&1; then
+  echo "   ✅ Running on http://localhost:8081"
+  echo "   📊 Admin UI: http://localhost:8081/__admin"
+
+  # Count mappings
+  MAPPINGS=$(curl -s http://localhost:8081/__admin/mappings | grep -o '"id"' | wc -l)
+  echo "   📝 Loaded mappings: $MAPPINGS"
+else
+  echo "   ❌ Not running"
+fi
+echo ""
+
+# Check Prism (DAWA Mock)
+echo "🏠 Prism (DAWA Address API):"
+if curl -s http://localhost:8082 > /dev/null 2>&1; then
+  echo "   ✅ Running on http://localhost:8082"
+  echo "   📊 OpenAPI Docs: http://localhost:8082"
+else
+  echo "   ❌ Not running"
+fi
+echo ""
+
+echo "=== Quick Start ==="
+echo "• Login to Keycloak: http://localhost:8080/admin (admin/admin)"
+echo "• View test users: Realm 'danish-gov-test' → Users"
+echo "• Test MitID login: http://localhost:8080/realms/danish-gov-test/account"
+echo "• Test CPR lookup: curl -X POST http://localhost:8081/sf1520 --data @test-cpr-request.xml"
+echo "• Test address search: curl http://localhost:8082/adresser/autocomplete?q=frederiksberg"
+echo ""

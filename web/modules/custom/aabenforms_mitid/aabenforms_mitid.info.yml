@@ -1,0 +1,11 @@
+name: 'ÅbenForms MitID'
+type: module
+description: 'MitID authentication and CPR Claims extraction for Danish government workflows.'
+package: 'ÅbenForms'
+core_version_requirement: ^11
+php: ^8.3
+
+dependencies:
+  - drupal:openid_connect
+  - aabenforms_core:aabenforms_core
+  - aabenforms_webform:aabenforms_webform

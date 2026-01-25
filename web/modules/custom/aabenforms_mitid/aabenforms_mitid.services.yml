@@ -1,0 +1,23 @@
+services:
+  aabenforms_mitid.cpr_extractor:
+    class: Drupal\aabenforms_mitid\Service\MitIdCprExtractor
+    arguments:
+      - '@aabenforms_core.audit_logger'
+      - '@logger.factory'
+
+  aabenforms_mitid.session_manager:
+    class: Drupal\aabenforms_mitid\Service\MitIdSessionManager
+    arguments:
+      - '@tempstore.private'
+      - '@datetime.time'
+      - '@logger.factory'
+      - '@aabenforms_core.audit_logger'
+
+  aabenforms_mitid.oidc_client:
+    class: Drupal\aabenforms_mitid\Service\MitIdOidcClient
+    arguments:
+      - '@config.factory'
+      - '@http_client'
+      - '@logger.factory'
+      - '@aabenforms_mitid.cpr_extractor'
+      - '@aabenforms_mitid.session_manager'

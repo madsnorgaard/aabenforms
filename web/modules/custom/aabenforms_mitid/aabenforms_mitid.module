@@ -1,0 +1,38 @@
+<?php
+
+/**
+ * @file
+ * ÅbenForms MitID module.
+ *
+ * Provides MitID authentication and CPR Claims extraction:
+ * - MitID OIDC authentication (Personal and Business)
+ * - CPR number extraction from id_token
+ * - Flow-scoped session management
+ * - Person data extraction from MitID claims
+ * - NSIS assurance level tracking
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function aabenforms_mitid_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.aabenforms_mitid':
+      $output = '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('ÅbenForms MitID provides authentication and CPR data extraction via Denmark\'s national identity system (MitID). This module replaces the need for direct CPR lookup services (SF1520) by extracting verified CPR numbers and person data directly from authenticated MitID sessions.') . '</p>';
+      $output .= '<h3>' . t('Features') . '</h3>';
+      $output .= '<dl>';
+      $output .= '<dt>' . t('MitID Authentication') . '</dt>';
+      $output .= '<dd>' . t('OIDC-based authentication supporting both Personal (MitID Privat) and Business (MitID Erhverv) login.') . '</dd>';
+      $output .= '<dt>' . t('CPR Claims Extraction') . '</dt>';
+      $output .= '<dd>' . t('Extract verified CPR number directly from MitID authentication token (no external API calls needed).') . '</dd>';
+      $output .= '<dt>' . t('Flow-Scoped Sessions') . '</dt>';
+      $output .= '<dd>' . t('MitID sessions are tied to workflow instances, not permanent user accounts (GDPR compliant).') . '</dd>';
+      $output .= '<dt>' . t('NSIS Assurance Levels') . '</dt>';
+      $output .= '<dd>' . t('Track authentication assurance level (Substantial/High) for compliance requirements.') . '</dd>';
+      $output .= '</dl>';
+      return $output;
+  }
+}

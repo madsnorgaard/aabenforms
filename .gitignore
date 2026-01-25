@@ -31,17 +31,16 @@
 /.gitattributes
 /.ht.router.php
 
-# Ignore DDEV (keep .ddev/config.yaml and commands)
+# Ignore DDEV (keep .ddev/config.yaml, commands, and mock services)
 /.ddev/*
 !/.ddev/config.yaml
 !/.ddev/commands/
+!/.ddev/docker-compose.mocks.yaml
+!/.ddev/mocks/
 
 # Ignore database dumps
 *.sql
 *.sql.gz
-
-# Keep important .ddev config
-!.ddev/config.yaml
 
 # Ignore node_modules if using npm/yarn for theme development
 node_modules/
@@ -66,3 +65,6 @@ Thumbs.db
 
 # Reports and planning documents (internal)
 /reports/
+
+# OS2Forms reference repositories (for studying patterns, not our code)
+/reference/

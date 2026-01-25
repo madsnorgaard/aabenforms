@@ -1,0 +1,93 @@
+# Configuration schema for ÅbenForms Core module.
+
+aabenforms_core.settings:
+  type: config_object
+  label: 'ÅbenForms Core settings'
+  mapping:
+    serviceplatformen:
+      type: mapping
+      label: 'Serviceplatformen configuration'
+      mapping:
+        urls:
+          type: mapping
+          label: 'Service endpoint URLs'
+          mapping:
+            SF1520:
+              type: string
+              label: 'CPR Lookup service URL (SF1520)'
+            SF1530:
+              type: string
+              label: 'CVR Lookup service URL (SF1530)'
+            SF1601:
+              type: string
+              label: 'Digital Post service URL (SF1601)'
+        certificates:
+          type: mapping
+          label: 'Client certificates'
+          mapping:
+            cert_path:
+              type: string
+              label: 'Certificate file path'
+            key_path:
+              type: string
+              label: 'Private key file path'
+            password:
+              type: string
+              label: 'Private key password'
+        cache:
+          type: mapping
+          label: 'Cache settings'
+          mapping:
+            enabled:
+              type: boolean
+              label: 'Enable response caching'
+            default_expiration:
+              type: integer
+              label: 'Default cache expiration (seconds)'
+    encryption:
+      type: mapping
+      label: 'Encryption configuration'
+      mapping:
+        default_profile:
+          type: string
+          label: 'Default encryption profile ID'
+    audit:
+      type: mapping
+      label: 'Audit logging configuration'
+      mapping:
+        enabled:
+          type: boolean
+          label: 'Enable audit logging'
+        retention_days:
+          type: integer
+          label: 'Audit log retention period (days)'
+
+# Tenant-specific configuration
+aabenforms_core.tenant.*:
+  type: config_object
+  label: 'Tenant-specific ÅbenForms Core settings'
+  mapping:
+    mitid:
+      type: mapping
+      label: 'MitID configuration'
+      mapping:
+        client_id:
+          type: string
+          label: 'MitID client ID'
+        client_secret:
+          type: string
+          label: 'MitID client secret'
+    serviceplatformen:
+      type: mapping
+      label: 'Serviceplatformen tenant configuration'
+      mapping:
+        certificates:
+          type: mapping
+          label: 'Tenant-specific certificates'
+          mapping:
+            cert_path:
+              type: string
+              label: 'Certificate file path'
+            key_path:
+              type: string
+              label: 'Private key file path'
