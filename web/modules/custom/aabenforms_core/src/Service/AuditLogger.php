@@ -98,7 +98,7 @@ class AuditLogger {
    *   The purpose of the lookup (e.g., 'citizen_complaint_workflow').
    * @param string $status
    *   The result status ('success', 'failure', 'protected_person').
-   * @param array $context
+   * @param array<string, mixed> $context
    *   Additional context (workflow_id, tenant_id, etc.).
    */
   public function logCprLookup(string $cpr, string $purpose, string $status, array $context = []): void {
@@ -114,7 +114,7 @@ class AuditLogger {
    *   The purpose of the lookup.
    * @param string $status
    *   The result status.
-   * @param array $context
+   * @param array<string, mixed> $context
    *   Additional context.
    */
   public function logCvrLookup(string $cvr, string $purpose, string $status, array $context = []): void {
@@ -130,7 +130,7 @@ class AuditLogger {
    *   The action performed (e.g., 'view', 'update', 'delete').
    * @param string $status
    *   The result status.
-   * @param array $context
+   * @param array<string, mixed> $context
    *   Additional context.
    */
   public function logWorkflowAccess(string $workflow_id, string $action, string $status, array $context = []): void {
@@ -148,7 +148,7 @@ class AuditLogger {
    *   The purpose or sub-action.
    * @param string $status
    *   The result status.
-   * @param array $context
+   * @param array<string, mixed> $context
    *   Additional context data.
    */
   protected function log(string $action, string $identifier, string $purpose, string $status, array $context): void {
@@ -192,14 +192,14 @@ class AuditLogger {
   /**
    * Retrieves audit log entries.
    *
-   * @param array $conditions
+   * @param array<string, mixed> $conditions
    *   Query conditions (e.g., ['action' => 'cpr_lookup', 'uid' => 123]).
    * @param int $limit
    *   Maximum number of entries to return.
    * @param int $offset
    *   Query offset for pagination.
    *
-   * @return array
+   * @return array<int, array<string, mixed>>
    *   Array of audit log entries.
    */
   public function getAuditLog(array $conditions = [], int $limit = 100, int $offset = 0): array {

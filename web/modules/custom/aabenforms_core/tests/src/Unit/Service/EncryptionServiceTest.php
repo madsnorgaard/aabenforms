@@ -4,7 +4,6 @@ namespace Drupal\Tests\aabenforms_core\Unit\Service;
 
 use Drupal\aabenforms_core\Service\EncryptionService;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
-use Drupal\encrypt\EncryptionProfileInterface;
 use Drupal\encrypt\EncryptionProfileManagerInterface;
 use Drupal\key\KeyRepositoryInterface;
 use Drupal\Tests\UnitTestCase;
@@ -90,7 +89,7 @@ class EncryptionServiceTest extends UnitTestCase {
     string $encryptReturn = '',
     string $decryptReturn = '',
     bool $throwOnEncrypt = FALSE,
-    bool $throwOnDecrypt = FALSE
+    bool $throwOnDecrypt = FALSE,
   ) {
     return new class($encryptReturn, $decryptReturn, $throwOnEncrypt, $throwOnDecrypt) {
 
