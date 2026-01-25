@@ -68,7 +68,7 @@ class MitIdSessionManager {
     PrivateTempStoreFactory $temp_store,
     TimeInterface $time,
     LoggerChannelFactoryInterface $logger_factory,
-    AuditLogger $audit_logger
+    AuditLogger $audit_logger,
   ) {
     $this->tempStore = $temp_store;
     $this->time = $time;
@@ -91,19 +91,19 @@ class MitIdSessionManager {
     try {
       $store = $this->tempStore->get('aabenforms_mitid');
 
-      // Add metadata
+      // Add metadata.
       $session_data['created_at'] = $this->time->getRequestTime();
       $session_data['expires_at'] = $this->time->getRequestTime() + self::SESSION_EXPIRATION;
       $session_data['workflow_id'] = $workflow_id;
 
-      // Store session
+      // Store session.
       $store->set($workflow_id, $session_data);
 
       $this->logger->info('MitID session stored for workflow: {workflow_id}', [
         'workflow_id' => $workflow_id,
       ]);
 
-      // Audit log
+      // Audit log.
       if (isset($session_data['cpr'])) {
         $this->auditLogger->logWorkflowAccess(
           $workflow_id,
@@ -143,7 +143,7 @@ class MitIdSessionManager {
         return NULL;
       }
 
-      // Check expiration
+      // Check expiration.
       $expiresAt = $session_data['expires_at'] ?? 0;
       if ($expiresAt < $this->time->getRequestTime()) {
         $this->logger->info('MitID session expired for workflow: {workflow_id}', [
@@ -183,7 +183,7 @@ class MitIdSessionManager {
         'workflow_id' => $workflow_id,
       ]);
 
-      // Audit log
+      // Audit log.
       $this->auditLogger->logWorkflowAccess(
         $workflow_id,
         'mitid_session_deleted',

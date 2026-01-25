@@ -7,7 +7,7 @@
  * Provides custom Webform elements for Danish government forms:
  * - CprField: CPR number with modulus-11 validation
  * - CvrField: CVR number with format validation
- * - DawaAddress: Danish address autocomplete
+ * - DawaAddress: Danish address autocomplete.
  */
 
 use Drupal\Core\Routing\RouteMatchInterface;

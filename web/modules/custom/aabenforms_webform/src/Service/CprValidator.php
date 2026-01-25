@@ -9,7 +9,7 @@ namespace Drupal\aabenforms_webform\Service;
  * - DD: Day (01-31)
  * - MM: Month (01-12)
  * - YY: Year (00-99)
- * - XXXX: Sequence number + check digit
+ * - XXXX: Sequence number + check digit.
  *
  * Validation includes:
  * - Format check (10 digits)
@@ -111,7 +111,8 @@ class CprValidator {
       }
     }
 
-    return 1900; // Default fallback.
+    // Default fallback.
+    return 1900;
   }
 
   /**
@@ -186,7 +187,7 @@ class CprValidator {
    *
    * The last digit determines gender:
    * - Even = Female
-   * - Odd = Male
+   * - Odd = Male.
    *
    * @param string $cpr
    *   The CPR number.
