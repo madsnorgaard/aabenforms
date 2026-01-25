@@ -18,6 +18,9 @@ on:
       - 'phpunit.xml'
       - '.github/workflows/ci.yml'
 
+permissions:
+  contents: write
+
 jobs:
   validate-composer:
     name: Validate Composer
@@ -75,6 +78,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: true
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -191,7 +197,7 @@ jobs:
           git config --local user.name "github-actions[bot]"
           git add .github/badges/coverage.json || true
           git diff --staged --quiet || git commit -m "Update coverage badge [skip ci]"
-          git push || true
+          git push
 
   summary:
     name: CI Summary
