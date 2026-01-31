@@ -288,10 +288,143 @@ class ServiceplatformenClient {
    *   The SOAP XML envelope.
    */
   protected function buildSoapEnvelope(string $service, string $operation, array $params): string {
-    // @todo Implement SOAP envelope building.
-    // This will be service-specific (SF1520 vs. SF1530 vs. SF1601 have different schemas).
-    // For now, return placeholder.
-    return '<?xml version="1.0" encoding="UTF-8"?><soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope"></soap:Envelope>';
+    return match($service) {
+      'SF1520' => $this->buildSF1520Envelope($operation, $params),
+      'SF1530' => $this->buildSF1530Envelope($operation, $params),
+      'SF1601' => $this->buildSF1601Envelope($operation, $params),
+      default => throw new \InvalidArgumentException("Unknown service: {$service}"),
+    };
+  }
+
+  /**
+   * Builds SOAP envelope for SF1520 (CPR person lookup).
+   *
+   * @param string $operation
+   *   The operation name.
+   * @param array $params
+   *   Request parameters.
+   *
+   * @return string
+   *   The SOAP envelope XML.
+   */
+  protected function buildSF1520Envelope(string $operation, array $params): string {
+    $config = $this->configFactory->get('aabenforms_core.settings');
+    $username = $config->get('serviceplatformen.username') ?? '';
+    $password = $config->get('serviceplatformen.password') ?? '';
+
+    $cpr = $params['cpr'] ?? '';
+
+    $xml = <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+               xmlns:ns="http://serviceplatformen.dk/cprlookup/1">
+  <soap:Header>
+    <wsse:Security xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
+      <wsse:UsernameToken>
+        <wsse:Username>{$username}</wsse:Username>
+        <wsse:Password>{$password}</wsse:Password>
+      </wsse:UsernameToken>
+    </wsse:Security>
+  </soap:Header>
+  <soap:Body>
+    <ns:PersonLookupRequest>
+      <ns:PNR>{$cpr}</ns:PNR>
+    </ns:PersonLookupRequest>
+  </soap:Body>
+</soap:Envelope>
+XML;
+
+    return $xml;
+  }
+
+  /**
+   * Builds SOAP envelope for SF1530 (CVR company lookup).
+   *
+   * @param string $operation
+   *   The operation name.
+   * @param array $params
+   *   Request parameters.
+   *
+   * @return string
+   *   The SOAP envelope XML.
+   */
+  protected function buildSF1530Envelope(string $operation, array $params): string {
+    $config = $this->configFactory->get('aabenforms_core.settings');
+    $username = $config->get('serviceplatformen.username') ?? '';
+    $password = $config->get('serviceplatformen.password') ?? '';
+
+    $cvr = $params['cvr'] ?? '';
+
+    $xml = <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+               xmlns:ns="http://serviceplatformen.dk/cvrlookup/1">
+  <soap:Header>
+    <wsse:Security xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
+      <wsse:UsernameToken>
+        <wsse:Username>{$username}</wsse:Username>
+        <wsse:Password>{$password}</wsse:Password>
+      </wsse:UsernameToken>
+    </wsse:Security>
+  </soap:Header>
+  <soap:Body>
+    <ns:CompanyLookupRequest>
+      <ns:CVR>{$cvr}</ns:CVR>
+    </ns:CompanyLookupRequest>
+  </soap:Body>
+</soap:Envelope>
+XML;
+
+    return $xml;
+  }
+
+  /**
+   * Builds SOAP envelope for SF1601 (Digital Post).
+   *
+   * @param string $operation
+   *   The operation name.
+   * @param array $params
+   *   Request parameters.
+   *
+   * @return string
+   *   The SOAP envelope XML.
+   */
+  protected function buildSF1601Envelope(string $operation, array $params): string {
+    $config = $this->configFactory->get('aabenforms_core.settings');
+    $username = $config->get('serviceplatformen.username') ?? '';
+    $password = $config->get('serviceplatformen.password') ?? '';
+
+    $cpr = $params['cpr'] ?? '';
+    $subject = $params['subject'] ?? '';
+    $content = $params['content'] ?? '';
+    $messageId = $params['message_id'] ?? uniqid('msg_');
+
+    $xml = <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+               xmlns:ns="http://serviceplatformen.dk/digitalpost/1">
+  <soap:Header>
+    <wsse:Security xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
+      <wsse:UsernameToken>
+        <wsse:Username>{$username}</wsse:Username>
+        <wsse:Password>{$password}</wsse:Password>
+      </wsse:UsernameToken>
+    </wsse:Security>
+  </soap:Header>
+  <soap:Body>
+    <ns:SendMessageRequest>
+      <ns:MessageID>{$messageId}</ns:MessageID>
+      <ns:Recipient>
+        <ns:CPR>{$cpr}</ns:CPR>
+      </ns:Recipient>
+      <ns:Subject>{$subject}</ns:Subject>
+      <ns:Content><![CDATA[{$content}]]></ns:Content>
+    </ns:SendMessageRequest>
+  </soap:Body>
+</soap:Envelope>
+XML;
+
+    return $xml;
   }
 
   /**
@@ -309,17 +442,40 @@ class ServiceplatformenClient {
   protected function parseResponse(string $xml): array {
     try {
       $doc = new \DOMDocument();
-      $doc->loadXML($xml);
+      // Suppress XML loading warnings.
+      @$doc->loadXML($xml);
 
       // Check for SOAP fault.
       $faults = $doc->getElementsByTagName('Fault');
       if ($faults->length > 0) {
-        $faultString = $doc->getElementsByTagName('Reason')->item(0)?->textContent ?? 'Unknown SOAP fault';
+        $faultString = $doc->getElementsByTagName('Reason')->item(0)?->textContent
+                    ?? $doc->getElementsByTagName('faultstring')->item(0)?->textContent
+                    ?? 'Unknown SOAP fault';
         throw new \RuntimeException('SOAP Fault: ' . $faultString);
       }
 
-      // @todo Parse response body (service-specific).
-      // For now, return placeholder.
+      // Parse response body - detect service type from namespace.
+      $body = $doc->getElementsByTagName('Body')->item(0);
+      if (!$body) {
+        throw new \RuntimeException('No SOAP Body found in response');
+      }
+
+      // Check for CPR lookup response.
+      if ($doc->getElementsByTagName('PersonLookupResponse')->length > 0) {
+        return $this->parseSF1520Response($doc);
+      }
+
+      // Check for CVR lookup response.
+      if ($doc->getElementsByTagName('CompanyLookupResponse')->length > 0) {
+        return $this->parseSF1530Response($doc);
+      }
+
+      // Check for Digital Post response.
+      if ($doc->getElementsByTagName('SendMessageResponse')->length > 0) {
+        return $this->parseSF1601Response($doc);
+      }
+
+      // Unknown response format.
       return ['success' => TRUE, 'data' => []];
 
     }
@@ -333,6 +489,114 @@ class ServiceplatformenClient {
         previous: $e
       );
     }
+  }
+
+  /**
+   * Parses SF1520 (CPR) response.
+   *
+   * @param \DOMDocument $doc
+   *   The response DOM document.
+   *
+   * @return array
+   *   Parsed person data.
+   */
+  protected function parseSF1520Response(\DOMDocument $doc): array {
+    $data = [
+      'success' => TRUE,
+      'service' => 'SF1520',
+      'person' => [],
+    ];
+
+    // Extract person data from response.
+    $firstName = $doc->getElementsByTagName('FirstName')->item(0)?->textContent ?? '';
+    $lastName = $doc->getElementsByTagName('LastName')->item(0)?->textContent ?? '';
+    $address = $doc->getElementsByTagName('Address')->item(0)?->textContent ?? '';
+    $postalCode = $doc->getElementsByTagName('PostalCode')->item(0)?->textContent ?? '';
+    $city = $doc->getElementsByTagName('City')->item(0)?->textContent ?? '';
+    $cpr = $doc->getElementsByTagName('CPR')->item(0)?->textContent ?? '';
+
+    if ($firstName || $lastName) {
+      $data['person'] = [
+        'cpr' => $cpr,
+        'first_name' => $firstName,
+        'last_name' => $lastName,
+        'full_name' => trim("{$firstName} {$lastName}"),
+        'address' => $address,
+        'postal_code' => $postalCode,
+        'city' => $city,
+      ];
+    }
+
+    return $data;
+  }
+
+  /**
+   * Parses SF1530 (CVR) response.
+   *
+   * @param \DOMDocument $doc
+   *   The response DOM document.
+   *
+   * @return array
+   *   Parsed company data.
+   */
+  protected function parseSF1530Response(\DOMDocument $doc): array {
+    $data = [
+      'success' => TRUE,
+      'service' => 'SF1530',
+      'company' => [],
+    ];
+
+    // Extract company data from response.
+    $cvr = $doc->getElementsByTagName('CVR')->item(0)?->textContent ?? '';
+    $name = $doc->getElementsByTagName('CompanyName')->item(0)?->textContent ?? '';
+    $address = $doc->getElementsByTagName('Address')->item(0)?->textContent ?? '';
+    $postalCode = $doc->getElementsByTagName('PostalCode')->item(0)?->textContent ?? '';
+    $city = $doc->getElementsByTagName('City')->item(0)?->textContent ?? '';
+    $status = $doc->getElementsByTagName('Status')->item(0)?->textContent ?? '';
+
+    if ($name || $cvr) {
+      $data['company'] = [
+        'cvr' => $cvr,
+        'name' => $name,
+        'address' => $address,
+        'postal_code' => $postalCode,
+        'city' => $city,
+        'status' => $status,
+      ];
+    }
+
+    return $data;
+  }
+
+  /**
+   * Parses SF1601 (Digital Post) response.
+   *
+   * @param \DOMDocument $doc
+   *   The response DOM document.
+   *
+   * @return array
+   *   Parsed send status.
+   */
+  protected function parseSF1601Response(\DOMDocument $doc): array {
+    $data = [
+      'success' => TRUE,
+      'service' => 'SF1601',
+      'status' => [],
+    ];
+
+    // Extract send status from response.
+    $messageId = $doc->getElementsByTagName('MessageID')->item(0)?->textContent ?? '';
+    $status = $doc->getElementsByTagName('Status')->item(0)?->textContent ?? '';
+    $statusCode = $doc->getElementsByTagName('StatusCode')->item(0)?->textContent ?? '';
+
+    $data['status'] = [
+      'message_id' => $messageId,
+      'status' => $status,
+      'status_code' => $statusCode,
+      'sent' => ($status === 'OK' || $statusCode === '200'),
+    ];
+
+    return $data;
   }
 
   /**
