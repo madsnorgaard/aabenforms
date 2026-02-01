@@ -4,7 +4,7 @@
 
 ---
 
-## ✅ Step 1: Verify Core Module (5 minutes)
+##  Step 1: Verify Core Module (5 minutes)
 
 ### 1.1 Check Installation
 
@@ -46,11 +46,11 @@ ddev drush sql:query "SELECT * FROM aabenforms_audit_log ORDER BY id DESC LIMIT 
 # Expected: Shows audit entry with action='cpr_lookup'
 ```
 
-**✅ Core module verified!**
+** Core module verified!**
 
 ---
 
-## 🎯 Step 2: Enable Webform + ECA (10 minutes)
+##  Step 2: Enable Webform + ECA (10 minutes)
 
 ### 2.1 Enable Required Modules
 
@@ -85,11 +85,11 @@ Open in browser:
 - **ECA Models**: `https://aabenforms.ddev.site/admin/config/workflow/eca`
 - **BPMN Modeler**: `https://aabenforms.ddev.site/admin/config/workflow/eca/add/bpmn_io`
 
-**✅ Workflow infrastructure ready!**
+** Workflow infrastructure ready!**
 
 ---
 
-## 📝 Step 3: Create Your First Webform (5 minutes)
+##  Step 3: Create Your First Webform (5 minutes)
 
 ### 3.1 Create Test Form via Drush
 
@@ -140,11 +140,11 @@ echo 'Total submissions: ' . count(\$submissions) . PHP_EOL;
 "
 ```
 
-**✅ Webform working!**
+** Webform working!**
 
 ---
 
-## 🔄 Step 4: Create Your First ECA Workflow (10 minutes)
+##  Step 4: Create Your First ECA Workflow (10 minutes)
 
 ### 4.1 Create Simple ECA Model
 
@@ -218,7 +218,7 @@ ddev drush ev "
 \$webform = \Drupal\webform\Entity\Webform::load('test_contact');
 \$values = [
   'name' => 'Test User',
-  'email' => 'test@example.com',
+  'email' => 'test@aabenforms.dk',
   'message' => 'Testing ECA workflow',
 ];
 
@@ -235,11 +235,11 @@ echo 'Test submission created (ID: ' . \$submission->id() . ')' . PHP_EOL;
 ddev drush sql:query "SELECT * FROM aabenforms_audit_log ORDER BY id DESC LIMIT 3;"
 ```
 
-**✅ First workflow executed!**
+** First workflow executed!**
 
 ---
 
-## 🚀 Next Steps: Build Danish Government Integrations
+##  Next Steps: Build Danish Government Integrations
 
 ### Option 1: Create CPR Lookup Webform Element
 
@@ -281,7 +281,7 @@ ddev drush config:set aabenforms_core.tenant.aarhus mitid.client_id "aarhus-test
 
 ---
 
-## 🧪 Testing Your Setup
+##  Testing Your Setup
 
 ### Run All Verification Checks
 
@@ -292,39 +292,39 @@ ddev drush config:set aabenforms_core.tenant.aarhus mitid.client_id "aarhus-test
 echo "=== ÅbenForms Installation Verification ==="
 
 # 1. Core module
-echo -n "✓ aabenforms_core: "
+echo -n " aabenforms_core: "
 ddev drush pm:list --filter=aabenforms_core --status=enabled --format=list
 
 # 2. Dependencies
-echo -n "✓ key: "
+echo -n " key: "
 ddev drush pm:list --filter=key --status=enabled --format=list
-echo -n "✓ encrypt: "
+echo -n " encrypt: "
 ddev drush pm:list --filter=encrypt --status=enabled --format=list
 
 # 3. Workflow infrastructure
-echo -n "✓ webform: "
+echo -n " webform: "
 ddev drush pm:list --filter=webform --status=enabled --format=list
-echo -n "✓ eca: "
+echo -n " eca: "
 ddev drush pm:list --filter=eca --status=enabled --format=list
-echo -n "✓ bpmn_io: "
+echo -n " bpmn_io: "
 ddev drush pm:list --filter=bpmn_io --status=enabled --format=list
 
 # 4. Services
-echo -n "✓ Audit logging service: "
+echo -n " Audit logging service: "
 ddev drush ev "echo get_class(\Drupal::service('aabenforms_core.audit_logger')) . PHP_EOL;"
 
-echo -n "✓ Encryption service: "
+echo -n " Encryption service: "
 ddev drush ev "echo get_class(\Drupal::service('aabenforms_core.encryption_service')) . PHP_EOL;"
 
-echo -n "✓ Tenant resolver: "
+echo -n " Tenant resolver: "
 ddev drush ev "echo get_class(\Drupal::service('aabenforms_core.tenant_resolver')) . PHP_EOL;"
 
 # 5. Database
-echo -n "✓ Audit log table: "
+echo -n " Audit log table: "
 ddev drush sql:query "SELECT COUNT(*) FROM information_schema.tables WHERE table_name='aabenforms_audit_log';"
 
 echo ""
-echo "=== All checks passed! ✅ ==="
+echo "=== All checks passed!  ==="
 ```
 
 Run verification:
@@ -335,7 +335,7 @@ chmod +x scripts/verify-install.sh
 
 ---
 
-## 📚 Reference Documentation
+##  Reference Documentation
 
 ### Admin URLs
 
@@ -415,6 +415,6 @@ ddev drush cr
 
 ---
 
-**Ready to build! 🚀**
+**Ready to build! **
 
 **Next**: Let's create the aabenforms_webform module with Danish field types (CPR, CVR, DAWA).

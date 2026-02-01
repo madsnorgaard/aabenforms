@@ -1,0 +1,19 @@
+_core:
+  default_config_hash: 91eddBLmEzocTHYCBUQFuMc4UrlvzjYYg6a0I4Ke4no
+serviceplatformen:
+  urls:
+    SF1520: 'https://exttest.serviceplatformen.dk/service/CPR/CPRBasicInformation/1'
+    SF1530: 'https://exttest.serviceplatformen.dk/service/CVR/CVROnline/1'
+    SF1601: 'https://exttest.serviceplatformen.dk/service/DigitalPost/1'
+  certificates:
+    cert_path: ''
+    key_path: ''
+    password: ''
+  cache:
+    enabled: true
+    default_expiration: 900
+encryption:
+  default_profile: aabenforms_aes256
+audit:
+  enabled: true
+  retention_days: 1825

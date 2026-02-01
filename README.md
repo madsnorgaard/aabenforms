@@ -15,10 +15,10 @@
 ÅbenForms is a modern, modular platform for Danish municipalities to automate citizen-facing workflows and integrate with government services (MitID, Serviceplatformen, case management systems).
 
 This repository contains the **Drupal 11 backend** that provides:
-- 🔄 ECA workflow engine (event-driven automation)
-- 📝 Dynamic webforms with JSON:API exposure
-- 🏢 Multi-tenant architecture via Domain module
-- 🔐 GDPR-compliant CPR encryption
+-  ECA workflow engine (event-driven automation)
+- Dynamic webforms with JSON:API exposure
+-  Multi-tenant architecture via Domain module
+-  GDPR-compliant CPR encryption
 - 🇩🇰 Danish government service integrations (MitID, SF1520, SF1530, SF1601)
 
 ## Architecture
@@ -85,25 +85,25 @@ ddev launch
 ### Core Platform (Phase 1)
 | Module | Status | Description |
 |--------|--------|-------------|
-| `aabenforms_core` | ✅ Active | Base services, utilities, JSON:API config |
-| `aabenforms_tenant` | ✅ Active | Multi-tenancy via Domain module |
-| `aabenforms_workflows` | ✅ Active | ECA integration, workflow templates |
+| `aabenforms_core` | Active | Base services, utilities, JSON:API config |
+| `aabenforms_tenant` | Active | Multi-tenancy via Domain module |
+| `aabenforms_workflows` | Active | ECA integration, workflow templates |
 
 ### Security & Auth (Phase 2)
 | Module | Status | Description |
 |--------|--------|-------------|
-| `aabenforms_gdpr` | 🔜 Planned | Field encryption, audit logs, retention |
-| `aabenforms_mitid` | 🔜 Planned | MitID OIDC authentication |
+| `aabenforms_gdpr` |  Planned | Field encryption, audit logs, retention |
+| `aabenforms_mitid` |  Planned | MitID OIDC authentication |
 
 ### Danish Integrations (Phase 3-4)
 | Module | Status | Description |
 |--------|--------|-------------|
-| `aabenforms_cpr` | 🔜 Planned | SF1520 person lookup |
-| `aabenforms_cvr` | 🔜 Planned | SF1530 company lookup |
-| `aabenforms_dawa` | 🔜 Planned | Address autocomplete |
-| `aabenforms_digital_post` | 🔜 Planned | SF1601 notifications |
-| `aabenforms_sbsys` | 🔜 Planned | SBSYS case management |
-| `aabenforms_get_organized` | 🔜 Planned | GetOrganized ESDH |
+| `aabenforms_cpr` |  Planned | SF1520 person lookup |
+| `aabenforms_cvr` |  Planned | SF1530 company lookup |
+| `aabenforms_dawa` |  Planned | Address autocomplete |
+| `aabenforms_digital_post` |  Planned | SF1601 notifications |
+| `aabenforms_sbsys` |  Planned | SBSYS case management |
+| `aabenforms_get_organized` |  Planned | GetOrganized ESDH |
 
 ## Development
 
@@ -158,7 +158,7 @@ For detailed information, see:
 
 ## Security
 
-⚠️ **GDPR Compliance**: This platform handles sensitive data (CPR numbers). Always:
+**GDPR Compliance**: This platform handles sensitive data (CPR numbers). Always:
 1. Enable field-level encryption (`aabenforms_gdpr`)
 2. Log all CPR access (automatic via `aabenforms_cpr`)
 3. Obtain explicit consent before collection
@@ -181,4 +181,4 @@ https://github.com/madsnorgaard/aabenforms/issues
 
 ---
 
-**Developed with ❤️ for Danish municipalities**
+**Developed with  for Danish municipalities**

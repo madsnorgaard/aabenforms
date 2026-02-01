@@ -381,11 +381,11 @@ ddev exec mkdir -p /tmp/browser_output && ddev exec chmod 777 /tmp/browser_outpu
 
 | Module | Target Coverage | Status |
 |--------|----------------|--------|
-| aabenforms_core | 70% | 🟡 In Progress |
-| aabenforms_tenant | 70% | 🟡 In Progress |
-| aabenforms_workflows | 60% | 🟡 In Progress |
-| aabenforms_mitid (future) | 80% | 📋 Planned |
-| aabenforms_gdpr (future) | 80% | 📋 Planned |
+| aabenforms_core | 70% |  In Progress |
+| aabenforms_tenant | 70% |  In Progress |
+| aabenforms_workflows | 60% |  In Progress |
+| aabenforms_mitid (future) | 80% | Planned |
+| aabenforms_gdpr (future) | 80% | Planned |
 
 ## Testing Danish Integration Modules
 

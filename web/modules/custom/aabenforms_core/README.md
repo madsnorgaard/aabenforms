@@ -216,20 +216,20 @@ GDPR-compliant audit log for all sensitive data access.
 
 ### CPR Number Handling
 
-⚠️ **CRITICAL**: CPR numbers are sensitive personal data under GDPR Article 9.
+**CRITICAL**: CPR numbers are sensitive personal data under GDPR Article 9.
 
 **Always**:
-- ✅ Encrypt CPR numbers at rest using EncryptionService
-- ✅ Log all CPR lookups using AuditLogger
-- ✅ Only request CPR when absolutely necessary
-- ✅ Delete CPR data when no longer needed
-- ✅ Use HTTPS for all Serviceplatformen requests
+- Encrypt CPR numbers at rest using EncryptionService
+- Log all CPR lookups using AuditLogger
+- Only request CPR when absolutely necessary
+- Delete CPR data when no longer needed
+- Use HTTPS for all Serviceplatformen requests
 
 **Never**:
-- ❌ Store CPR numbers in plain text
-- ❌ Log CPR numbers in application logs
-- ❌ Display CPR numbers in URLs or JavaScript
-- ❌ Share CPR data across tenant boundaries
+- Store CPR numbers in plain text
+- Log CPR numbers in application logs
+- Display CPR numbers in URLs or JavaScript
+- Share CPR data across tenant boundaries
 
 ### Serviceplatformen Certificates
 
@@ -284,4 +284,4 @@ GPL-2.0 (aligned with Drupal and OS2 ecosystem)
 
 ## Maintainer
 
-Mads Nørgaard <mads@example.com>
+Mads Nørgaard <mads@aabenforms.dk>

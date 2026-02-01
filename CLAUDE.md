@@ -272,7 +272,7 @@ ddev drush domain:create odense.aabenforms.ddev.site "Odense Kommune"
 ## Security & GDPR Notes
 
 ### CPR Number Handling
-⚠️ **CRITICAL**: CPR numbers (Danish social security numbers) are **sensitive personal data** under GDPR Article 9.
+ **CRITICAL**: CPR numbers (Danish social security numbers) are **sensitive personal data** under GDPR Article 9.
 
 **Requirements**:
 1. **Field-level encryption** via `aabenforms_gdpr` module
