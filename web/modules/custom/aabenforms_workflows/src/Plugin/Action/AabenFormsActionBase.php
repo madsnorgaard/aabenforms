@@ -4,8 +4,6 @@ namespace Drupal\aabenforms_workflows\Plugin\Action;
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultInterface;
-use Drupal\Core\Logger\LoggerChannelFactoryInterface;
-use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\eca\Plugin\Action\ActionBase;
@@ -23,29 +21,21 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 abstract class AabenFormsActionBase extends ActionBase implements ContainerFactoryPluginInterface {
 
   /**
-   * The logger.
-   *
-   * @var \Drupal\Core\Logger\LoggerChannelInterface
-   */
-  protected LoggerChannelInterface $logger;
-
-  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
-    $instance = new static($configuration, $plugin_id, $plugin_definition);
-    $instance->setLogger($container->get('logger.factory'));
+    $instance = new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('entity_type.manager'),
+      $container->get('eca.token_services'),
+      $container->get('current_user'),
+      $container->get('datetime.time'),
+      $container->get('eca.state'),
+      $container->get('logger.factory')->get('aabenforms_workflows')
+    );
     return $instance;
-  }
-
-  /**
-   * Sets the logger factory.
-   *
-   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory
-   *   The logger factory.
-   */
-  public function setLogger(LoggerChannelFactoryInterface $logger_factory): void {
-    $this->logger = $logger_factory->get('aabenforms_workflows');
   }
 
   /**
