@@ -25,19 +25,19 @@ ddev mocks-status
 ```
 === Danish Government Mock Services Status ===
 
-🔑 Keycloak (MitID + UNI-Login):
-   ✅ Running on http://localhost:8080
-   📊 Admin UI: http://localhost:8080/admin (admin/admin)
-   🔗 Realm: danish-gov-test
+Keycloak (MitID + UNI-Login):
+   Running on http://localhost:8080
+   Admin UI: http://localhost:8080/admin (admin/admin)
+   Realm: danish-gov-test
 
-🌐 WireMock (Serviceplatformen):
-   ✅ Running on http://localhost:8081
-   📊 Admin UI: http://localhost:8081/__admin
-   📝 Loaded mappings: 12
+WireMock (Serviceplatformen):
+   Running on http://localhost:8081
+   Admin UI: http://localhost:8081/__admin
+   Loaded mappings: 12
 
-🏠 Prism (DAWA Address API):
-   ✅ Running on http://localhost:8082
-   📊 OpenAPI Docs: http://localhost:8082
+ Prism (DAWA Address API):
+   Running on http://localhost:8082
+   OpenAPI Docs: http://localhost:8082
 ```
 
 ### 2. Test Mock Services
@@ -102,10 +102,10 @@ curl http://localhost:8082/adresser/autocomplete?q=frederiksberg
 **Realm**: danish-gov-test
 
 **Features**:
-- ✅ Full OIDC + SAML 2.0 support
-- ✅ Custom Danish claims (CPR, CVR, assurance level)
-- ✅ 10 realistic test personas
-- ✅ Multi-client support (backend + frontend)
+- Full OIDC + SAML 2.0 support
+- Custom Danish claims (CPR, CVR, assurance level)
+- 10 realistic test personas
+- Multi-client support (backend + frontend)
 
 **OIDC Endpoints**:
 ```
@@ -128,11 +128,11 @@ JWKs:           http://localhost:8080/realms/danish-gov-test/protocol/openid-con
 **Admin UI**: http://localhost:8081/__admin
 
 **Features**:
-- ✅ SOAP 1.1/1.2 support
-- ✅ OIO-compliant XML responses
-- ✅ SF1520 (CPR lookup), SF1530 (CVR lookup), SF1601 (Digital Post)
-- ✅ Request matching (XPath)
-- ✅ No OCES certificate validation (bypassed for dev)
+- SOAP 1.1/1.2 support
+- OIO-compliant XML responses
+- SF1520 (CPR lookup), SF1530 (CVR lookup), SF1601 (Digital Post)
+- Request matching (XPath)
+- No OCES certificate validation (bypassed for dev)
 
 **Services**:
 ```
@@ -149,10 +149,10 @@ SF1601 (Digital Post): POST http://localhost:8081/sf1601
 **OpenAPI Docs**: http://localhost:8082
 
 **Features**:
-- ✅ REST API (JSON)
-- ✅ Address autocomplete
-- ✅ Geolocation
-- ✅ Realistic Danish addresses
+- REST API (JSON)
+- Address autocomplete
+- Geolocation
+- Realistic Danish addresses
 
 **Endpoints**:
 ```
@@ -392,7 +392,7 @@ export default defineNuxtConfig({
   <div class="login-page">
     <h1>Log ind med MitID</h1>
     <button @click="loginWithMitID" class="mitid-button">
-      🔑 Log ind med MitID
+      Log ind med MitID
     </button>
     <p class="test-info">
       Test brugere: freja.nielsen, mikkel.jensen, etc.<br>
@@ -759,36 +759,36 @@ elseif ($is_production) {
 
 ### For Developers
 
-- ✅ **Start coding immediately** - No waiting for credentials
-- ✅ **Work offline** - No network dependencies
-- ✅ **Fast tests** - Mock responses in milliseconds
-- ✅ **Deterministic** - Same test data every time
-- ✅ **Realistic** - Danish names, addresses, CPR numbers
+- **Start coding immediately** - No waiting for credentials
+- **Work offline** - No network dependencies
+- **Fast tests** - Mock responses in milliseconds
+- **Deterministic** - Same test data every time
+- **Realistic** - Danish names, addresses, CPR numbers
 
 ### For Teams
 
-- ✅ **Onboarding** - New developers productive on day one
-- ✅ **CI/CD** - Fast integration tests without external APIs
-- ✅ **Parallel development** - Backend and frontend teams work independently
-- ✅ **Cost savings** - No test environment costs
+- **Onboarding** - New developers productive on day one
+- **CI/CD** - Fast integration tests without external APIs
+- **Parallel development** - Backend and frontend teams work independently
+- **Cost savings** - No test environment costs
 
 ### For Quality
 
-- ✅ **Edge cases** - Test protected persons, high assurance levels
-- ✅ **Error scenarios** - Simulate Serviceplatformen failures
-- ✅ **Security testing** - Test without risking real CPR data
-- ✅ **Performance testing** - Load test without rate limits
+- **Edge cases** - Test protected persons, high assurance levels
+- **Error scenarios** - Simulate Serviceplatformen failures
+- **Security testing** - Test without risking real CPR data
+- **Performance testing** - Load test without rate limits
 
 ---
 
 ## Next Steps
 
-1. ✅ **Start DDEV**: `ddev start`
-2. ✅ **Check status**: `ddev mocks-status`
-3. ✅ **Configure Drupal**: Add to `settings.local.php`
-4. ✅ **Configure Nuxt**: Update `nuxt.config.ts`
-5. ✅ **Test login flow**: Login as `freja.nielsen`
-6. ✅ **Build workflows**: Use mock services in development
+1. **Start DDEV**: `ddev start`
+2. **Check status**: `ddev mocks-status`
+3. **Configure Drupal**: Add to `settings.local.php`
+4. **Configure Nuxt**: Update `nuxt.config.ts`
+5. **Test login flow**: Login as `freja.nielsen`
+6. **Build workflows**: Use mock services in development
 
 ---
 

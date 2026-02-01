@@ -9,13 +9,13 @@
 
 | Service | Port | Status | Purpose |
 |---------|------|--------|---------|
-| **Keycloak** | 8080 | ✅ **RUNNING** | MitID authentication mock (OIDC) |
-| **WireMock** | 8081 | ✅ **RUNNING** | Serviceplatformen SOAP mocks (SF1520, SF1530, SF1601) |
-| **Prism** | 4010 | ❌ **DISABLED** | DAWA address API mock (OpenAPI) - Not needed yet |
+| **Keycloak** | 8080 | **RUNNING** | MitID authentication mock (OIDC) |
+| **WireMock** | 8081 | **RUNNING** | Serviceplatformen SOAP mocks (SF1520, SF1530, SF1601) |
+| **Prism** | 4010 | **DISABLED** | DAWA address API mock (OpenAPI) - Not needed yet |
 
 ---
 
-## ✅ Working Services
+## Working Services
 
 ### 1. Keycloak (MitID Mock) - Port 8080
 
@@ -56,7 +56,7 @@ curl http://localhost:8080/realms/danish-gov-test/.well-known/openid-configurati
 **Mappings API**: http://localhost:8081/__admin/mappings
 
 **Current Stubs**:
-- ✅ **SF1520** (CPR Lookup) - Freja Nielsen (CPR: 0101904521)
+- **SF1520** (CPR Lookup) - Freja Nielsen (CPR: 0101904521)
 
 **Missing Stubs** (TODO):
 - ⏳ SF1520 for remaining 9 test users
@@ -76,7 +76,7 @@ curl -X POST http://localhost:8081/sf1520 \
 
 ---
 
-## ❌ Disabled Service
+## Disabled Service
 
 ### 3. Prism (DAWA Address Mock) - Port 4010
 
@@ -235,10 +235,10 @@ $config['aabenforms_core.settings']['serviceplatformen']['mock_mode'] = TRUE;
 ## Next Steps
 
 ### Immediate (Today)
-1. ✅ Keycloak running with 10 test users
-2. ✅ WireMock running with 1 CPR lookup stub
-3. ✅ CI/CD pipeline configured with mock services
-4. ✅ Documentation complete
+1. Keycloak running with 10 test users
+2. WireMock running with 1 CPR lookup stub
+3. CI/CD pipeline configured with mock services
+4. Documentation complete
 
 ### Short-term (Next Week)
 1. Add remaining 9 CPR lookup stubs (SF1520)
@@ -264,4 +264,4 @@ $config['aabenforms_core.settings']['serviceplatformen']['mock_mode'] = TRUE;
 ---
 
 **Last Updated**: 2026-01-25
-**Status**: ✅ Ready for Development
+**Status**: Ready for Development

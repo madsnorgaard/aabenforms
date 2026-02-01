@@ -1,0 +1,23 @@
+aabenforms_mitid.login:
+  path: '/mitid/login'
+  defaults:
+    _controller: '\Drupal\aabenforms_mitid\Controller\MitIdController::login'
+    _title: 'Login with MitID'
+  requirements:
+    _access: 'TRUE'
+
+aabenforms_mitid.callback:
+  path: '/mitid/callback'
+  defaults:
+    _controller: '\Drupal\aabenforms_mitid\Controller\MitIdController::callback'
+    _title: 'MitID Callback'
+  requirements:
+    _access: 'TRUE'
+
+aabenforms_mitid.logout:
+  path: '/mitid/logout'
+  defaults:
+    _controller: '\Drupal\aabenforms_mitid\Controller\MitIdController::logout'
+    _title: 'Logout'
+  requirements:
+    _access: 'TRUE'

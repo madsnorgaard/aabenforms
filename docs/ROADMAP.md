@@ -6,7 +6,7 @@
 
 ---
 
-## 🎯 Immediate Priorities (This Week)
+## Immediate Priorities (This Week)
 
 ### 1. Complete Core Service Tests (PRIORITY HIGH)
 
@@ -19,12 +19,12 @@
 File: web/modules/custom/aabenforms_core/tests/src/Unit/Service/TenantResolverTest.php
 
 Tests to write (6 tests):
-✅ testGetTenantIdFromDomain()
-✅ testGetTenantNameFromConfig()
-✅ testGetCurrentTenant()
-✅ testGetTenantIdForInvalidDomain()
-✅ testGetTenantConfigWithMissingDomain()
-✅ testGetDefaultTenantId()
+testGetTenantIdFromDomain()
+testGetTenantNameFromConfig()
+testGetCurrentTenant()
+testGetTenantIdForInvalidDomain()
+testGetTenantConfigWithMissingDomain()
+testGetDefaultTenantId()
 ```
 
 #### EncryptionService Tests (~3 hours)
@@ -32,14 +32,14 @@ Tests to write (6 tests):
 File: web/modules/custom/aabenforms_core/tests/src/Unit/Service/EncryptionServiceTest.php
 
 Tests to write (8 tests):
-✅ testEncryptField()
-✅ testDecryptField()
-✅ testEncryptionRoundTrip()
-✅ testEncryptWithInvalidProfile()
-✅ testDecryptWithMissingKey()
-✅ testEncryptEmptyValue()
-✅ testEncryptNullValue()
-✅ testEncryptLongValue()
+testEncryptField()
+testDecryptField()
+testEncryptionRoundTrip()
+testEncryptWithInvalidProfile()
+testDecryptWithMissingKey()
+testEncryptEmptyValue()
+testEncryptNullValue()
+testEncryptLongValue()
 ```
 
 #### AuditLogger Tests (~3 hours)
@@ -47,16 +47,16 @@ Tests to write (8 tests):
 File: web/modules/custom/aabenforms_core/tests/src/Unit/Service/AuditLoggerTest.php
 
 Tests to write (10 tests):
-✅ testLogCprLookup()
-✅ testLogCvrLookup()
-✅ testLogWorkflowAccess()
-✅ testLogWithDifferentSeverities()
-✅ testLogWithTenantContext()
-✅ testLogWithoutTenant()
-✅ testLogWithAdditionalContext()
-✅ testRetrieveAuditLogsByCpr()
-✅ testRetrieveAuditLogsByWorkflow()
-✅ testRetrieveAuditLogsByDateRange()
+testLogCprLookup()
+testLogCvrLookup()
+testLogWorkflowAccess()
+testLogWithDifferentSeverities()
+testLogWithTenantContext()
+testLogWithoutTenant()
+testLogWithAdditionalContext()
+testRetrieveAuditLogsByCpr()
+testRetrieveAuditLogsByWorkflow()
+testRetrieveAuditLogsByDateRange()
 ```
 
 #### ServiceplatformenClient Tests (~4 hours)
@@ -64,14 +64,14 @@ Tests to write (10 tests):
 File: web/modules/custom/aabenforms_core/tests/src/Unit/Service/ServiceplatformenClientTest.php
 
 Tests to write (8 tests):
-✅ testBuildSoapEnvelopeCPR()
-✅ testBuildSoapEnvelopeCVR()
-✅ testBuildSoapEnvelopeDigitalPost()
-✅ testParseSOAPResponse()
-✅ testParseSOAPResponseWithFault()
-✅ testAddAuthenticationHeaders()
-✅ testHandleNetworkError()
-✅ testHandleTimeout()
+testBuildSoapEnvelopeCPR()
+testBuildSoapEnvelopeCVR()
+testBuildSoapEnvelopeDigitalPost()
+testParseSOAPResponse()
+testParseSOAPResponseWithFault()
+testAddAuthenticationHeaders()
+testHandleNetworkError()
+testHandleTimeout()
 ```
 
 **Deliverable**: 32 new tests, aabenforms_core at 70%+ coverage
@@ -89,21 +89,21 @@ Tests to write (8 tests):
 File: web/modules/custom/aabenforms_webform/tests/src/Unit/Service/CprValidatorTest.php
 
 Tests to write (15 tests):
-✅ testIsValidWithValidCpr()
-✅ testIsValidWithInvalidDate()
-✅ testIsValidWithInvalidMonth()
-✅ testIsValidWithInvalidDay()
-✅ testIsValidWithInvalidChecksum()
-✅ testIsValidWithHyphenatedCpr()
-✅ testGetBirthdate()
-✅ testGetBirthdateFrom1800sRange()
-✅ testGetBirthdateFrom2000sRange()
-✅ testGetGenderMale()
-✅ testGetGenderFemale()
-✅ testCleanCpr()
-✅ testValidateModulus11()
-✅ testValidateInvalidLength()
-✅ testValidateNonNumeric()
+testIsValidWithValidCpr()
+testIsValidWithInvalidDate()
+testIsValidWithInvalidMonth()
+testIsValidWithInvalidDay()
+testIsValidWithInvalidChecksum()
+testIsValidWithHyphenatedCpr()
+testGetBirthdate()
+testGetBirthdateFrom1800sRange()
+testGetBirthdateFrom2000sRange()
+testGetGenderMale()
+testGetGenderFemale()
+testCleanCpr()
+testValidateModulus11()
+testValidateInvalidLength()
+testValidateNonNumeric()
 ```
 
 #### CprField Element Tests (~3 hours)
@@ -111,29 +111,29 @@ Tests to write (15 tests):
 File: web/modules/custom/aabenforms_webform/tests/src/Kernel/Plugin/WebformElement/CprFieldTest.php
 
 Tests to write (8 tests):
-✅ testElementDefinition()
-✅ testValidationWithValidCpr()
-✅ testValidationWithInvalidCpr()
-✅ testMaskedDisplayEnabled()
-✅ testMaskedDisplayDisabled()
-✅ testErrorMessages()
-✅ testFormatHtmlItem()
-✅ testDefaultConfiguration()
+testElementDefinition()
+testValidationWithValidCpr()
+testValidationWithInvalidCpr()
+testMaskedDisplayEnabled()
+testMaskedDisplayDisabled()
+testErrorMessages()
+testFormatHtmlItem()
+testDefaultConfiguration()
 ```
 
 **Deliverable**: 23 new tests, aabenforms_webform at 60%+ coverage
 
 ---
 
-## 📅 Week-by-Week Roadmap
+##  Week-by-Week Roadmap
 
 ### Week 2 (Jan 27 - Feb 2): Test Coverage Sprint
 
 **Goals**:
-- ✅ 72 total tests passing (currently 40)
-- ✅ 70%+ coverage on aabenforms_core
-- ✅ 60%+ coverage on aabenforms_webform
-- ✅ Overall coverage: 45%+
+- 72 total tests passing (currently 40)
+- 70%+ coverage on aabenforms_core
+- 60%+ coverage on aabenforms_webform
+- Overall coverage: 45%+
 
 **Deliverables**:
 1. Complete all aabenforms_core service tests
@@ -249,7 +249,7 @@ Each template:
 
 ---
 
-## 🚀 Future Phases (Overview)
+## Future Phases (Overview)
 
 ### Phase 3: Serviceplatformen Integration (Weeks 5-8)
 
@@ -307,7 +307,7 @@ Each template:
 
 ---
 
-## 🎯 Success Metrics
+## Success Metrics
 
 ### Week 2 Targets:
 - [ ] 72 total tests passing
@@ -330,7 +330,7 @@ Each template:
 
 ---
 
-## 📋 Daily Checklist (Week 2)
+## Daily Checklist (Week 2)
 
 ### Monday (Today)
 - [x] Update STATUS.md with current progress
@@ -366,7 +366,7 @@ Each template:
 
 ---
 
-## 🛠️ Development Commands
+##  Development Commands
 
 ### Start Working on Tests
 
@@ -428,7 +428,7 @@ gh run watch
 
 ---
 
-## 🎓 Testing Resources
+## Testing Resources
 
 ### Test Examples to Reference
 
@@ -513,9 +513,9 @@ class FeatureTest extends KernelTestBase {
 
 ---
 
-## 🚨 Blockers & Risks
+## Blockers & Risks
 
-### Current Blockers: NONE ✅
+### Current Blockers: NONE 
 
 All infrastructure is in place and working.
 
@@ -535,7 +535,7 @@ All infrastructure is in place and working.
 
 ---
 
-## 📞 Support & Questions
+##  Support & Questions
 
 **Getting Stuck?**
 - Check existing test files in aabenforms_mitid for patterns

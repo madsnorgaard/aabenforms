@@ -1,0 +1,7 @@
+dawa_address:
+  version: 1.x
+  js:
+    js/dawa-address.js: {}
+  dependencies:
+    - core/drupal
+    - core/once

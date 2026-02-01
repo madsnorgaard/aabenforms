@@ -23,11 +23,11 @@
 - UNI-Login SAML server
 
 **Benefits**:
-- ✅ **No credentials needed** for development
-- ✅ **Work offline** (local Docker containers)
-- ✅ **Fast CI/CD** (no external dependencies)
-- ✅ **Deterministic testing** (repeatable test data)
-- ✅ **Community-driven** (OS2 ecosystem contribution)
+- **No credentials needed** for development
+- **Work offline** (local Docker containers)
+- **Fast CI/CD** (no external dependencies)
+- **Deterministic testing** (repeatable test data)
+- **Community-driven** (OS2 ecosystem contribution)
 
 ---
 
@@ -180,7 +180,7 @@ danish-gov-mock-services/
       "given_name": "Hans",
       "family_name": "Hansen",
       "birthdate": "1900-01-01",
-      "email": "hans@example.com",
+      "email": "hans@aabenforms.dk",
       "assurance_level": "substantial",
       "mitid_uuid": "mitid-uuid-test-123"
     },
@@ -726,11 +726,11 @@ jobs:
 ### Phase 1: Core Services (Weeks 1-4)
 
 **Deliverables**:
-- ✅ MitID Mock (OIDC server)
-- ✅ Serviceplatformen Mock (SF1520, SF1530, SF1601)
-- ✅ Test data generator (CPR, CVR)
-- ✅ Docker images published
-- ✅ Basic documentation
+- MitID Mock (OIDC server)
+- Serviceplatformen Mock (SF1520, SF1530, SF1601)
+- Test data generator (CPR, CVR)
+- Docker images published
+- Basic documentation
 
 **Timeline**: 4 weeks
 **Resources**: 1-2 developers
@@ -738,11 +738,11 @@ jobs:
 ### Phase 2: Advanced Features (Weeks 5-8)
 
 **Deliverables**:
-- ✅ UNI-Login Mock (SAML server)
-- ✅ DAWA Mock (address API)
-- ✅ Enhanced test data (families, protected persons)
-- ✅ Integration examples (Drupal, Node.js, Python)
-- ✅ CI/CD templates
+- UNI-Login Mock (SAML server)
+- DAWA Mock (address API)
+- Enhanced test data (families, protected persons)
+- Integration examples (Drupal, Node.js, Python)
+- CI/CD templates
 
 **Timeline**: 4 weeks
 **Resources**: 1 developer
@@ -750,11 +750,11 @@ jobs:
 ### Phase 3: Community & Refinement (Weeks 9-12)
 
 **Deliverables**:
-- ✅ Community presentation
-- ✅ Contribution guidelines
-- ✅ API reference documentation
-- ✅ Example integrations
-- ✅ Performance optimization
+- Community presentation
+- Contribution guidelines
+- API reference documentation
+- Example integrations
+- Performance optimization
 
 **Timeline**: 4 weeks
 **Resources**: 1 developer + community feedback
@@ -1065,11 +1065,11 @@ npx mitid-mock start --port 8080
 
 ### Adoption Goals (Year 1)
 
-- ✅ **10+ OS2 projects** using mocks in development
-- ✅ **5+ municipalities** using in CI/CD
-- ✅ **1,000+ Docker pulls** per month
-- ✅ **50+ GitHub stars**
-- ✅ **10+ community contributors**
+- **10+ OS2 projects** using mocks in development
+- **5+ municipalities** using in CI/CD
+- **1,000+ Docker pulls** per month
+- **50+ GitHub stars**
+- **10+ community contributors**
 
 ### Impact Metrics
 
@@ -1164,6 +1164,6 @@ npx mitid-mock start --port 8080
 
 ---
 
-**Recommendation**: ✅ **PROCEED** - High value, low risk, strong community demand.
+**Recommendation**: **PROCEED** - High value, low risk, strong community demand.
 
 **Next Step**: Present to OS2 Foundation and KOMBIT for validation.

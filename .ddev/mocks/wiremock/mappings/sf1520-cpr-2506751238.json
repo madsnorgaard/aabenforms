@@ -1,0 +1,12 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPath": "/sf1520",
+    "bodyPatterns": [{"contains": "<ns:PNR>2506751238</ns:PNR>"}]
+  },
+  "response": {
+    "status": 200,
+    "headers": {"Content-Type": "text/xml; charset=UTF-8"},
+    "body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">\n  <soap:Body>\n    <PersonLookupResponse>\n      <CPR>2506751238</CPR>\n      <FirstName>Isabella</FirstName>\n      <LastName>Christensen</LastName>\n      <Address>Ågade 12</Address>\n      <PostalCode>6700</PostalCode>\n      <City>Esbjerg</City>\n      <Status>ACTIVE</Status>\n    </PersonLookupResponse>\n  </soap:Body>\n</soap:Envelope>"
+  }
+}
