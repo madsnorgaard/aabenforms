@@ -3,10 +3,10 @@
 namespace Drupal\aabenforms_core\Controller;
 
 use Drupal\Component\Utility\Crypt;
+use Symfony\Component\HttpFoundation\Request;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\webform\Entity\Webform;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Simple REST controller for webform access (bypasses JSON:API permissions).
@@ -57,7 +57,7 @@ class WebformApiController extends ControllerBase {
   /**
    * Submit webform data.
    *
-   * Route: /api/webform/{id}/submit
+   * Route: /api/webform/{id}/submit.
    *
    * @param string $id
    *   The webform machine name.
@@ -67,7 +67,7 @@ class WebformApiController extends ControllerBase {
    * @return \Symfony\Component\HttpFoundation\JsonResponse
    *   JSON response with submission result.
    */
-  public function submitWebform(string $id, \Symfony\Component\HttpFoundation\Request $request): JsonResponse {
+  public function submitWebform(string $id, Request $request): JsonResponse {
     $webform = Webform::load($id);
 
     if (!$webform) {
@@ -97,7 +97,7 @@ class WebformApiController extends ControllerBase {
       'in_draft' => FALSE,
       'uid' => \Drupal::currentUser()->id(),
       'langcode' => \Drupal::languageManager()->getCurrentLanguage()->getId(),
-      'token' => \Drupal\Component\Utility\Crypt::randomBytesBase64(),
+      'token' => Crypt::randomBytesBase64(),
       'uri' => $request->getRequestUri(),
       'remote_addr' => $request->getClientIp(),
       'data' => $submission_data,

@@ -15,7 +15,7 @@ use Psr\Log\LoggerInterface;
  * 1. Generate authorization URL with PKCE
  * 2. Handle callback with authorization code
  * 3. Exchange code for access + ID tokens
- * 4. Validate and extract user data
+ * 4. Validate and extract user data.
  */
 class MitIdOidcClient {
 

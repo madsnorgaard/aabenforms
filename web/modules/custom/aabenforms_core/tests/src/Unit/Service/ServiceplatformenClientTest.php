@@ -10,7 +10,6 @@ use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Tests\UnitTestCase;
 use GuzzleHttp\ClientInterface;
-use GuzzleHttp\Psr7\Response;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -79,7 +78,8 @@ class ServiceplatformenClientTest extends UnitTestCase {
         'SF1520' => 'https://test.serviceplatformen.dk/sf1520',
         'SF1530' => 'https://test.serviceplatformen.dk/sf1530',
         'SF1601' => 'https://test.serviceplatformen.dk/sf1601',
-      ]],
+      ],
+      ],
       ['serviceplatformen.username', NULL, 'testuser'],
       ['serviceplatformen.password', NULL, 'testpass'],
     ]);
@@ -98,9 +98,9 @@ class ServiceplatformenClientTest extends UnitTestCase {
    * Tests SF1520 SOAP envelope building.
    *
    * @covers ::buildSoapEnvelope
-   * @covers ::buildSF1520Envelope
+   * @covers ::buildSf1520Envelope
    */
-  public function testBuildSF1520Envelope(): void {
+  public function testBuildSf1520Envelope(): void {
     $reflection = new \ReflectionClass($this->client);
     $method = $reflection->getMethod('buildSoapEnvelope');
     $method->setAccessible(TRUE);
@@ -120,9 +120,9 @@ class ServiceplatformenClientTest extends UnitTestCase {
    * Tests SF1530 SOAP envelope building.
    *
    * @covers ::buildSoapEnvelope
-   * @covers ::buildSF1530Envelope
+   * @covers ::buildSf1530Envelope
    */
-  public function testBuildSF1530Envelope(): void {
+  public function testBuildSf1530Envelope(): void {
     $reflection = new \ReflectionClass($this->client);
     $method = $reflection->getMethod('buildSoapEnvelope');
     $method->setAccessible(TRUE);
@@ -139,9 +139,9 @@ class ServiceplatformenClientTest extends UnitTestCase {
    * Tests SF1601 SOAP envelope building.
    *
    * @covers ::buildSoapEnvelope
-   * @covers ::buildSF1601Envelope
+   * @covers ::buildSf1601Envelope
    */
-  public function testBuildSF1601Envelope(): void {
+  public function testBuildSf1601Envelope(): void {
     $reflection = new \ReflectionClass($this->client);
     $method = $reflection->getMethod('buildSoapEnvelope');
     $method->setAccessible(TRUE);
@@ -164,9 +164,9 @@ class ServiceplatformenClientTest extends UnitTestCase {
    * Tests SF1520 response parsing.
    *
    * @covers ::parseResponse
-   * @covers ::parseSF1520Response
+   * @covers ::parseSf1520Response
    */
-  public function testParseSF1520Response(): void {
+  public function testParseSf1520Response(): void {
     $xml = <<<XML
 <?xml version="1.0" encoding="UTF-8"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
@@ -204,9 +204,9 @@ XML;
    * Tests SF1530 response parsing.
    *
    * @covers ::parseResponse
-   * @covers ::parseSF1530Response
+   * @covers ::parseSf1530Response
    */
-  public function testParseSF1530Response(): void {
+  public function testParseSf1530Response(): void {
     $xml = <<<XML
 <?xml version="1.0" encoding="UTF-8"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
@@ -240,9 +240,9 @@ XML;
    * Tests SF1601 response parsing.
    *
    * @covers ::parseResponse
-   * @covers ::parseSF1601Response
+   * @covers ::parseSf1601Response
    */
-  public function testParseSF1601Response(): void {
+  public function testParseSf1601Response(): void {
     $xml = <<<XML
 <?xml version="1.0" encoding="UTF-8"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">

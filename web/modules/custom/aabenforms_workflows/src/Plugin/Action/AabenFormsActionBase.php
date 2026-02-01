@@ -18,7 +18,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * - Error handling and logging
  * - Access control
  * - Token support
- * - Audit logging integration
+ * - Audit logging integration.
  */
 abstract class AabenFormsActionBase extends ActionBase implements ContainerFactoryPluginInterface {
 
