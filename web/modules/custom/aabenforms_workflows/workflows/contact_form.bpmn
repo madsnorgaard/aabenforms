@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                   xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   id="Definitions_contact_form"
+                   targetNamespace="http://aabenforms.dk/bpmn"
+                   exporter="ÅbenForms"
+                   exporterVersion="1.0">
+
+  <bpmn:process id="contact_form_process" name="Contact Form Workflow" isExecutable="true">
+    <bpmn:documentation>[category: citizen_service]
+Simple citizen inquiry submission workflow with email notification.
+No authentication required. Auto-response sent to citizen.</bpmn:documentation>
+
+    <bpmn:startEvent id="StartEvent_1" name="Form Submitted">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="Task_ValidateInput" name="Validate Input">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_RouteToDepart" name="Route to Department">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_SendConfirmation" name="Send Confirmation Email">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_AuditLog" name="Log Submission">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="EndEvent_1" name="Submission Complete">
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Task_ValidateInput"/>
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_ValidateInput" targetRef="Task_RouteToDepart"/>
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_RouteToDepart" targetRef="Task_SendConfirmation"/>
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Task_SendConfirmation" targetRef="Task_AuditLog"/>
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="Task_AuditLog" targetRef="EndEvent_1"/>
+  </bpmn:process>
+
+</bpmn:definitions>

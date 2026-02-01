@@ -1,0 +1,11 @@
+services:
+  aabenforms_workflows.bpmn_template_manager:
+    class: Drupal\aabenforms_workflows\Service\BpmnTemplateManager
+    arguments:
+      - '@extension.list.module'
+      - '@file_system'
+      - '@logger.channel.aabenforms_workflows'
+
+  logger.channel.aabenforms_workflows:
+    parent: logger.channel_base
+    arguments: ['aabenforms_workflows']
