@@ -1,0 +1,20 @@
+_core:
+  default_config_hash: AhZV8ZBfgOuKFzzr5wHAv2P7KjTH5PSQtf6qFe7xuKU
+deployment_mode: split_routing
+drupal_base_url: ''
+proxy_secret: ''
+proxy_protect_jsonapi: false
+resolver:
+  cache_max_age: 0
+  langcode_fallback: site_default
+enable_all: true
+headless_bundles: {  }
+enable_all_views: true
+headless_views: {  }
+routes:
+  enabled: false
+  secret: ''
+revalidation:
+  enabled: false
+  url: ''
+  secret: ''

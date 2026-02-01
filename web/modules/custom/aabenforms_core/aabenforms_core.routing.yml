@@ -1,0 +1,24 @@
+aabenforms_core.webform_api:
+  path: '/api/webform/{id}'
+  defaults:
+    _controller: '\Drupal\aabenforms_core\Controller\WebformApiController::getWebform'
+    _title: 'Get Webform'
+  requirements:
+    _permission: 'access webform api'
+  options:
+    parameters:
+      id:
+        type: string
+
+aabenforms_core.webform_submit:
+  path: '/api/webform/{id}/submit'
+  defaults:
+    _controller: '\Drupal\aabenforms_core\Controller\WebformApiController::submitWebform'
+    _title: 'Submit Webform'
+  requirements:
+    _permission: 'access webform api'
+  methods: [POST]
+  options:
+    parameters:
+      id:
+        type: string

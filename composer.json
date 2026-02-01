@@ -27,6 +27,7 @@
         "drupal/encrypt": "^3.2",
         "drupal/gin": "^3.0",
         "drupal/jsonapi_extras": "^3.0",
+        "drupal/jsonapi_frontend_webform": "^1.0",
         "drupal/key": "^1.22",
         "drupal/openid_connect": "^3.0@alpha",
         "drupal/real_aes": "^2.6",
