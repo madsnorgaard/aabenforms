@@ -45,7 +45,7 @@ class MitIdController extends ControllerBase {
   /**
    * Initiates MitID login flow.
    *
-   * Route: /mitid/login
+   * Route: /mitid/login.
    *
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   The request.
@@ -80,7 +80,7 @@ class MitIdController extends ControllerBase {
   /**
    * Handles MitID OIDC callback.
    *
-   * Route: /mitid/callback
+   * Route: /mitid/callback.
    *
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   The request.
@@ -156,7 +156,7 @@ class MitIdController extends ControllerBase {
   /**
    * Logout endpoint.
    *
-   * Route: /mitid/logout
+   * Route: /mitid/logout.
    *
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   The request.

@@ -172,7 +172,7 @@ class AuditLogAction extends AabenFormsActionBase {
    *   String with tokens replaced.
    */
   protected function replaceTokensInString(string $string): string {
-    // Simple token replacement: [token_name] -> value
+    // Simple token replacement: [token_name] -> value.
     preg_match_all('/\[([^\]]+)\]/', $string, $matches);
 
     foreach ($matches[1] as $tokenName) {

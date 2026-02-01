@@ -289,9 +289,9 @@ class ServiceplatformenClient {
    */
   protected function buildSoapEnvelope(string $service, string $operation, array $params): string {
     return match($service) {
-      'SF1520' => $this->buildSF1520Envelope($operation, $params),
-      'SF1530' => $this->buildSF1530Envelope($operation, $params),
-      'SF1601' => $this->buildSF1601Envelope($operation, $params),
+      'SF1520' => $this->buildSf1520Envelope($operation, $params),
+      'SF1530' => $this->buildSf1530Envelope($operation, $params),
+      'SF1601' => $this->buildSf1601Envelope($operation, $params),
       default => throw new \InvalidArgumentException("Unknown service: {$service}"),
     };
   }
@@ -307,7 +307,7 @@ class ServiceplatformenClient {
    * @return string
    *   The SOAP envelope XML.
    */
-  protected function buildSF1520Envelope(string $operation, array $params): string {
+  protected function buildSf1520Envelope(string $operation, array $params): string {
     $config = $this->configFactory->get('aabenforms_core.settings');
     $username = $config->get('serviceplatformen.username') ?? '';
     $password = $config->get('serviceplatformen.password') ?? '';
@@ -348,7 +348,7 @@ XML;
    * @return string
    *   The SOAP envelope XML.
    */
-  protected function buildSF1530Envelope(string $operation, array $params): string {
+  protected function buildSf1530Envelope(string $operation, array $params): string {
     $config = $this->configFactory->get('aabenforms_core.settings');
     $username = $config->get('serviceplatformen.username') ?? '';
     $password = $config->get('serviceplatformen.password') ?? '';
@@ -389,7 +389,7 @@ XML;
    * @return string
    *   The SOAP envelope XML.
    */
-  protected function buildSF1601Envelope(string $operation, array $params): string {
+  protected function buildSf1601Envelope(string $operation, array $params): string {
     $config = $this->configFactory->get('aabenforms_core.settings');
     $username = $config->get('serviceplatformen.username') ?? '';
     $password = $config->get('serviceplatformen.password') ?? '';
@@ -462,17 +462,17 @@ XML;
 
       // Check for CPR lookup response.
       if ($doc->getElementsByTagName('PersonLookupResponse')->length > 0) {
-        return $this->parseSF1520Response($doc);
+        return $this->parseSf1520Response($doc);
       }
 
       // Check for CVR lookup response.
       if ($doc->getElementsByTagName('CompanyLookupResponse')->length > 0) {
-        return $this->parseSF1530Response($doc);
+        return $this->parseSf1530Response($doc);
       }
 
       // Check for Digital Post response.
       if ($doc->getElementsByTagName('SendMessageResponse')->length > 0) {
-        return $this->parseSF1601Response($doc);
+        return $this->parseSf1601Response($doc);
       }
 
       // Unknown response format.
@@ -500,7 +500,7 @@ XML;
    * @return array
    *   Parsed person data.
    */
-  protected function parseSF1520Response(\DOMDocument $doc): array {
+  protected function parseSf1520Response(\DOMDocument $doc): array {
     $data = [
       'success' => TRUE,
       'service' => 'SF1520',
@@ -539,7 +539,7 @@ XML;
    * @return array
    *   Parsed company data.
    */
-  protected function parseSF1530Response(\DOMDocument $doc): array {
+  protected function parseSf1530Response(\DOMDocument $doc): array {
     $data = [
       'success' => TRUE,
       'service' => 'SF1530',
@@ -577,7 +577,7 @@ XML;
    * @return array
    *   Parsed send status.
    */
-  protected function parseSF1601Response(\DOMDocument $doc): array {
+  protected function parseSf1601Response(\DOMDocument $doc): array {
     $data = [
       'success' => TRUE,
       'service' => 'SF1601',

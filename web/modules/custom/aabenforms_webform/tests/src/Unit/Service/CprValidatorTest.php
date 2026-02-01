@@ -138,13 +138,13 @@ class CprValidatorTest extends UnitTestCase {
     // Use a mock valid CPR for testing (assuming validation passes).
     // Since we can't easily generate valid CPR numbers, we'll test
     // the logic with any CPR that passes format/date checks.
-
     // Test that last digit determines gender correctly.
     // Note: These may not pass full validation, but gender logic should work.
     $reflection = new \ReflectionClass($this->validator);
 
     // Test with digits 0-9.
-    $baseCpr = '010170000';  // Valid date format.
+    // Valid date format.
+    $baseCpr = '010170000';
 
     for ($i = 0; $i < 10; $i++) {
       $cpr = $baseCpr . $i;
@@ -171,7 +171,6 @@ class CprValidatorTest extends UnitTestCase {
     // CPR: 0101700001
     // Weights: [4,3,2,7,6,5,4,3,2,1]
     // We need a CPR where sum % 11 = 0.
-
     // Test that the algorithm calculates correctly.
     // The method should return false for most random numbers.
     $this->assertFalse($method->invoke($this->validator, '0101700001'));
@@ -186,11 +185,13 @@ class CprValidatorTest extends UnitTestCase {
    */
   public function testInvalidCprReturnsNull(): void {
     $this->assertNull($this->validator->getBirthdate('invalid'));
-    $this->assertNull($this->validator->getBirthdate('3201701234'));  // Invalid date.
+    // Invalid date.
+    $this->assertNull($this->validator->getBirthdate('3201701234'));
     $this->assertNull($this->validator->getBirthdate(''));
 
     $this->assertNull($this->validator->getGender('invalid'));
-    $this->assertNull($this->validator->getGender('3201701234'));  // Invalid date.
+    // Invalid date.
+    $this->assertNull($this->validator->getGender('3201701234'));
     $this->assertNull($this->validator->getGender(''));
   }
 
