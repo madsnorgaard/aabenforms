@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\aabenforms_mitid\Kernel;
 
+use Drupal\aabenforms_mitid\Service\MitIdOidcClient;
 use Drupal\KernelTests\KernelTestBase;
 use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
@@ -89,7 +90,7 @@ class MitIdOidcFlowTest extends KernelTestBase {
     $httpClient = new Client(['handler' => $handlerStack]);
 
     // Create OIDC client with mocked HTTP client.
-    $this->oidcClient = new \Drupal\aabenforms_mitid\Service\MitIdOidcClient(
+    $this->oidcClient = new MitIdOidcClient(
       $this->container->get('config.factory'),
       $httpClient,
       $this->container->get('logger.factory'),

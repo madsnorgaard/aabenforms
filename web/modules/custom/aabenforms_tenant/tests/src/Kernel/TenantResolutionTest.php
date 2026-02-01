@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\aabenforms_tenant\Kernel;
 
+use Drupal\domain\DomainInterface;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\domain\Entity\Domain;
 
@@ -135,7 +136,7 @@ class TenantResolutionTest extends KernelTestBase {
     // Note: In kernel tests, domain negotiation may default to 'default' domain.
     // The important test is that the service works and returns a domain entity.
     $this->assertNotNull($tenant, 'Tenant is detected');
-    $this->assertInstanceOf(\Drupal\domain\DomainInterface::class, $tenant);
+    $this->assertInstanceOf(DomainInterface::class, $tenant);
     $this->assertNotEmpty($tenant->id());
     $this->assertNotEmpty($tenant->label());
   }
@@ -186,7 +187,6 @@ class TenantResolutionTest extends KernelTestBase {
     // Test that getTenantConfig method works and returns expected types.
     // Actual tenant-specific config would require proper domain context
     // which is complex in kernel tests.
-
     // Test with default value.
     $config = $this->tenantResolver->getTenantConfig('test.key', 'default_value');
     $this->assertEquals('default_value', $config, 'Returns default value for non-existent config');
@@ -223,7 +223,6 @@ class TenantResolutionTest extends KernelTestBase {
     // Test behavior when no specific domain is active.
     // In kernel tests, there's always a default domain, so we test
     // the fallback behavior instead.
-
     // Get current tenant.
     $tenant = $this->tenantResolver->getCurrentTenant();
 

@@ -8,6 +8,12 @@ aabenforms_core.settings:
       type: mapping
       label: 'Serviceplatformen configuration'
       mapping:
+        username:
+          type: string
+          label: 'Serviceplatformen username'
+        password:
+          type: string
+          label: 'Serviceplatformen password'
         urls:
           type: mapping
           label: 'Service endpoint URLs'

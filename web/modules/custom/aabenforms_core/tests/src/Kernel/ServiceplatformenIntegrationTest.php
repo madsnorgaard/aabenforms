@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\aabenforms_core\Kernel;
 
+use Drupal\aabenforms_core\Service\ServiceplatformenClient;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\aabenforms_core\Exception\ServiceplatformenException;
 use GuzzleHttp\Client;
@@ -9,7 +10,6 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Exception\ConnectException;
-use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Request;
 
 /**
@@ -84,7 +84,7 @@ class ServiceplatformenIntegrationTest extends KernelTestBase {
     $httpClient = new Client(['handler' => $handlerStack]);
 
     // Get Serviceplatformen client with mocked HTTP client.
-    $this->serviceplatformenClient = new \Drupal\aabenforms_core\Service\ServiceplatformenClient(
+    $this->serviceplatformenClient = new ServiceplatformenClient(
       $this->container->get('config.factory'),
       $this->container->get('cache.default'),
       $this->container->get('logger.factory'),
