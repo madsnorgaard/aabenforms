@@ -314,6 +314,11 @@ class ServiceplatformenClient {
 
     $cpr = $params['cpr'] ?? '';
 
+    // Escape all values to prevent XML injection.
+    $username = htmlspecialchars($username, ENT_XML1, 'UTF-8');
+    $password = htmlspecialchars($password, ENT_XML1, 'UTF-8');
+    $cpr = htmlspecialchars($cpr, ENT_XML1, 'UTF-8');
+
     $xml = <<<XML
 <?xml version="1.0" encoding="UTF-8"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
@@ -354,6 +359,11 @@ XML;
     $password = $config->get('serviceplatformen.password') ?? '';
 
     $cvr = $params['cvr'] ?? '';
+
+    // Escape all values to prevent XML injection.
+    $username = htmlspecialchars($username, ENT_XML1, 'UTF-8');
+    $password = htmlspecialchars($password, ENT_XML1, 'UTF-8');
+    $cvr = htmlspecialchars($cvr, ENT_XML1, 'UTF-8');
 
     $xml = <<<XML
 <?xml version="1.0" encoding="UTF-8"?>
@@ -398,6 +408,15 @@ XML;
     $subject = $params['subject'] ?? '';
     $content = $params['content'] ?? '';
     $messageId = $params['message_id'] ?? uniqid('msg_');
+
+    // Escape all values to prevent XML injection.
+    $username = htmlspecialchars($username, ENT_XML1, 'UTF-8');
+    $password = htmlspecialchars($password, ENT_XML1, 'UTF-8');
+    $messageId = htmlspecialchars($messageId, ENT_XML1, 'UTF-8');
+    $cpr = htmlspecialchars($cpr, ENT_XML1, 'UTF-8');
+    $subject = htmlspecialchars($subject, ENT_XML1, 'UTF-8');
+    // Content is in CDATA but still escape CDATA end sequences.
+    $content = str_replace(']]>', ']]]]><![CDATA[>', $content);
 
     $xml = <<<XML
 <?xml version="1.0" encoding="UTF-8"?>

@@ -13,4 +13,3 @@ weight: 0
 is_admin: false
 permissions:
   - 'access content'
-  - 'access webform overview'
