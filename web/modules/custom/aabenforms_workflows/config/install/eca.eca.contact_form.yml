@@ -1,0 +1,53 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - eca
+    - webform
+id: contact_form
+label: 'Contact Form Workflow'
+modeller: fallback
+version: 1.0.0
+events:
+  webform_submit:
+    plugin: 'content_entity:insert'
+    configuration:
+      type: webform_submission
+    successors:
+      - id: validate_input
+        condition: ''
+gateways: {  }
+conditions: {  }
+actions:
+  validate_input:
+    plugin: eca_base_log
+    configuration:
+      level: info
+      message: 'Contact form submitted: [webform_submission:values:name]'
+    successors:
+      - id: route_to_department
+        condition: ''
+  route_to_department:
+    plugin: eca_base_log
+    configuration:
+      level: info
+      message: 'Routing to department: [webform_submission:values:department]'
+    successors:
+      - id: send_confirmation
+        condition: ''
+  send_confirmation:
+    plugin: eca_base_log
+    configuration:
+      level: info
+      message: 'Sending confirmation email to: [webform_submission:values:email]'
+    successors:
+      - id: audit_log
+        condition: ''
+  audit_log:
+    plugin: aabenforms_audit_log
+    configuration:
+      event_type: contact_form_submission
+      message_template: 'Contact form submitted by [webform_submission:values:email]'
+      cpr_token: ''
+      additional_data_token: ''
+    successors: {  }
