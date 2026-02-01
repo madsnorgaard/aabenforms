@@ -73,8 +73,13 @@ class MitIdController extends ControllerBase {
         $returnUrl = '/';
       }
     }
+    elseif (str_starts_with($returnUrl, '//')) {
+      // Reject protocol-relative URLs (e.g., //evil.com).
+      $this->getLogger('aabenforms_mitid')->warning('Rejected protocol-relative return_url: @url', ['@url' => $returnUrl]);
+      $returnUrl = '/';
+    }
     elseif (!str_starts_with($returnUrl, '/')) {
-      // Ensure path starts with / to prevent protocol-relative URLs.
+      // Ensure path starts with / for relative URLs.
       $returnUrl = '/' . $returnUrl;
     }
 
