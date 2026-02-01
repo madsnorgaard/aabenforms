@@ -25,8 +25,8 @@
         const xField = container.querySelector('.dawa-address-x');
         const yField = container.querySelector('.dawa-address-y');
 
-        let autocompleteList = NULL;
-        let debounceTimer = NULL;
+        let autocompleteList = null;
+        let debounceTimer = null;
 
         // Handle search input.
         searchField.addEventListener('input', function (e) {
@@ -49,7 +49,7 @@
 
         // Fetch addresses from DAWA API.
         function fetchAddresses(query) {
-          const url = `${apiUrl} ? q = ${encodeURIComponent(query)} & type = adresse & fuzzy = `;
+          const url = `${apiUrl}?q=${encodeURIComponent(query)}&type=adresse&fuzzy=`;
 
           fetch(url)
             .then(response => response.json())
@@ -118,7 +118,7 @@
         function hideAutocomplete() {
           if (autocompleteList) {
             autocompleteList.remove();
-            autocompleteList = NULL;
+            autocompleteList = null;
           }
         }
 
