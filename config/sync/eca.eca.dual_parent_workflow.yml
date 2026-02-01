@@ -1,0 +1,60 @@
+uuid: 752a9aba-1b48-4759-bf9e-58006ca4c611
+langcode: en
+status: true
+dependencies:
+  module:
+    - aabenforms_workflows
+    - aabenforms_mitid
+    - webform
+id: dual_parent_workflow
+label: 'Dual Parent Workflow (Both Parents Authenticate)'
+version: '1.0'
+events:
+  webform_submission_insert:
+    plugin: 'content_entity:insert'
+    configuration:
+      type: webform_submission
+    successors:
+      - validate_parent1
+modeller: fallback
+conditions: {  }
+actions:
+  validate_parent1:
+    plugin: aabenforms_mitid_validate
+    configuration:
+      workflow_id_token: workflow_id_parent1
+      result_token: parent1_result
+      session_data_token: parent1_session
+    successors:
+      - lookup_parent1_cpr
+  lookup_parent1_cpr:
+    plugin: aabenforms_cpr_lookup
+    configuration:
+      cpr_token: '[parent1_session:cpr]'
+      result_token: parent1_data
+      use_cache: true
+    successors:
+      - validate_parent2
+  validate_parent2:
+    plugin: aabenforms_mitid_validate
+    configuration:
+      workflow_id_token: workflow_id_parent2
+      result_token: parent2_result
+      session_data_token: parent2_session
+    successors:
+      - lookup_parent2_cpr
+  lookup_parent2_cpr:
+    plugin: aabenforms_cpr_lookup
+    configuration:
+      cpr_token: '[parent2_session:cpr]'
+      result_token: parent2_data
+      use_cache: true
+    successors:
+      - audit_dual_submission
+  audit_dual_submission:
+    plugin: aabenforms_audit_log
+    configuration:
+      event_type_token: dual_parent_submission
+      user_data_token: '[parent1_data:name] + [parent2_data:name]'
+      metadata_token: '[webform_submission:sid]'
+    successors: [  ]
