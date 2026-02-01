@@ -4,6 +4,7 @@ namespace Drupal\aabenforms_mitid\Controller;
 
 use Drupal\aabenforms_mitid\Service\MitIdOidcClient;
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Routing\TrustedRedirectResponse;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -49,10 +50,10 @@ class MitIdController extends ControllerBase {
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   The request.
    *
-   * @return \Symfony\Component\HttpFoundation\RedirectResponse
+   * @return \Drupal\Core\Routing\TrustedRedirectResponse
    *   Redirect to MitID authorization.
    */
-  public function login(Request $request): RedirectResponse {
+  public function login(Request $request): TrustedRedirectResponse {
     // Get workflow ID from query params or generate.
     $workflowId = $request->query->get('workflow_id') ?? 'default_' . uniqid();
 
@@ -72,8 +73,8 @@ class MitIdController extends ControllerBase {
       'created' => time(),
     ]);
 
-    // Redirect to MitID.
-    return new RedirectResponse($result['url']);
+    // Redirect to MitID (external URL - use TrustedRedirectResponse).
+    return new TrustedRedirectResponse($result['url']);
   }
 
   /**

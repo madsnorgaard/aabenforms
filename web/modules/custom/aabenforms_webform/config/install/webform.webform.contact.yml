@@ -1,19 +1,16 @@
-uuid: 01750a1d-773f-4189-9381-1fdf4869a2ab
 langcode: en
 status: open
 dependencies: {  }
-_core:
-  default_config_hash: jn9wQnWlA6AJw_1CNg9Ld8rIqPTDxdVfSUU-3l7jON0
+weight: 0
 open: null
 close: null
-weight: 0
 uid: 1
 template: false
 archive: false
 id: contact
 title: 'Contact Form'
 description: 'Contact form for testing dynamic rendering'
-categories: {  }
+category: ''
 elements: |
   name:
     '#type': textfield
@@ -24,7 +21,7 @@ elements: |
     '#type': email
     '#title': 'Email address'
     '#required': true
-    '#placeholder': 'your.email@example.com'
+    '#placeholder': 'din.email@aabenforms.dk'
   message:
     '#type': textarea
     '#title': 'Your message'

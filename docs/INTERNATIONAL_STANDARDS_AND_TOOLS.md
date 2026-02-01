@@ -11,17 +11,17 @@
 **Key Principle**: Use **international standards** where possible, add **Danish-specific extensions** only where necessary.
 
 **Recommendation**: Build Danish mock services as **thin wrappers** around proven open-source tools like:
-- ✅ **Keycloak** (instead of custom OIDC server)
-- ✅ **WireMock** (for HTTP/SOAP mocking)
-- ✅ **SimpleSAMLphp** (for UNI-Login)
-- ✅ **Faker.js** (for test data generation)
+- **Keycloak** (instead of custom OIDC server)
+- **WireMock** (for HTTP/SOAP mocking)
+- **SimpleSAMLphp** (for UNI-Login)
+- **Faker.js** (for test data generation)
 
 **Benefits**:
-- 🔧 Less code to maintain
-- 🛡️ Battle-tested security
-- 📚 Better documentation
-- 🌍 International community support
-- 🚀 Faster development
+- Less code to maintain
+-  Battle-tested security
+-  Better documentation
+-  International community support
+- Faster development
 
 ---
 
@@ -29,7 +29,7 @@
 
 ### 1. Identity & Authentication Standards
 
-#### OpenID Connect (OIDC) - ✅ **USE THIS**
+#### OpenID Connect (OIDC) - **USE THIS**
 
 **Official Spec**: https://openid.net/specs/openid-connect-core-1_0.html
 **Status**: International standard (used by Google, Microsoft, MitID)
@@ -47,7 +47,7 @@
 
 | Tool | Language | Maturity | Use Case |
 |------|----------|----------|----------|
-| **Keycloak** ⭐ | Java | Production | Full-featured IdP (RECOMMENDED) |
+| **Keycloak** | Java | Production | Full-featured IdP (RECOMMENDED) |
 | **ORY Hydra** | Go | Production | Lightweight OAuth 2.0/OIDC server |
 | **Ory Kratos** | Go | Production | Identity management |
 | **IdentityServer** | .NET | Production | Enterprise OIDC/OAuth |
@@ -56,13 +56,13 @@
 **RECOMMENDATION**: Use **Keycloak** as base for MitID mock.
 
 **Why Keycloak**:
-- ✅ Full OIDC compliance (certified by OpenID Foundation)
-- ✅ Admin UI (manage test users easily)
-- ✅ Realm support (multi-tenant test environments)
-- ✅ Custom claim mappers (add CPR, CVR claims)
-- ✅ Docker image available
-- ✅ Huge community (Red Hat backed)
-- ✅ SAML 2.0 support (for UNI-Login too!)
+- Full OIDC compliance (certified by OpenID Foundation)
+- Admin UI (manage test users easily)
+- Realm support (multi-tenant test environments)
+- Custom claim mappers (add CPR, CVR claims)
+- Docker image available
+- Huge community (Red Hat backed)
+- SAML 2.0 support (for UNI-Login too!)
 
 **Danish Extension**:
 ```javascript
@@ -82,7 +82,7 @@
 
 ---
 
-#### OAuth 2.0 - ✅ **USE THIS**
+#### OAuth 2.0 - **USE THIS**
 
 **Official Spec**: https://oauth.net/2/
 **RFCs**:
@@ -96,7 +96,7 @@
 
 ---
 
-#### SAML 2.0 - ✅ **USE THIS**
+#### SAML 2.0 - **USE THIS**
 
 **Official Spec**: http://docs.oasis-open.org/security/saml/Post2.0/
 **Status**: International standard (legacy but still widely used)
@@ -107,7 +107,7 @@
 
 | Tool | Language | Maturity | Use Case |
 |------|----------|----------|----------|
-| **SimpleSAMLphp** ⭐ | PHP | Production | SAML IdP/SP (RECOMMENDED) |
+| **SimpleSAMLphp** | PHP | Production | SAML IdP/SP (RECOMMENDED) |
 | **Shibboleth** | Java | Production | Enterprise SAML |
 | **Keycloak** | Java | Production | SAML + OIDC combined |
 | **saml2-js** | Node.js | Stable | Lightweight SAML library |
@@ -127,7 +127,7 @@
 
 ---
 
-#### eIDAS (EU Electronic Identification) - ✅ **ALIGN WITH THIS**
+#### eIDAS (EU Electronic Identification) - **ALIGN WITH THIS**
 
 **Official Spec**: https://ec.europa.eu/digital-building-blocks/wikis/display/DIGITAL/eIDAS
 **Status**: EU regulation (910/2014)
@@ -155,7 +155,7 @@ $mapping = [
 
 ### 2. Web Services Standards
 
-#### SOAP 1.1/1.2 - ✅ **USE THIS**
+#### SOAP 1.1/1.2 - **USE THIS**
 
 **Official Spec**: https://www.w3.org/TR/soap12/
 **Status**: W3C Recommendation
@@ -166,7 +166,7 @@ $mapping = [
 
 | Tool | Language | Maturity | Use Case |
 |------|----------|----------|----------|
-| **WireMock** ⭐ | Java | Production | HTTP/SOAP mocking (RECOMMENDED) |
+| **WireMock** | Java | Production | HTTP/SOAP mocking (RECOMMENDED) |
 | **SoapUI** | Java | Production | SOAP testing (GUI tool) |
 | **node-soap** | Node.js | Stable | SOAP server/client |
 | **Apache CXF** | Java | Production | Enterprise SOAP framework |
@@ -175,12 +175,12 @@ $mapping = [
 **RECOMMENDATION**: Use **WireMock** for Serviceplatformen mock.
 
 **Why WireMock**:
-- ✅ HTTP/SOAP/REST mocking in one tool
-- ✅ Stub mapping (JSON configuration)
-- ✅ Request matching (XPath for SOAP)
-- ✅ Response templating (dynamic data)
-- ✅ Docker image available
-- ✅ Widely used (industry standard)
+- HTTP/SOAP/REST mocking in one tool
+- Stub mapping (JSON configuration)
+- Request matching (XPath for SOAP)
+- Response templating (dynamic data)
+- Docker image available
+- Widely used (industry standard)
 
 **Example WireMock Configuration**:
 ```json
@@ -206,7 +206,7 @@ $mapping = [
 
 ---
 
-#### WSDL (Web Services Description Language) - ✅ **USE THIS**
+#### WSDL (Web Services Description Language) - **USE THIS**
 
 **Official Spec**: https://www.w3.org/TR/wsdl20/
 **Status**: W3C Recommendation
@@ -219,7 +219,7 @@ $mapping = [
 
 ---
 
-#### WS-Security - ✅ **USE THIS**
+#### WS-Security - **USE THIS**
 
 **Official Spec**: http://docs.oasis-open.org/wss/2004/01/
 **Status**: OASIS Standard
@@ -257,7 +257,7 @@ $mapping = [
 
 ### 3. Data Standards
 
-#### JSON Schema - ✅ **USE THIS**
+#### JSON Schema - **USE THIS**
 
 **Official Spec**: https://json-schema.org/
 **Status**: Internet standard
@@ -285,7 +285,7 @@ $mapping = [
 
 ---
 
-#### OpenAPI (Swagger) - ✅ **USE THIS**
+#### OpenAPI (Swagger) - **USE THIS**
 
 **Official Spec**: https://swagger.io/specification/
 **Status**: Industry standard (Linux Foundation)
@@ -326,7 +326,7 @@ paths:
 
 ---
 
-#### XML Schema (XSD) - ✅ **USE THIS**
+#### XML Schema (XSD) - **USE THIS**
 
 **Official Spec**: https://www.w3.org/TR/xmlschema11-1/
 **Status**: W3C Recommendation
@@ -341,7 +341,7 @@ paths:
 
 ### 4. Security Standards
 
-#### X.509 Certificates - ✅ **USE THIS**
+#### X.509 Certificates - **USE THIS**
 
 **Official Spec**: RFC 5280
 **Status**: Internet standard
@@ -358,7 +358,7 @@ openssl req -x509 -newkey rsa:4096 -keyout mock-oces.key -out mock-oces.crt -day
 
 ---
 
-#### JWT (JSON Web Token) - ✅ **USE THIS**
+#### JWT (JSON Web Token) - **USE THIS**
 
 **Official Spec**: RFC 7519
 **Status**: IETF standard
@@ -376,7 +376,7 @@ openssl req -x509 -newkey rsa:4096 -keyout mock-oces.key -out mock-oces.crt -day
 
 ## Existing Open-Source Mock Frameworks
 
-### 1. Keycloak - ✅ **PRIMARY RECOMMENDATION**
+### 1. Keycloak - **PRIMARY RECOMMENDATION**
 
 **Website**: https://www.keycloak.org/
 **License**: Apache 2.0
@@ -388,13 +388,13 @@ openssl req -x509 -newkey rsa:4096 -keyout mock-oces.key -out mock-oces.crt -day
 - UNI-Login SAML mock (Keycloak supports both!)
 
 **Features**:
-- ✅ OIDC + SAML in one
-- ✅ Admin UI (manage test users)
-- ✅ Realms (multi-tenant)
-- ✅ Custom claim mappers (add CPR, CVR, UNI-ID)
-- ✅ User federation (LDAP, database)
-- ✅ Docker image
-- ✅ REST API (for automation)
+- OIDC + SAML in one
+- Admin UI (manage test users)
+- Realms (multi-tenant)
+- Custom claim mappers (add CPR, CVR, UNI-ID)
+- User federation (LDAP, database)
+- Docker image
+- REST API (for automation)
 
 **Docker Setup**:
 ```yaml
@@ -440,15 +440,15 @@ services:
 ```
 
 **Advantages over Custom OIDC Server**:
-- 🔧 No code to maintain (just configuration)
-- 🛡️ Security audited (Red Hat)
-- 📚 Excellent documentation
-- 🌍 Large community
-- 🚀 Admin UI (no code needed for user management)
+- No code to maintain (just configuration)
+-  Security audited (Red Hat)
+-  Excellent documentation
+-  Large community
+- Admin UI (no code needed for user management)
 
 ---
 
-### 2. WireMock - ✅ **PRIMARY RECOMMENDATION**
+### 2. WireMock - **PRIMARY RECOMMENDATION**
 
 **Website**: https://wiremock.org/
 **License**: Apache 2.0
@@ -460,13 +460,13 @@ services:
 - HTTP API mocking
 
 **Features**:
-- ✅ SOAP/REST mocking
-- ✅ Request matching (XPath, JSONPath, regex)
-- ✅ Response templating (dynamic data)
-- ✅ Stateful scenarios
-- ✅ Fault injection (test error handling)
-- ✅ Docker image
-- ✅ Standalone or embedded
+- SOAP/REST mocking
+- Request matching (XPath, JSONPath, regex)
+- Response templating (dynamic data)
+- Stateful scenarios
+- Fault injection (test error handling)
+- Docker image
+- Standalone or embedded
 
 **Docker Setup**:
 ```yaml
@@ -503,15 +503,15 @@ services:
 ```
 
 **Advantages over Custom SOAP Server**:
-- 🔧 No code (just JSON configuration)
-- 🛡️ Battle-tested
-- 📚 Great documentation
-- 🌍 Industry standard (used by Netflix, Amazon, etc.)
-- 🚀 Fast development (no coding)
+- No code (just JSON configuration)
+-  Battle-tested
+-  Great documentation
+-  Industry standard (used by Netflix, Amazon, etc.)
+- Fast development (no coding)
 
 ---
 
-### 3. Prism (OpenAPI Mock Server) - ✅ **RECOMMENDATION**
+### 3. Prism (OpenAPI Mock Server) - **RECOMMENDATION**
 
 **Website**: https://stoplight.io/open-source/prism
 **License**: Apache 2.0
@@ -521,10 +521,10 @@ services:
 **Use Case**: DAWA address API mock
 
 **Features**:
-- ✅ OpenAPI 3.0 support
-- ✅ Dynamic mock data
-- ✅ Validation (requests/responses)
-- ✅ Docker image
+- OpenAPI 3.0 support
+- Dynamic mock data
+- Validation (requests/responses)
+- Docker image
 
 **Docker Setup**:
 ```yaml
@@ -540,7 +540,7 @@ services:
 
 ---
 
-### 4. Faker.js / Bogus - ✅ **RECOMMENDATION**
+### 4. Faker.js / Bogus - **RECOMMENDATION**
 
 **Faker.js**: https://fakerjs.dev/
 **Bogus**: https://github.com/bchavez/Bogus
@@ -548,9 +548,9 @@ services:
 **Use Case**: Generate realistic test data
 
 **Features**:
-- ✅ Names, addresses, emails, phone numbers
-- ✅ Locale support (da_DK for Danish)
-- ✅ Deterministic (seeded random)
+- Names, addresses, emails, phone numbers
+- Locale support (da_DK for Danish)
+- Deterministic (seeded random)
 
 **Danish Extension**:
 ```javascript
@@ -564,7 +564,7 @@ const person = {
   name: faker.name.fullName(),       // "Hans Hansen"
   address: faker.address.streetAddress(), // "Testvej 42"
   city: faker.address.city(),        // "København"
-  email: faker.internet.email(),     // "hans@example.com"
+  email: faker.internet.email(),     // "hans@aabenforms.dk"
 };
 
 // Add CPR generator (custom)
@@ -643,19 +643,19 @@ const cpr = generateCPR(new Date('1900-01-01')); // "0101001234"
 
 | Benefit | Custom Implementation | Standards-Based | Winner |
 |---------|----------------------|-----------------|--------|
-| **Development Time** | 12 weeks | 8 weeks | ✅ Standards |
-| **Maintenance** | High (custom code) | Low (configuration) | ✅ Standards |
-| **Security** | Needs audit | Pre-audited | ✅ Standards |
-| **Documentation** | Must write | Already exists | ✅ Standards |
-| **Community Support** | None | Large community | ✅ Standards |
-| **Updates** | Manual | Automatic (upstream) | ✅ Standards |
+| **Development Time** | 12 weeks | 8 weeks | Standards |
+| **Maintenance** | High (custom code) | Low (configuration) | Standards |
+| **Security** | Needs audit | Pre-audited | Standards |
+| **Documentation** | Must write | Already exists | Standards |
+| **Community Support** | None | Large community | Standards |
+| **Updates** | Manual | Automatic (upstream) | Standards |
 
 ### Business Benefits
 
-- 💰 **Cost**: DKK 200,000 (vs DKK 300,000 custom)
-- ⏱️ **Time**: 8 weeks (vs 12 weeks custom)
-- 🛡️ **Risk**: Low (proven tools) vs High (custom code)
-- 🌍 **Adoption**: High (familiar tools) vs Low (learning curve)
+- **Cost**: DKK 200,000 (vs DKK 300,000 custom)
+-  **Time**: 8 weeks (vs 12 weeks custom)
+-  **Risk**: Low (proven tools) vs High (custom code)
+-  **Adoption**: High (familiar tools) vs Low (learning curve)
 
 ---
 
@@ -780,10 +780,10 @@ services:
 4. Create Docker Compose orchestration
 
 **Deliverables**:
-- ✅ Running Keycloak instance
-- ✅ Running WireMock instance
-- ✅ Running Prism instance
-- ✅ `docker-compose up` works
+- Running Keycloak instance
+- Running WireMock instance
+- Running Prism instance
+- `docker-compose up` works
 
 ### Phase 2: Danish Extensions (Week 3-5)
 
@@ -794,10 +794,10 @@ services:
 4. **Test Data**: Build CPR/CVR generator
 
 **Deliverables**:
-- ✅ Keycloak returns CPR in ID token
-- ✅ WireMock responds to SF1520 SOAP requests
-- ✅ Prism returns Danish addresses
-- ✅ Test data generator creates valid CPR numbers
+- Keycloak returns CPR in ID token
+- WireMock responds to SF1520 SOAP requests
+- Prism returns Danish addresses
+- Test data generator creates valid CPR numbers
 
 ### Phase 3: Integration & Testing (Week 6-7)
 
@@ -808,10 +808,10 @@ services:
 4. Documentation
 
 **Deliverables**:
-- ✅ ÅbenForms works with mock services
-- ✅ Example projects (Drupal, Node.js)
-- ✅ CI/CD templates
-- ✅ User documentation
+- ÅbenForms works with mock services
+- Example projects (Drupal, Node.js)
+- CI/CD templates
+- User documentation
 
 ### Phase 4: Community Launch (Week 8)
 
@@ -822,53 +822,53 @@ services:
 4. Present to OS2 community
 
 **Deliverables**:
-- ✅ Published to Docker Hub (os2community/*)
-- ✅ GitHub repository live
-- ✅ Community presentation
-- ✅ Blog post
+- Published to Docker Hub (os2community/*)
+- GitHub repository live
+- Community presentation
+- Blog post
 
 ---
 
 ## Standards Compliance Checklist
 
 ### Identity Standards
-- ✅ **OIDC Core 1.0** - Keycloak certified
-- ✅ **OAuth 2.0** (RFC 6749) - Keycloak certified
-- ✅ **SAML 2.0** - Keycloak supports
-- ✅ **eIDAS** - Use eIDAS ACR URIs
-- ✅ **JWT** (RFC 7519) - Keycloak generates
-- ✅ **JWS** (RFC 7515) - Keycloak signs tokens
-- ✅ **PKCE** (RFC 7636) - Keycloak supports
+- **OIDC Core 1.0** - Keycloak certified
+- **OAuth 2.0** (RFC 6749) - Keycloak certified
+- **SAML 2.0** - Keycloak supports
+- **eIDAS** - Use eIDAS ACR URIs
+- **JWT** (RFC 7519) - Keycloak generates
+- **JWS** (RFC 7515) - Keycloak signs tokens
+- **PKCE** (RFC 7636) - Keycloak supports
 
 ### Web Services Standards
-- ✅ **SOAP 1.1/1.2** - WireMock supports
-- ✅ **WSDL 1.1/2.0** - Use official KOMBIT WSDLs
-- ✅ **WS-Security** - WireMock can validate (or bypass)
-- ✅ **XML Schema (XSD)** - Use OIO schemas
+- **SOAP 1.1/1.2** - WireMock supports
+- **WSDL 1.1/2.0** - Use official KOMBIT WSDLs
+- **WS-Security** - WireMock can validate (or bypass)
+- **XML Schema (XSD)** - Use OIO schemas
 
 ### Data Standards
-- ✅ **OpenAPI 3.0** - Prism uses
-- ✅ **JSON Schema** - Prism validates
-- ✅ **X.509 Certificates** - Self-signed for mocks
+- **OpenAPI 3.0** - Prism uses
+- **JSON Schema** - Prism validates
+- **X.509 Certificates** - Self-signed for mocks
 
 ### Danish Standards
-- ✅ **OIO Standards** - Use official XSD files
-- ✅ **NSIS** - Map to eIDAS levels
-- ✅ **CPR Modulus-11** - Custom generator
-- ✅ **CVR Modulus-11** - Custom generator
+- **OIO Standards** - Use official XSD files
+- **NSIS** - Map to eIDAS levels
+- **CPR Modulus-11** - Custom generator
+- **CVR Modulus-11** - Custom generator
 
 ---
 
 ## Open Source License Strategy
 
-### Recommended License: **Apache 2.0** ✅
+### Recommended License: **Apache 2.0** 
 
 **Why Apache 2.0** (instead of GPL-2.0):
-- ✅ Compatible with Keycloak (Apache 2.0)
-- ✅ Compatible with WireMock (Apache 2.0)
-- ✅ More permissive (allows commercial use)
-- ✅ No copyleft (easier adoption by vendors)
-- ✅ Patent protection clause
+- Compatible with Keycloak (Apache 2.0)
+- Compatible with WireMock (Apache 2.0)
+- More permissive (allows commercial use)
+- No copyleft (easier adoption by vendors)
+- Patent protection clause
 
 **Trade-off**: GPL-2.0 would align with Drupal/OS2, but Apache 2.0 allows broader ecosystem adoption.
 
@@ -880,20 +880,20 @@ services:
 
 ### Key Decisions
 
-1. ✅ **Use Keycloak** (not custom OIDC server)
-2. ✅ **Use WireMock** (not custom SOAP server)
-3. ✅ **Use Prism** (for OpenAPI mocking)
-4. ✅ **Use Faker.js** (for test data)
-5. ✅ **Follow international standards** (OIDC, SAML, eIDAS, SOAP)
-6. ✅ **Add Danish extensions** (CPR, CVR, OIO data)
+1. **Use Keycloak** (not custom OIDC server)
+2. **Use WireMock** (not custom SOAP server)
+3. **Use Prism** (for OpenAPI mocking)
+4. **Use Faker.js** (for test data)
+5. **Follow international standards** (OIDC, SAML, eIDAS, SOAP)
+6. **Add Danish extensions** (CPR, CVR, OIO data)
 
 ### Benefits
 
-- 🔧 **33% less development** (8 weeks vs 12 weeks)
-- 💰 **33% cost savings** (DKK 200,000 vs DKK 300,000)
-- 🛡️ **Better security** (audited tools)
-- 📚 **Better documentation** (existing docs)
-- 🌍 **Wider adoption** (familiar tools)
+- **33% less development** (8 weeks vs 12 weeks)
+- **33% cost savings** (DKK 200,000 vs DKK 300,000)
+-  **Better security** (audited tools)
+-  **Better documentation** (existing docs)
+-  **Wider adoption** (familiar tools)
 
 ### Next Steps
 
@@ -905,7 +905,7 @@ services:
 
 ---
 
-**Final Recommendation**: ✅ **BUILD ON INTERNATIONAL STANDARDS** - Don't reinvent the wheel!
+**Final Recommendation**: **BUILD ON INTERNATIONAL STANDARDS** - Don't reinvent the wheel!
 
 **Key Principle**: "Danish government services are just **data extensions** on top of **international protocols**."
 

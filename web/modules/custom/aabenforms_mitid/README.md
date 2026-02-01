@@ -13,12 +13,12 @@ This module provides MitID authentication and CPR Claims extraction, replacing t
 **Solution**: Extract CPR number and person data directly from MitID authentication tokens.
 
 **Benefits**:
-- ✅ Works for ALL new ÅbenForms clients (no SF1520 service agreement needed)
-- ✅ Real-time verified data (no replica delay)
-- ✅ GDPR compliant (authenticated user = explicit consent)
-- ✅ No external API calls needed (CPR in token)
-- ✅ Higher security (authenticated identity)
-- ✅ NSIS assurance level tracking
+- Works for ALL new ÅbenForms clients (no SF1520 service agreement needed)
+- Real-time verified data (no replica delay)
+- GDPR compliant (authenticated user = explicit consent)
+- No external API calls needed (CPR in token)
+- Higher security (authenticated identity)
+- NSIS assurance level tracking
 
 ## Features
 
@@ -374,4 +374,4 @@ GPL-2.0 (aligned with Drupal and OS2 ecosystem)
 
 ## Maintainer
 
-Mads Nørgaard <mads@example.com>
+Mads Nørgaard <mads@aabenforms.dk>

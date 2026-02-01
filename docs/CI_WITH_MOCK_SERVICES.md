@@ -1,6 +1,6 @@
 # CI/CD with Danish Government Mock Services
 
-**Status**: ✅ **COMPLETE** - Mock services integrated into GitHub Actions CI
+**Status**: **COMPLETE** - Mock services integrated into GitHub Actions CI
 **Date**: 2026-01-25
 
 ---
@@ -30,9 +30,9 @@ Your GitHub Actions CI pipeline now runs with the **same Danish government mock 
 │ Composer        │    │ with Mock Services   │
 │                 │    │                      │
 │ - Validate      │    │ Services:            │
-│ - Security      │    │ ✅ MariaDB 10.11     │
-│   Audit         │    │ ✅ Keycloak:8080     │
-└─────────────────┘    │ ✅ WireMock:8081     │
+│ - Security      │    │ MariaDB 10.11     │
+│   Audit         │    │ Keycloak:8080     │
+└─────────────────┘    │ WireMock:8081     │
                        │                      │
                        │ Steps:               │
                        │ 1. Import realm      │
@@ -45,8 +45,8 @@ Your GitHub Actions CI pipeline now runs with the **same Danish government mock 
                        ┌──────────────────────┐
                        │ CI Summary           │
                        │                      │
-                       │ ✅ Tests passed      │
-                       │ 📊 70% coverage      │
+                       │ Tests passed      │
+                       │ 70% coverage      │
                        │ 🇩🇰 10 test users    │
                        └──────────────────────┘
 ```
@@ -67,10 +67,10 @@ The CI pipeline automatically:
 
 | Environment | MitID | Serviceplatformen | Test Users |
 |-------------|-------|-------------------|------------|
-| **Local (DDEV)** | localhost:8080 | localhost:8081 | ✅ Same 10 users |
-| **CI (GitHub)** | localhost:8080 | localhost:8081 | ✅ Same 10 users |
-| **Staging** | localhost:8080 | localhost:8081 | ✅ Same 10 users |
-| **Production** | mitid.dk | serviceplatformen.dk | ❌ Real citizens |
+| **Local (DDEV)** | localhost:8080 | localhost:8081 | Same 10 users |
+| **CI (GitHub)** | localhost:8080 | localhost:8081 | Same 10 users |
+| **Staging** | localhost:8080 | localhost:8081 | Same 10 users |
+| **Production** | mitid.dk | serviceplatformen.dk | Real citizens |
 
 **Benefit**: Tests pass locally = tests pass in CI = predictable deployments
 
@@ -288,10 +288,10 @@ When you create a PR, GitHub will automatically:
 Navigate to: `https://github.com/madsnorgaard/aabenforms/actions`
 
 You'll see:
-- ✅ All jobs (Composer validation, PHPUnit tests)
-- 📊 Code coverage percentage
+- All jobs (Composer validation, PHPUnit tests)
+- Code coverage percentage
 - 🇩🇰 Mock service information
-- ⏱️ Duration (~5-8 minutes)
+-  Duration (~5-8 minutes)
 
 ### 3. Coverage Report Artifact
 
@@ -349,7 +349,7 @@ ddev test
 | **CI Duration** | 15-20 min (external APIs) | 5-8 min | **60% faster** |
 | **CI Cost** | $50-100/month (paid tier) | $0 | **100% saved** |
 | **Test Reliability** | 70% (flaky APIs) | 99% (deterministic) | **41% more stable** |
-| **Offline Development** | ❌ No | ✅ Yes | **Developer happiness** |
+| **Offline Development** | No | Yes | **Developer happiness** |
 
 ---
 
@@ -439,12 +439,12 @@ Configure GitHub to require CI passing before merge:
 
 | Aspect | Local DDEV | GitHub Actions CI |
 |--------|------------|-------------------|
-| **Database** | MariaDB 10.11 | ✅ Same (MariaDB 10.11) |
-| **MitID Mock** | Keycloak :8080 | ✅ Same (Keycloak :8080) |
-| **Serviceplatformen Mock** | WireMock :8081 | ✅ Same (WireMock :8081) |
-| **Test Users** | 10 personas | ✅ Same (10 personas) |
-| **Test Data** | Danish CPR/names | ✅ Same data |
-| **PHP Version** | 8.4 | ✅ Same (8.4) |
+| **Database** | MariaDB 10.11 | Same (MariaDB 10.11) |
+| **MitID Mock** | Keycloak :8080 | Same (Keycloak :8080) |
+| **Serviceplatformen Mock** | WireMock :8081 | Same (WireMock :8081) |
+| **Test Users** | 10 personas | Same (10 personas) |
+| **Test Data** | Danish CPR/names | Same data |
+| **PHP Version** | 8.4 | Same (8.4) |
 
 **Result**: If tests pass locally, they will pass in CI (and vice versa).
 
@@ -478,14 +478,14 @@ github.com/os2community/danish-gov-mock-services
 ```
 
 Benefits:
-- ✅ Reusable across projects
-- ✅ Docker Hub images
-- ✅ Community contributions (more test users, more stubs)
-- ✅ Presentation at OS2 Day
+- Reusable across projects
+- Docker Hub images
+- Community contributions (more test users, more stubs)
+- Presentation at OS2 Day
 
 ---
 
-**Status**: ✅ **COMPLETE** - CI with mock services is ready
+**Status**: **COMPLETE** - CI with mock services is ready
 
 **Next Action**: Write your first integration test and watch it run with Danish test data!
 

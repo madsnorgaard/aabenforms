@@ -21,9 +21,9 @@
 │  (WireMock)       (Keycloak)         (Keycloak)     (MitID)  │
 │                   (WireMock)         (WireMock)     (SP)     │
 │                                                               │
-│  ✅ Fast          ✅ Fast            ✅ Fast        Real      │
-│  ✅ Offline       ✅ No credentials   ✅ Safe       traffic   │
-│  ✅ Deterministic ✅ Parallel jobs   ✅ Testing    only      │
+│  Fast          Fast            Fast        Real      │
+│  Offline       No credentials   Safe       traffic   │
+│  Deterministic Parallel jobs   Testing    only      │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -31,7 +31,7 @@
 
 ## 1. Local Development (DDEV)
 
-**Status**: ✅ **COMPLETE** (already working!)
+**Status**: **COMPLETE** (already working!)
 
 **Setup**:
 ```bash
@@ -44,10 +44,10 @@ ddev start  # Automatically starts mock services
 - Drupal: https://aabenforms.ddev.site
 
 **Benefits**:
-- ✅ No credentials needed
-- ✅ Work offline
-- ✅ Fast (milliseconds)
-- ✅ Deterministic test data
+- No credentials needed
+- Work offline
+- Fast (milliseconds)
+- Deterministic test data
 
 ---
 
@@ -215,7 +215,7 @@ jobs:
           echo "Waiting for WireMock..."
           timeout 30 bash -c 'until curl -f http://localhost:8081/__admin/health; do sleep 2; done'
 
-          echo "✅ All mock services ready!"
+          echo "All mock services ready!"
 
       - name: Install Drupal
         run: |
@@ -267,9 +267,9 @@ jobs:
           \$config = json_decode(\$result, true);
 
           if (isset(\$config['issuer'])) {
-            echo '✅ OIDC Discovery working' . PHP_EOL;
+            echo 'OIDC Discovery working' . PHP_EOL;
           } else {
-            echo '❌ OIDC Discovery failed' . PHP_EOL;
+            echo 'OIDC Discovery failed' . PHP_EOL;
             exit(1);
           }
           "
@@ -465,37 +465,37 @@ jobs:
     steps:
       - name: Check results
         run: |
-          echo "## 🎯 CI Pipeline Results" >> $GITHUB_STEP_SUMMARY
+          echo "## CI Pipeline Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
           if [ "${{ needs.static-analysis.result }}" == "success" ]; then
-            echo "✅ Static Analysis" >> $GITHUB_STEP_SUMMARY
+            echo "Static Analysis" >> $GITHUB_STEP_SUMMARY
           else
-            echo "❌ Static Analysis" >> $GITHUB_STEP_SUMMARY
+            echo "Static Analysis" >> $GITHUB_STEP_SUMMARY
           fi
 
           if [ "${{ needs.unit-tests.result }}" == "success" ]; then
-            echo "✅ Unit Tests" >> $GITHUB_STEP_SUMMARY
+            echo "Unit Tests" >> $GITHUB_STEP_SUMMARY
           else
-            echo "❌ Unit Tests" >> $GITHUB_STEP_SUMMARY
+            echo "Unit Tests" >> $GITHUB_STEP_SUMMARY
           fi
 
           if [ "${{ needs.integration-tests.result }}" == "success" ]; then
-            echo "✅ Integration Tests (with mocks)" >> $GITHUB_STEP_SUMMARY
+            echo "Integration Tests (with mocks)" >> $GITHUB_STEP_SUMMARY
           else
-            echo "❌ Integration Tests" >> $GITHUB_STEP_SUMMARY
+            echo "Integration Tests" >> $GITHUB_STEP_SUMMARY
           fi
 
           if [ "${{ needs.frontend-tests.result }}" == "success" ]; then
-            echo "✅ Frontend Tests" >> $GITHUB_STEP_SUMMARY
+            echo "Frontend Tests" >> $GITHUB_STEP_SUMMARY
           else
-            echo "❌ Frontend Tests" >> $GITHUB_STEP_SUMMARY
+            echo "Frontend Tests" >> $GITHUB_STEP_SUMMARY
           fi
 
           if [ "${{ needs.e2e-tests.result }}" == "success" ]; then
-            echo "✅ E2E Tests" >> $GITHUB_STEP_SUMMARY
+            echo "E2E Tests" >> $GITHUB_STEP_SUMMARY
           else
-            echo "❌ E2E Tests" >> $GITHUB_STEP_SUMMARY
+            echo "E2E Tests" >> $GITHUB_STEP_SUMMARY
           fi
 
       - name: Overall result
@@ -506,7 +506,7 @@ jobs:
           needs.frontend-tests.result == 'failure' ||
           needs.e2e-tests.result == 'failure'
         run: |
-          echo "❌ CI Pipeline Failed"
+          echo "CI Pipeline Failed"
           exit 1
 ```
 
@@ -714,9 +714,9 @@ strategy:
 |--------|-----------|---------------|
 | **Setup Time** | 30 seconds | N/A (impossible) |
 | **Test Speed** | 5 minutes | N/A |
-| **Credentials Needed** | ❌ None | ✅ Required |
-| **Cost** | ❌ $0 | ✅ DKK 200,000+ |
-| **Offline Development** | ✅ Yes | ❌ No |
+| **Credentials Needed** | None | Required |
+| **Cost** | $0 | DKK 200,000+ |
+| **Offline Development** | Yes | No |
 
 ---
 
@@ -747,13 +747,13 @@ gh api repos/aabenforms/aabenforms/actions/workflows/ci.yml/runs \
     webhook-url: ${{ secrets.SLACK_WEBHOOK }}
     payload: |
       {
-        "text": "❌ CI failed for ${{ github.repository }}",
+        "text": "CI failed for ${{ github.repository }}",
         "blocks": [
           {
             "type": "section",
             "text": {
               "type": "mrkdwn",
-              "text": "❌ *CI Pipeline Failed*\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref }}\n*Commit:* ${{ github.sha }}"
+              "text": "*CI Pipeline Failed*\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref }}\n*Commit:* ${{ github.sha }}"
             }
           }
         ]
@@ -834,7 +834,7 @@ jobs:
           webhook-url: ${{ secrets.SLACK_WEBHOOK }}
           payload: |
             {
-              "text": "✅ Deployed to production: ${{ github.sha }}"
+              "text": "Deployed to production: ${{ github.sha }}"
             }
 ```
 
@@ -877,9 +877,9 @@ jobs:
 
 ### Immediate (Week 1)
 
-1. ✅ **Create `.github/workflows/ci.yml`** (copy from this doc)
-2. ✅ **Test CI pipeline** (push to branch, create PR)
-3. ✅ **Add status badges** to README.md
+1. **Create `.github/workflows/ci.yml`** (copy from this doc)
+2. **Test CI pipeline** (push to branch, create PR)
+3. **Add status badges** to README.md
 
 ### Short-term (Week 2-3)
 
@@ -915,7 +915,7 @@ jobs:
 
 ## Summary
 
-### ✅ What We Achieved
+### What We Achieved
 
 1. **Mock services everywhere** (local, CI, staging)
 2. **No credentials needed** for development
@@ -923,17 +923,17 @@ jobs:
 4. **Cost-effective** ($0 for CI minutes)
 5. **Production-ready** (switch to real services in prod)
 
-### 🎯 Key Benefits
+### Key Benefits
 
-- 🚀 **99% faster** than waiting for credentials
-- 💰 **DKK 200,000+ saved** per project
-- ✅ **Deterministic tests** (same data every time)
-- 🔒 **Secure** (no production credentials in CI)
-- 🌍 **Scalable** (parallel jobs, caching)
+- **99% faster** than waiting for credentials
+- **DKK 200,000+ saved** per project
+- **Deterministic tests** (same data every time)
+- **Secure** (no production credentials in CI)
+-  **Scalable** (parallel jobs, caching)
 
 ---
 
-**Status**: ✅ **READY TO IMPLEMENT**
+**Status**: **READY TO IMPLEMENT**
 
 **Next Command**: Create `.github/workflows/ci.yml` and push to test!
 

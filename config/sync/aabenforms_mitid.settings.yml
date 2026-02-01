@@ -1,0 +1,21 @@
+_core:
+  default_config_hash: r0zQF0o9lkA3FLcd7pKqaZyOl2tRbtJbeDwLM6eP64I
+oidc:
+  issuer: 'https://pp.mitid.dk/oidc'
+  authorization_endpoint: 'https://pp.mitid.dk/oidc/authorize'
+  token_endpoint: 'https://pp.mitid.dk/oidc/token'
+  userinfo_endpoint: 'https://pp.mitid.dk/oidc/userinfo'
+  client_id: ''
+  client_secret: ''
+  scopes:
+    - openid
+    - mitid
+    - cpr
+  redirect_uri: ''
+session:
+  expiration: 900
+  storage: tempstore
+security:
+  validate_tokens: true
+  required_assurance_level: substantial
+production: false

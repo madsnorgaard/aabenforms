@@ -1,10 +1,10 @@
 # ÅbenForms Mock Services - Quick Reference Card
 
-**Print this page and keep it handy while developing!** 📄
+**Print this page and keep it handy while developing!** 
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ```bash
 ddev start              # Start everything (includes mocks)
@@ -14,7 +14,7 @@ ddev mocks-logs         # View logs
 
 ---
 
-## 🔗 Service URLs
+## Service URLs
 
 | Service | URL | Admin/UI |
 |---------|-----|----------|
@@ -26,7 +26,7 @@ ddev mocks-logs         # View logs
 
 ---
 
-## 👥 Test Users (Password: test1234)
+##  Test Users (Password: test1234)
 
 | Username | Name | CPR | Type |
 |----------|------|-----|------|
@@ -43,7 +43,7 @@ ddev mocks-logs         # View logs
 
 ---
 
-## 🔑 Keycloak Admin Access
+## Keycloak Admin Access
 
 - **URL**: http://localhost:8080/admin
 - **Username**: `admin`
@@ -52,7 +52,7 @@ ddev mocks-logs         # View logs
 
 ---
 
-## 🧪 Quick Tests
+##  Quick Tests
 
 ### Test MitID Login
 ```bash
@@ -80,7 +80,7 @@ curl http://localhost:8080/realms/danish-gov-test/.well-known/openid-configurati
 
 ---
 
-## ⚙️ Drupal Configuration Snippet
+##  Drupal Configuration Snippet
 
 **File**: `web/sites/default/settings.local.php`
 
@@ -101,7 +101,7 @@ $config['aabenforms_dawa.settings']['api_url'] = 'http://localhost:8082';
 
 ---
 
-## 🎨 Nuxt 3 Configuration Snippet
+##  Nuxt 3 Configuration Snippet
 
 **File**: `nuxt.config.ts`
 
@@ -127,7 +127,7 @@ export default defineNuxtConfig({
 
 ---
 
-## 🐛 Troubleshooting
+##  Troubleshooting
 
 ### Keycloak Not Starting?
 ```bash
@@ -149,7 +149,7 @@ ddev mocks-logs wiremock                     # Check logs
 
 ---
 
-## 📊 OIDC Client Credentials
+## OIDC Client Credentials
 
 | Client | Type | Client ID | Secret |
 |--------|------|-----------|--------|
@@ -158,7 +158,7 @@ ddev mocks-logs wiremock                     # Check logs
 
 ---
 
-## 🌍 OIDC Endpoints (MitID Mock)
+##  OIDC Endpoints (MitID Mock)
 
 ```
 Discovery:      http://localhost:8080/realms/danish-gov-test/.well-known/openid-configuration
@@ -171,7 +171,7 @@ Logout:         http://localhost:8080/realms/danish-gov-test/protocol/openid-con
 
 ---
 
-## 🧩 Serviceplatformen Endpoints
+##  Serviceplatformen Endpoints
 
 ```
 SF1520 (CPR):         POST http://localhost:8081/sf1520
@@ -181,7 +181,7 @@ SF1601 (Digital Post): POST http://localhost:8081/sf1601
 
 ---
 
-## 🏠 DAWA API Endpoints
+##  DAWA API Endpoints
 
 ```
 Autocomplete:  GET http://localhost:8082/adresser/autocomplete?q={query}
@@ -191,7 +191,7 @@ Postal codes:  GET http://localhost:8082/postnumre/{postal_code}
 
 ---
 
-## 🎯 Common Scenarios
+## Common Scenarios
 
 ### Scenario 1: Test Citizen Complaint Workflow
 1. Login as `freja.nielsen` (MitID mock)
@@ -216,7 +216,7 @@ Postal codes:  GET http://localhost:8082/postnumre/{postal_code}
 
 ---
 
-## 📝 Useful Drush Commands
+## Useful Drush Commands
 
 ```bash
 # Test CPR extraction
@@ -234,7 +234,7 @@ ddev drush sql:query "SELECT * FROM aabenforms_audit_log ORDER BY timestamp DESC
 
 ---
 
-## 💡 Pro Tips
+## Pro Tips
 
 1. **Bookmark Keycloak Admin** - You'll use it often
 2. **Use realistic test data** - Makes development feel more authentic
@@ -244,7 +244,7 @@ ddev drush sql:query "SELECT * FROM aabenforms_audit_log ORDER BY timestamp DESC
 
 ---
 
-## 📚 Full Documentation
+##  Full Documentation
 
 - **Comprehensive Guide**: `docs/DDEV_MOCK_SERVICES_GUIDE.md`
 - **International Standards**: `docs/INTERNATIONAL_STANDARDS_AND_TOOLS.md`
@@ -262,6 +262,6 @@ ddev drush sql:query "SELECT * FROM aabenforms_audit_log ORDER BY timestamp DESC
 
 ---
 
-**Happy Coding!** 🚀🇩🇰
+**Happy Coding!** 🇩🇰
 
 **Version**: 1.0.0 | **Last Updated**: 2026-01-25
