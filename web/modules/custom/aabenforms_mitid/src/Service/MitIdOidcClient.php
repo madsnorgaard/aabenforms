@@ -12,10 +12,14 @@ use Psr\Log\LoggerInterface;
  * Service for MitID OpenID Connect (OIDC) authentication.
  *
  * Implements the OIDC Authorization Code Flow for MitID:
- * 1. Generate authorization URL with PKCE
+ * 1. Generate authorization URL
  * 2. Handle callback with authorization code
  * 3. Exchange code for access + ID tokens
  * 4. Validate and extract user data.
+ *
+ * Note: PKCE (Proof Key for Code Exchange) is not yet implemented.
+ * This is acceptable for confidential clients with client_secret,
+ * but PKCE should be added for enhanced security in future versions.
  */
 class MitIdOidcClient {
 
@@ -100,11 +104,11 @@ class MitIdOidcClient {
 
     $clientId = $config->get('client_id');
     $authorizationEndpoint = $config->get('authorization_endpoint')
-      ?? 'https://gateway.test.mitid.dk/authorize';
+        ?? 'https://gateway.test.mitid.dk/authorize';
 
     $redirectUri = $options['redirect_uri']
-      ?? $config->get('redirect_uri')
-      ?? '';
+        ?? $config->get('redirect_uri')
+        ?? '';
 
     $state = $options['state'] ?? $this->generateState();
     $scope = $options['scope'] ?? 'openid ssn';
@@ -123,11 +127,13 @@ class MitIdOidcClient {
 
     $authUrl = $authorizationEndpoint . '?' . http_build_query($params);
 
-    $this->logger->info('Generated MitID authorization URL for client: {client_id}', [
-      'client_id' => $clientId,
-      'scope' => $scope,
-      'acr_values' => $acrValues,
-    ]);
+    $this->logger->info(
+          'Generated MitID authorization URL for client: {client_id}', [
+            'client_id' => $clientId,
+            'scope' => $scope,
+            'acr_values' => $acrValues,
+          ]
+      );
 
     return [
       'url' => $authUrl,
@@ -155,7 +161,7 @@ class MitIdOidcClient {
     $clientId = $config->get('client_id');
     $clientSecret = $config->get('client_secret');
     $tokenEndpoint = $config->get('token_endpoint')
-      ?? 'https://gateway.test.mitid.dk/token';
+        ?? 'https://gateway.test.mitid.dk/token';
 
     if (empty($redirect_uri)) {
       $redirect_uri = $config->get('redirect_uri');
@@ -171,12 +177,14 @@ class MitIdOidcClient {
     ];
 
     try {
-      $response = $this->httpClient->post($tokenEndpoint, [
-        'form_params' => $params,
-        'headers' => [
-          'Accept' => 'application/json',
-        ],
-      ]);
+      $response = $this->httpClient->post(
+            $tokenEndpoint, [
+              'form_params' => $params,
+              'headers' => [
+                'Accept' => 'application/json',
+              ],
+            ]
+        );
 
       $body = (string) $response->getBody();
       $tokens = json_decode($body, TRUE);
@@ -195,9 +203,11 @@ class MitIdOidcClient {
 
     }
     catch (RequestException $e) {
-      $this->logger->error('Token exchange failed: {error}', [
-        'error' => $e->getMessage(),
-      ]);
+      $this->logger->error(
+            'Token exchange failed: {error}', [
+              'error' => $e->getMessage(),
+            ]
+        );
       throw new \RuntimeException('Failed to exchange authorization code: ' . $e->getMessage(), 0, $e);
     }
   }
@@ -245,23 +255,25 @@ class MitIdOidcClient {
     // Validate and extract person data.
     $personData = $this->validateIdToken($tokens['id_token']);
 
-    // Create session.
-    $sessionData = [
-      'person' => $personData,
-      'tokens' => [
-        'access_token' => $tokens['access_token'],
-        'id_token' => $tokens['id_token'],
-        'expires_in' => $tokens['expires_in'] ?? 3600,
-      ],
-      'authenticated_at' => time(),
-    ];
+    // Create session with flat structure (MitIdSessionManager expects
+    // person fields at top level, not nested under 'person' key).
+    $sessionData = array_merge(
+          $personData, [
+            'access_token' => $tokens['access_token'],
+            'id_token' => $tokens['id_token'],
+            'expires_in' => $tokens['expires_in'] ?? 3600,
+            'authenticated_at' => time(),
+          ]
+      );
 
     $this->sessionManager->storeSession($workflow_id, $sessionData);
 
-    $this->logger->info('MitID OIDC flow completed for workflow: {workflow_id}', [
-      'workflow_id' => $workflow_id,
-      'cpr_masked' => substr($personData['cpr'] ?? '', 0, 6) . 'XXXX',
-    ]);
+    $this->logger->info(
+          'MitID OIDC flow completed for workflow: {workflow_id}', [
+            'workflow_id' => $workflow_id,
+            'cpr_masked' => substr($personData['cpr'] ?? '', 0, 6) . 'XXXX',
+          ]
+      );
 
     return $sessionData;
   }
@@ -291,15 +303,17 @@ class MitIdOidcClient {
   public function getUserInfo(string $access_token): array {
     $config = $this->configFactory->get('aabenforms_mitid.settings');
     $userinfoEndpoint = $config->get('userinfo_endpoint')
-      ?? 'https://gateway.test.mitid.dk/userinfo';
+        ?? 'https://gateway.test.mitid.dk/userinfo';
 
     try {
-      $response = $this->httpClient->get($userinfoEndpoint, [
-        'headers' => [
-          'Authorization' => 'Bearer ' . $access_token,
-          'Accept' => 'application/json',
-        ],
-      ]);
+      $response = $this->httpClient->get(
+            $userinfoEndpoint, [
+              'headers' => [
+                'Authorization' => 'Bearer ' . $access_token,
+                'Accept' => 'application/json',
+              ],
+            ]
+        );
 
       $body = (string) $response->getBody();
       $userInfo = json_decode($body, TRUE);
@@ -312,9 +326,11 @@ class MitIdOidcClient {
 
     }
     catch (RequestException $e) {
-      $this->logger->error('UserInfo request failed: {error}', [
-        'error' => $e->getMessage(),
-      ]);
+      $this->logger->error(
+            'UserInfo request failed: {error}', [
+              'error' => $e->getMessage(),
+            ]
+        );
       throw new \RuntimeException('Failed to get user info: ' . $e->getMessage(), 0, $e);
     }
   }

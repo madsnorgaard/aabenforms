@@ -4,11 +4,9 @@ namespace Drupal\aabenforms_workflows\Plugin\Action;
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultInterface;
-use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\eca\Plugin\Action\ActionBase;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -23,29 +21,21 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 abstract class AabenFormsActionBase extends ActionBase implements ContainerFactoryPluginInterface {
 
   /**
-   * The logger.
-   *
-   * @var \Psr\Log\LoggerInterface
-   */
-  protected LoggerInterface $logger;
-
-  /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    $instance = new static($configuration, $plugin_id, $plugin_definition);
-    $instance->setLogger($container->get('logger.factory'));
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
+    $instance = new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('entity_type.manager'),
+      $container->get('eca.token_services'),
+      $container->get('current_user'),
+      $container->get('datetime.time'),
+      $container->get('eca.state'),
+      $container->get('logger.factory')->get('aabenforms_workflows')
+    );
     return $instance;
-  }
-
-  /**
-   * Sets the logger factory.
-   *
-   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory
-   *   The logger factory.
-   */
-  public function setLogger(LoggerChannelFactoryInterface $logger_factory): void {
-    $this->logger = $logger_factory->get('aabenforms_workflows');
   }
 
   /**
@@ -103,7 +93,7 @@ abstract class AabenFormsActionBase extends ActionBase implements ContainerFacto
    *   The token value.
    */
   protected function getTokenValue(string $token_name, $default = NULL) {
-    return $this->tokenServices->getTokenData($token_name) ?? $default;
+    return $this->tokenService->getTokenData($token_name) ?? $default;
   }
 
   /**
@@ -115,7 +105,7 @@ abstract class AabenFormsActionBase extends ActionBase implements ContainerFacto
    *   The value to set.
    */
   protected function setTokenValue(string $token_name, $value): void {
-    $this->tokenServices->addTokenData($token_name, $value);
+    $this->tokenService->addTokenData($token_name, $value);
   }
 
 }
