@@ -181,4 +181,4 @@ https://github.com/madsnorgaard/aabenforms/issues
 
 ---
 
-**Developed with  for Danish municipalities**
+**Developed with care for Danish municipalities**

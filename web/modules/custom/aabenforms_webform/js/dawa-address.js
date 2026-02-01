@@ -73,16 +73,16 @@
           autocompleteList.className = 'dawa-autocomplete-list';
           autocompleteList.style.cssText = `
             position: absolute;
-            z - index: 1000;
+            z-index: 1000;
             background: white;
             border: 1px solid #ccc;
-            border - radius: 4px;
+            border-radius: 4px;
             margin: 0;
             padding: 0;
-            list - style: none;
-            max - height: 300px;
-            overflow - y: auto;
-            box - shadow: 0 2px 8px rgba(0,0,0,0.1);
+            list-style: none;
+            max-height: 300px;
+            overflow-y: auto;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
           `;
 
           addresses.forEach(function (address) {
@@ -92,7 +92,7 @@
             item.style.cssText = `
               padding: 8px 12px;
               cursor: pointer;
-              border - bottom: 1px solid #eee;
+              border-bottom: 1px solid #eee;
             `;
 
             item.addEventListener('mouseenter', function () {
