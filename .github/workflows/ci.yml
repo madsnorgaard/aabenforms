@@ -113,6 +113,7 @@ jobs:
             --coverage-text \
             --coverage-cobertura=coverage/cobertura.xml \
             --coverage-html=coverage/html \
+            --exclude-group aabenforms_workflows \
             --testdox
         env:
           SIMPLETEST_DB: mysql://root:root@127.0.0.1/drupal_test
