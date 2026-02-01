@@ -1,44 +1,52 @@
-uuid: 4fb506e6-c68f-49f3-b453-d44a2cc90c5e
+uuid: 76362b2c-c292-467a-922b-f9973f52d2b6
 langcode: en
 status: true
 dependencies:
   module:
     - aabenforms_workflows
-    - aabenforms_mitid
-    - webform
-id: parent_submission_workflow
-label: 'Parent Submission Workflow'
-version: '1.0'
+    - eca_content
+id: parent_submission_simple
+weight: null
+template: null
 events:
-  webform_submission_insert:
+  webform_insert:
     plugin: 'content_entity:insert'
     configuration:
       type: webform_submission
     successors:
-      - validate_mitid
-modeller: fallback
+      -
+        id: validate_mitid
+        condition: ''
 conditions: {  }
+gateways: {  }
 actions:
   validate_mitid:
+    label: 'Validate MitID Session'
     plugin: aabenforms_mitid_validate
     configuration:
       workflow_id_token: workflow_id
       result_token: mitid_result
       session_data_token: mitid_session
     successors:
-      - lookup_cpr
+      -
+        id: lookup_cpr
+        condition: ''
   lookup_cpr:
+    label: 'Lookup CPR Data'
     plugin: aabenforms_cpr_lookup
     configuration:
       cpr_token: '[mitid_session:cpr]'
       result_token: cpr_person_data
       use_cache: true
     successors:
-      - audit_submission
-  audit_submission:
+      -
+        id: audit_log
+        condition: ''
+  audit_log:
+    label: 'Create Audit Log'
     plugin: aabenforms_audit_log
     configuration:
       event_type_token: parent_submission
       user_data_token: '[cpr_person_data:name]'
       metadata_token: '[webform_submission:sid]'
-    successors: [  ]
+    successors: {  }

@@ -5,12 +5,6 @@ serviceplatformen:
     SF1520: 'https://exttest.serviceplatformen.dk/service/CPR/CPRBasicInformation/1'
     SF1530: 'https://exttest.serviceplatformen.dk/service/CVR/CVROnline/1'
     SF1601: 'https://exttest.serviceplatformen.dk/service/DigitalPost/1'
-  # WS-Security credentials (UsernameToken authentication).
-  # Set these via environment variables or local settings.php in production.
-  username: ''
-  password: ''
-  # Certificate-based authentication (alternative to username/password).
-  # Currently certificate auth is not fully implemented - UsernameToken is used.
   certificates:
     cert_path: ''
     key_path: ''
@@ -18,6 +12,8 @@ serviceplatformen:
   cache:
     enabled: true
     default_expiration: 900
+  username: ''
+  password: ''
 encryption:
   default_profile: aabenforms_aes256
 audit:
