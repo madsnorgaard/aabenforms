@@ -4,7 +4,7 @@ aabenforms_core.webform_api:
     _controller: '\Drupal\aabenforms_core\Controller\WebformApiController::getWebform'
     _title: 'Get Webform'
   requirements:
-    _permission: 'access content'
+    _permission: 'access webform api'
   options:
     parameters:
       id:
@@ -16,7 +16,7 @@ aabenforms_core.webform_submit:
     _controller: '\Drupal\aabenforms_core\Controller\WebformApiController::submitWebform'
     _title: 'Submit Webform'
   requirements:
-    _permission: 'access content'
+    _permission: 'access webform api'
   methods: [POST]
   options:
     parameters:

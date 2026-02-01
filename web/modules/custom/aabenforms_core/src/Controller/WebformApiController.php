@@ -131,13 +131,16 @@ class WebformApiController extends ControllerBase {
       ], 201);
     }
     catch (\Exception $e) {
+      // Log detailed error server-side.
       \Drupal::logger('aabenforms_core')->error('Webform submission failed: @error', [
         '@error' => $e->getMessage(),
+        '@trace' => $e->getTraceAsString(),
       ]);
 
+      // Return generic error to client (don't expose internal details).
       return new JsonResponse([
         'error' => 'Submission failed',
-        'message' => $e->getMessage(),
+        'message' => 'An error occurred while processing your submission. Please try again.',
       ], 500);
     }
   }

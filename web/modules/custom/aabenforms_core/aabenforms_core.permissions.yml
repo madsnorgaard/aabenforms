@@ -1,0 +1,6 @@
+# Permissions for ÅbenForms Core module.
+
+access webform api:
+  title: 'Access webform API endpoints'
+  description: 'Allows access to custom REST API endpoints for fetching and submitting webforms.'
+  restrict access: true

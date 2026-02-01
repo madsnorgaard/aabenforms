@@ -58,7 +58,25 @@ class MitIdController extends ControllerBase {
     $workflowId = $request->query->get('workflow_id') ?? 'default_' . uniqid();
 
     // Get redirect URL (where to return after auth).
+    // Validate that it's an internal path to prevent open redirect attacks.
     $returnUrl = $request->query->get('return_url') ?? '/';
+
+    // Strip any external URLs - only allow internal paths.
+    if (preg_match('#^https?://#i', $returnUrl)) {
+      // If it's a full URL, parse it and check if it's the current site.
+      $currentHost = $request->getSchemeAndHttpHost();
+      $returnHost = parse_url($returnUrl, PHP_URL_SCHEME) . '://' . parse_url($returnUrl, PHP_URL_HOST);
+
+      if ($returnHost !== $currentHost) {
+        // External URL detected - reject it and use homepage.
+        $this->getLogger('aabenforms_mitid')->warning('Rejected external return_url: @url', ['@url' => $returnUrl]);
+        $returnUrl = '/';
+      }
+    }
+    elseif (!str_starts_with($returnUrl, '/')) {
+      // Ensure path starts with / to prevent protocol-relative URLs.
+      $returnUrl = '/' . $returnUrl;
+    }
 
     // Generate authorization URL.
     $result = $this->oidcClient->getAuthorizationUrl([
