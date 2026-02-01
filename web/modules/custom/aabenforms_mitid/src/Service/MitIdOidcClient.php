@@ -21,304 +21,325 @@ use Psr\Log\LoggerInterface;
  * This is acceptable for confidential clients with client_secret,
  * but PKCE should be added for enhanced security in future versions.
  */
-class MitIdOidcClient {
+class MitIdOidcClient
+{
 
-  /**
-   * The config factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected ConfigFactoryInterface $configFactory;
+    /**
+     * The config factory.
+     *
+     * @var \Drupal\Core\Config\ConfigFactoryInterface
+     */
+    protected ConfigFactoryInterface $configFactory;
 
-  /**
-   * The HTTP client.
-   *
-   * @var \GuzzleHttp\ClientInterface
-   */
-  protected ClientInterface $httpClient;
+    /**
+     * The HTTP client.
+     *
+     * @var \GuzzleHttp\ClientInterface
+     */
+    protected ClientInterface $httpClient;
 
-  /**
-   * The logger.
-   *
-   * @var \Psr\Log\LoggerInterface
-   */
-  protected LoggerInterface $logger;
+    /**
+     * The logger.
+     *
+     * @var \Psr\Log\LoggerInterface
+     */
+    protected LoggerInterface $logger;
 
-  /**
-   * The CPR extractor service.
-   *
-   * @var \Drupal\aabenforms_mitid\Service\MitIdCprExtractor
-   */
-  protected MitIdCprExtractor $cprExtractor;
+    /**
+     * The CPR extractor service.
+     *
+     * @var \Drupal\aabenforms_mitid\Service\MitIdCprExtractor
+     */
+    protected MitIdCprExtractor $cprExtractor;
 
-  /**
-   * The session manager service.
-   *
-   * @var \Drupal\aabenforms_mitid\Service\MitIdSessionManager
-   */
-  protected MitIdSessionManager $sessionManager;
+    /**
+     * The session manager service.
+     *
+     * @var \Drupal\aabenforms_mitid\Service\MitIdSessionManager
+     */
+    protected MitIdSessionManager $sessionManager;
 
-  /**
-   * Constructs a MitIdOidcClient.
-   *
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   *   The config factory.
-   * @param \GuzzleHttp\ClientInterface $http_client
-   *   The HTTP client.
-   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory
-   *   The logger factory.
-   * @param \Drupal\aabenforms_mitid\Service\MitIdCprExtractor $cpr_extractor
-   *   The CPR extractor.
-   * @param \Drupal\aabenforms_mitid\Service\MitIdSessionManager $session_manager
-   *   The session manager.
-   */
-  public function __construct(
-    ConfigFactoryInterface $config_factory,
-    ClientInterface $http_client,
-    LoggerChannelFactoryInterface $logger_factory,
-    MitIdCprExtractor $cpr_extractor,
-    MitIdSessionManager $session_manager,
-  ) {
-    $this->configFactory = $config_factory;
-    $this->httpClient = $http_client;
-    $this->logger = $logger_factory->get('aabenforms_mitid');
-    $this->cprExtractor = $cpr_extractor;
-    $this->sessionManager = $session_manager;
-  }
-
-  /**
-   * Generates MitID authorization URL.
-   *
-   * @param array $options
-   *   Options for authorization:
-   *   - redirect_uri: The callback URL.
-   *   - state: Optional state parameter for CSRF protection.
-   *   - scope: Space-separated scopes (default: 'openid ssn').
-   *   - acr_values: Assurance level (default: 'substantial').
-   *
-   * @return array
-   *   Array with 'url' and 'state' keys.
-   */
-  public function getAuthorizationUrl(array $options = []): array {
-    $config = $this->configFactory->get('aabenforms_mitid.settings');
-
-    $clientId = $config->get('client_id');
-    $authorizationEndpoint = $config->get('authorization_endpoint')
-      ?? 'https://gateway.test.mitid.dk/authorize';
-
-    $redirectUri = $options['redirect_uri']
-      ?? $config->get('redirect_uri')
-      ?? '';
-
-    $state = $options['state'] ?? $this->generateState();
-    $scope = $options['scope'] ?? 'openid ssn';
-    $acrValues = $options['acr_values'] ?? 'substantial';
-
-    // Build authorization URL.
-    $params = [
-      'client_id' => $clientId,
-      'redirect_uri' => $redirectUri,
-      'response_type' => 'code',
-      'scope' => $scope,
-      'state' => $state,
-      'acr_values' => $acrValues,
-      'response_mode' => 'query',
-    ];
-
-    $authUrl = $authorizationEndpoint . '?' . http_build_query($params);
-
-    $this->logger->info('Generated MitID authorization URL for client: {client_id}', [
-      'client_id' => $clientId,
-      'scope' => $scope,
-      'acr_values' => $acrValues,
-    ]);
-
-    return [
-      'url' => $authUrl,
-      'state' => $state,
-    ];
-  }
-
-  /**
-   * Exchanges authorization code for tokens.
-   *
-   * @param string $code
-   *   The authorization code from MitID callback.
-   * @param string $redirect_uri
-   *   The redirect URI used in authorization.
-   *
-   * @return array
-   *   Token response with 'access_token', 'id_token', 'expires_in'.
-   *
-   * @throws \RuntimeException
-   *   If token exchange fails.
-   */
-  public function exchangeCode(string $code, string $redirect_uri = ''): array {
-    $config = $this->configFactory->get('aabenforms_mitid.settings');
-
-    $clientId = $config->get('client_id');
-    $clientSecret = $config->get('client_secret');
-    $tokenEndpoint = $config->get('token_endpoint')
-      ?? 'https://gateway.test.mitid.dk/token';
-
-    if (empty($redirect_uri)) {
-      $redirect_uri = $config->get('redirect_uri');
+    /**
+     * Constructs a MitIdOidcClient.
+     *
+     * @param \Drupal\Core\Config\ConfigFactoryInterface           $config_factory
+     *   The config factory.
+     * @param \GuzzleHttp\ClientInterface                          $http_client
+     *   The HTTP client.
+     * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface    $logger_factory
+     *   The logger factory.
+     * @param \Drupal\aabenforms_mitid\Service\MitIdCprExtractor   $cpr_extractor
+     *   The CPR extractor.
+     * @param \Drupal\aabenforms_mitid\Service\MitIdSessionManager $session_manager
+     *   The session manager.
+     */
+    public function __construct(
+        ConfigFactoryInterface $config_factory,
+        ClientInterface $http_client,
+        LoggerChannelFactoryInterface $logger_factory,
+        MitIdCprExtractor $cpr_extractor,
+        MitIdSessionManager $session_manager,
+    ) {
+        $this->configFactory = $config_factory;
+        $this->httpClient = $http_client;
+        $this->logger = $logger_factory->get('aabenforms_mitid');
+        $this->cprExtractor = $cpr_extractor;
+        $this->sessionManager = $session_manager;
     }
 
-    // Build token request.
-    $params = [
-      'grant_type' => 'authorization_code',
-      'code' => $code,
-      'redirect_uri' => $redirect_uri,
-      'client_id' => $clientId,
-      'client_secret' => $clientSecret,
-    ];
+    /**
+     * Generates MitID authorization URL.
+     *
+     * @param array $options
+     *   Options for authorization:
+     *   - redirect_uri: The callback URL.
+     *   - state: Optional state parameter for CSRF protection.
+     *   - scope: Space-separated scopes (default: 'openid ssn').
+     *   - acr_values: Assurance level (default: 'substantial').
+     *
+     * @return array
+     *   Array with 'url' and 'state' keys.
+     */
+    public function getAuthorizationUrl(array $options = []): array
+    {
+        $config = $this->configFactory->get('aabenforms_mitid.settings');
 
-    try {
-      $response = $this->httpClient->post($tokenEndpoint, [
-        'form_params' => $params,
-        'headers' => [
-          'Accept' => 'application/json',
-        ],
-      ]);
+        $clientId = $config->get('client_id');
+        $authorizationEndpoint = $config->get('authorization_endpoint')
+        ?? 'https://gateway.test.mitid.dk/authorize';
 
-      $body = (string) $response->getBody();
-      $tokens = json_decode($body, TRUE);
+        $redirectUri = $options['redirect_uri']
+        ?? $config->get('redirect_uri')
+        ?? '';
 
-      if (json_last_error() !== JSON_ERROR_NONE) {
-        throw new \RuntimeException('Invalid JSON response from token endpoint: ' . json_last_error_msg());
-      }
+        $state = $options['state'] ?? $this->generateState();
+        $scope = $options['scope'] ?? 'openid ssn';
+        $acrValues = $options['acr_values'] ?? 'substantial';
 
-      if (!isset($tokens['access_token']) || !isset($tokens['id_token'])) {
-        throw new \RuntimeException('Token response missing required tokens');
-      }
+        // Build authorization URL.
+        $params = [
+        'client_id' => $clientId,
+        'redirect_uri' => $redirectUri,
+        'response_type' => 'code',
+        'scope' => $scope,
+        'state' => $state,
+        'acr_values' => $acrValues,
+        'response_mode' => 'query',
+        ];
 
-      $this->logger->info('Successfully exchanged authorization code for tokens');
+        $authUrl = $authorizationEndpoint . '?' . http_build_query($params);
 
-      return $tokens;
+        $this->logger->info(
+            'Generated MitID authorization URL for client: {client_id}', [
+            'client_id' => $clientId,
+            'scope' => $scope,
+            'acr_values' => $acrValues,
+            ]
+        );
 
-    }
-    catch (RequestException $e) {
-      $this->logger->error('Token exchange failed: {error}', [
-        'error' => $e->getMessage(),
-      ]);
-      throw new \RuntimeException('Failed to exchange authorization code: ' . $e->getMessage(), 0, $e);
-    }
-  }
-
-  /**
-   * Validates ID token and extracts claims.
-   *
-   * @param string $id_token
-   *   The ID token (JWT).
-   *
-   * @return array
-   *   The validated claims.
-   *
-   * @throws \RuntimeException
-   *   If validation fails.
-   */
-  public function validateIdToken(string $id_token): array {
-    if (!$this->cprExtractor->validateToken($id_token)) {
-      throw new \RuntimeException('ID token validation failed');
+        return [
+        'url' => $authUrl,
+        'state' => $state,
+        ];
     }
 
-    return $this->cprExtractor->extractPersonData($id_token);
-  }
+    /**
+     * Exchanges authorization code for tokens.
+     *
+     * @param string $code
+     *   The authorization code from MitID callback.
+     * @param string $redirect_uri
+     *   The redirect URI used in authorization.
+     *
+     * @return array
+     *   Token response with 'access_token', 'id_token', 'expires_in'.
+     *
+     * @throws \RuntimeException
+     *   If token exchange fails.
+     */
+    public function exchangeCode(string $code, string $redirect_uri = ''): array
+    {
+        $config = $this->configFactory->get('aabenforms_mitid.settings');
 
-  /**
-   * Completes OIDC flow: exchanges code, validates token, creates session.
-   *
-   * @param string $code
-   *   The authorization code.
-   * @param string $workflow_id
-   *   The workflow instance ID.
-   * @param array $options
-   *   Additional options.
-   *
-   * @return array
-   *   Session data with CPR, person data, and tokens.
-   *
-   * @throws \RuntimeException
-   *   If flow fails.
-   */
-  public function completeFlow(string $code, string $workflow_id, array $options = []): array {
-    // Exchange code for tokens.
-    $tokens = $this->exchangeCode($code, $options['redirect_uri'] ?? '');
+        $clientId = $config->get('client_id');
+        $clientSecret = $config->get('client_secret');
+        $tokenEndpoint = $config->get('token_endpoint')
+        ?? 'https://gateway.test.mitid.dk/token';
 
-    // Validate and extract person data.
-    $personData = $this->validateIdToken($tokens['id_token']);
+        if (empty($redirect_uri)) {
+            $redirect_uri = $config->get('redirect_uri');
+        }
 
-    // Create session with flat structure (MitIdSessionManager expects
-    // person fields at top level, not nested under 'person' key).
-    $sessionData = array_merge($personData, [
-      'access_token' => $tokens['access_token'],
-      'id_token' => $tokens['id_token'],
-      'expires_in' => $tokens['expires_in'] ?? 3600,
-      'authenticated_at' => time(),
-    ]);
+        // Build token request.
+        $params = [
+        'grant_type' => 'authorization_code',
+        'code' => $code,
+        'redirect_uri' => $redirect_uri,
+        'client_id' => $clientId,
+        'client_secret' => $clientSecret,
+        ];
 
-    $this->sessionManager->storeSession($workflow_id, $sessionData);
+        try {
+            $response = $this->httpClient->post(
+                $tokenEndpoint, [
+                'form_params' => $params,
+                'headers' => [
+                'Accept' => 'application/json',
+                ],
+                ]
+            );
 
-    $this->logger->info('MitID OIDC flow completed for workflow: {workflow_id}', [
-      'workflow_id' => $workflow_id,
-      'cpr_masked' => substr($personData['cpr'] ?? '', 0, 6) . 'XXXX',
-    ]);
+            $body = (string) $response->getBody();
+            $tokens = json_decode($body, true);
 
-    return $sessionData;
-  }
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw new \RuntimeException('Invalid JSON response from token endpoint: ' . json_last_error_msg());
+            }
 
-  /**
-   * Generates cryptographically secure state parameter.
-   *
-   * @return string
-   *   The state parameter.
-   */
-  protected function generateState(): string {
-    return bin2hex(random_bytes(16));
-  }
+            if (!isset($tokens['access_token']) || !isset($tokens['id_token'])) {
+                throw new \RuntimeException('Token response missing required tokens');
+            }
 
-  /**
-   * Gets user info from MitID using access token.
-   *
-   * @param string $access_token
-   *   The access token.
-   *
-   * @return array
-   *   User info from userinfo endpoint.
-   *
-   * @throws \RuntimeException
-   *   If request fails.
-   */
-  public function getUserInfo(string $access_token): array {
-    $config = $this->configFactory->get('aabenforms_mitid.settings');
-    $userinfoEndpoint = $config->get('userinfo_endpoint')
-      ?? 'https://gateway.test.mitid.dk/userinfo';
+            $this->logger->info('Successfully exchanged authorization code for tokens');
 
-    try {
-      $response = $this->httpClient->get($userinfoEndpoint, [
-        'headers' => [
-          'Authorization' => 'Bearer ' . $access_token,
-          'Accept' => 'application/json',
-        ],
-      ]);
+            return $tokens;
 
-      $body = (string) $response->getBody();
-      $userInfo = json_decode($body, TRUE);
-
-      if (json_last_error() !== JSON_ERROR_NONE) {
-        throw new \RuntimeException('Invalid JSON response from userinfo endpoint');
-      }
-
-      return $userInfo;
-
+        }
+        catch (RequestException $e) {
+            $this->logger->error(
+                'Token exchange failed: {error}', [
+                'error' => $e->getMessage(),
+                ]
+            );
+            throw new \RuntimeException('Failed to exchange authorization code: ' . $e->getMessage(), 0, $e);
+        }
     }
-    catch (RequestException $e) {
-      $this->logger->error('UserInfo request failed: {error}', [
-        'error' => $e->getMessage(),
-      ]);
-      throw new \RuntimeException('Failed to get user info: ' . $e->getMessage(), 0, $e);
+
+    /**
+     * Validates ID token and extracts claims.
+     *
+     * @param string $id_token
+     *   The ID token (JWT).
+     *
+     * @return array
+     *   The validated claims.
+     *
+     * @throws \RuntimeException
+     *   If validation fails.
+     */
+    public function validateIdToken(string $id_token): array
+    {
+        if (!$this->cprExtractor->validateToken($id_token)) {
+            throw new \RuntimeException('ID token validation failed');
+        }
+
+        return $this->cprExtractor->extractPersonData($id_token);
     }
-  }
+
+    /**
+     * Completes OIDC flow: exchanges code, validates token, creates session.
+     *
+     * @param string $code
+     *   The authorization code.
+     * @param string $workflow_id
+     *   The workflow instance ID.
+     * @param array  $options
+     *   Additional options.
+     *
+     * @return array
+     *   Session data with CPR, person data, and tokens.
+     *
+     * @throws \RuntimeException
+     *   If flow fails.
+     */
+    public function completeFlow(string $code, string $workflow_id, array $options = []): array
+    {
+        // Exchange code for tokens.
+        $tokens = $this->exchangeCode($code, $options['redirect_uri'] ?? '');
+
+        // Validate and extract person data.
+        $personData = $this->validateIdToken($tokens['id_token']);
+
+        // Create session with flat structure (MitIdSessionManager expects
+        // person fields at top level, not nested under 'person' key).
+        $sessionData = array_merge(
+            $personData, [
+            'access_token' => $tokens['access_token'],
+            'id_token' => $tokens['id_token'],
+            'expires_in' => $tokens['expires_in'] ?? 3600,
+            'authenticated_at' => time(),
+            ]
+        );
+
+        $this->sessionManager->storeSession($workflow_id, $sessionData);
+
+        $this->logger->info(
+            'MitID OIDC flow completed for workflow: {workflow_id}', [
+            'workflow_id' => $workflow_id,
+            'cpr_masked' => substr($personData['cpr'] ?? '', 0, 6) . 'XXXX',
+            ]
+        );
+
+        return $sessionData;
+    }
+
+    /**
+     * Generates cryptographically secure state parameter.
+     *
+     * @return string
+     *   The state parameter.
+     */
+    protected function generateState(): string
+    {
+        return bin2hex(random_bytes(16));
+    }
+
+    /**
+     * Gets user info from MitID using access token.
+     *
+     * @param string $access_token
+     *   The access token.
+     *
+     * @return array
+     *   User info from userinfo endpoint.
+     *
+     * @throws \RuntimeException
+     *   If request fails.
+     */
+    public function getUserInfo(string $access_token): array
+    {
+        $config = $this->configFactory->get('aabenforms_mitid.settings');
+        $userinfoEndpoint = $config->get('userinfo_endpoint')
+        ?? 'https://gateway.test.mitid.dk/userinfo';
+
+        try {
+            $response = $this->httpClient->get(
+                $userinfoEndpoint, [
+                'headers' => [
+                'Authorization' => 'Bearer ' . $access_token,
+                'Accept' => 'application/json',
+                ],
+                ]
+            );
+
+            $body = (string) $response->getBody();
+            $userInfo = json_decode($body, true);
+
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                  throw new \RuntimeException('Invalid JSON response from userinfo endpoint');
+            }
+
+            return $userInfo;
+
+        }
+        catch (RequestException $e) {
+            $this->logger->error(
+                'UserInfo request failed: {error}', [
+                'error' => $e->getMessage(),
+                ]
+            );
+            throw new \RuntimeException('Failed to get user info: ' . $e->getMessage(), 0, $e);
+        }
+    }
 
 }
