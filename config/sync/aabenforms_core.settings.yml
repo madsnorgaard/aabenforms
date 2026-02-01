@@ -12,6 +12,8 @@ serviceplatformen:
   cache:
     enabled: true
     default_expiration: 900
+  username: ''
+  password: ''
 encryption:
   default_profile: aabenforms_aes256
 audit:
