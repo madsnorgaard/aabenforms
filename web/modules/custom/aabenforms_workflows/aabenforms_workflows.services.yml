@@ -4,8 +4,4 @@ services:
     arguments:
       - '@extension.list.module'
       - '@file_system'
-      - '@logger.channel.aabenforms_workflows'
-
-  logger.channel.aabenforms_workflows:
-    parent: logger.channel_base
-    arguments: ['aabenforms_workflows']
+      - '@logger.factory'

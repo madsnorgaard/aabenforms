@@ -4,7 +4,8 @@ namespace Drupal\aabenforms_workflows\Service;
 
 use Drupal\Core\Extension\ModuleExtensionList;
 use Drupal\Core\File\FileSystemInterface;
-use Drupal\Core\Logger\LoggerChannelInterface;
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
+use Psr\Log\LoggerInterface;
 use SimpleXMLElement;
 
 /**
@@ -30,11 +31,11 @@ class BpmnTemplateManager {
   protected FileSystemInterface $fileSystem;
 
   /**
-   * The logger channel.
+   * The logger.
    *
-   * @var \Drupal\Core\Logger\LoggerChannelInterface
+   * @var \Psr\Log\LoggerInterface
    */
-  protected LoggerChannelInterface $logger;
+  protected LoggerInterface $logger;
 
   /**
    * Constructs a BpmnTemplateManager service.
@@ -43,17 +44,17 @@ class BpmnTemplateManager {
    *   The module extension list service.
    * @param \Drupal\Core\File\FileSystemInterface $file_system
    *   The file system service.
-   * @param \Drupal\Core\Logger\LoggerChannelInterface $logger
-   *   The logger channel.
+   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory
+   *   The logger factory.
    */
   public function __construct(
     ModuleExtensionList $module_list,
     FileSystemInterface $file_system,
-    LoggerChannelInterface $logger
+    LoggerChannelFactoryInterface $logger_factory
   ) {
     $this->moduleList = $module_list;
     $this->fileSystem = $file_system;
-    $this->logger = $logger;
+    $this->logger = $logger_factory->get('aabenforms_workflows');
   }
 
   /**
