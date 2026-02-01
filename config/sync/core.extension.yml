@@ -3,7 +3,9 @@ _core:
 module:
   aabenforms_core: 0
   aabenforms_mitid: 0
+  aabenforms_tenant: 0
   aabenforms_webform: 0
+  aabenforms_workflows: 0
   block: 0
   bpmn_io: 0
   breakpoint: 0

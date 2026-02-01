@@ -12,10 +12,14 @@ use Psr\Log\LoggerInterface;
  * Service for MitID OpenID Connect (OIDC) authentication.
  *
  * Implements the OIDC Authorization Code Flow for MitID:
- * 1. Generate authorization URL with PKCE
+ * 1. Generate authorization URL
  * 2. Handle callback with authorization code
  * 3. Exchange code for access + ID tokens
- * 4. Validate and extract user data.
+ * 4. Validate and extract user data
+ *
+ * Note: PKCE (Proof Key for Code Exchange) is not yet implemented.
+ * This is acceptable for confidential clients with client_secret,
+ * but PKCE should be added for enhanced security in future versions.
  */
 class MitIdOidcClient {
 
@@ -245,16 +249,14 @@ class MitIdOidcClient {
     // Validate and extract person data.
     $personData = $this->validateIdToken($tokens['id_token']);
 
-    // Create session.
-    $sessionData = [
-      'person' => $personData,
-      'tokens' => [
-        'access_token' => $tokens['access_token'],
-        'id_token' => $tokens['id_token'],
-        'expires_in' => $tokens['expires_in'] ?? 3600,
-      ],
+    // Create session with flat structure (MitIdSessionManager expects
+    // person fields at top level, not nested under 'person' key).
+    $sessionData = array_merge($personData, [
+      'access_token' => $tokens['access_token'],
+      'id_token' => $tokens['id_token'],
+      'expires_in' => $tokens['expires_in'] ?? 3600,
       'authenticated_at' => time(),
-    ];
+    ]);
 
     $this->sessionManager->storeSession($workflow_id, $sessionData);
 

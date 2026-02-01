@@ -460,9 +460,23 @@ XML;
    */
   protected function parseResponse(string $xml): array {
     try {
+      // Enable internal error handling for better diagnostics.
+      $use_errors = libxml_use_internal_errors(TRUE);
+      libxml_clear_errors();
+
       $doc = new \DOMDocument();
-      // Suppress XML loading warnings.
-      @$doc->loadXML($xml);
+      // Load XML with security hardening flags (disable network access).
+      $loaded = $doc->loadXML($xml, LIBXML_NONET | LIBXML_DTDLOAD | LIBXML_DTDATTR);
+
+      // Restore previous error handling state.
+      libxml_use_internal_errors($use_errors);
+
+      if (!$loaded) {
+        $errors = libxml_get_errors();
+        $error_messages = array_map(fn($error) => $error->message, $errors);
+        libxml_clear_errors();
+        throw new \RuntimeException('Failed to parse SOAP XML response: ' . implode(', ', $error_messages));
+      }
 
       // Check for SOAP fault.
       $faults = $doc->getElementsByTagName('Fault');

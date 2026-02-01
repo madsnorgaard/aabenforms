@@ -5,10 +5,10 @@ namespace Drupal\aabenforms_workflows\Plugin\Action;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
+use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\eca\Plugin\Action\ActionBase;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -25,14 +25,14 @@ abstract class AabenFormsActionBase extends ActionBase implements ContainerFacto
   /**
    * The logger.
    *
-   * @var \Psr\Log\LoggerInterface
+   * @var \Drupal\Core\Logger\LoggerChannelInterface
    */
-  protected LoggerInterface $logger;
+  protected LoggerChannelInterface $logger;
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     $instance = new static($configuration, $plugin_id, $plugin_definition);
     $instance->setLogger($container->get('logger.factory'));
     return $instance;
@@ -103,7 +103,7 @@ abstract class AabenFormsActionBase extends ActionBase implements ContainerFacto
    *   The token value.
    */
   protected function getTokenValue(string $token_name, $default = NULL) {
-    return $this->tokenServices->getTokenData($token_name) ?? $default;
+    return $this->tokenService->getTokenData($token_name) ?? $default;
   }
 
   /**
@@ -115,7 +115,7 @@ abstract class AabenFormsActionBase extends ActionBase implements ContainerFacto
    *   The value to set.
    */
   protected function setTokenValue(string $token_name, $value): void {
-    $this->tokenServices->addTokenData($token_name, $value);
+    $this->tokenService->addTokenData($token_name, $value);
   }
 
 }
