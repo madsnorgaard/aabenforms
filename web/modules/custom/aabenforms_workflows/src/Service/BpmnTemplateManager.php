@@ -6,7 +6,6 @@ use Drupal\Core\Extension\ModuleExtensionList;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Psr\Log\LoggerInterface;
-use SimpleXMLElement;
 
 /**
  * Service for loading and managing BPMN workflow templates.
@@ -50,7 +49,7 @@ class BpmnTemplateManager {
   public function __construct(
     ModuleExtensionList $module_list,
     FileSystemInterface $file_system,
-    LoggerChannelFactoryInterface $logger_factory
+    LoggerChannelFactoryInterface $logger_factory,
   ) {
     $this->moduleList = $module_list;
     $this->fileSystem = $file_system;
@@ -110,7 +109,7 @@ class BpmnTemplateManager {
    * @return \SimpleXMLElement|null
    *   The parsed BPMN XML or NULL if not found/invalid.
    */
-  public function loadTemplate(string $template_id): ?SimpleXMLElement {
+  public function loadTemplate(string $template_id): ?\SimpleXMLElement {
     $file = $this->getTemplatePath($template_id);
 
     if (!file_exists($file)) {

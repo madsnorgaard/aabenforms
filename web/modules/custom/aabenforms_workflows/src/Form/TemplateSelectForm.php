@@ -16,7 +16,7 @@ use Symfony\Component\HttpFoundation\ResponseHeaderBag;
  * - View all available BPMN templates
  * - Export templates as BPMN files
  * - Import custom BPMN files
- * - Delete templates
+ * - Delete templates.
  */
 class TemplateSelectForm extends FormBase {
 
@@ -256,8 +256,8 @@ class TemplateSelectForm extends FormBase {
     $form['confirmation'] = [
       '#type' => 'markup',
       '#markup' => '<h2>' . $this->t('Are you sure you want to delete this template?') . '</h2>' .
-                   '<p><strong>' . htmlspecialchars($template['name']) . '</strong> (' . htmlspecialchars($template_id) . ')</p>' .
-                   '<p>' . $this->t('This action cannot be undone.') . '</p>',
+      '<p><strong>' . htmlspecialchars($template['name']) . '</strong> (' . htmlspecialchars($template_id) . ')</p>' .
+      '<p>' . $this->t('This action cannot be undone.') . '</p>',
     ];
 
     $form['actions'] = ['#type' => 'actions'];
