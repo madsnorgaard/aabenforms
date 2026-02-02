@@ -11,7 +11,22 @@
   <bpmn:process id="contact_form_process" name="Contact Form Workflow" isExecutable="true">
     <bpmn:documentation>[category: citizen_service]
 Simple citizen inquiry submission workflow with email notification.
-No authentication required. Auto-response sent to citizen.</bpmn:documentation>
+No authentication required. Auto-response sent to citizen.
+
+<parameters>
+  <parameter id="submitter_email_field" label="Submitter Email Field" type="webform_field" required="true" default="email">
+    <description>Webform field containing the submitter email address</description>
+  </parameter>
+  <parameter id="recipient_email" label="Recipient Email" type="email" required="true" default="">
+    <description>Department email address to receive inquiries</description>
+  </parameter>
+  <parameter id="auto_reply" label="Send Auto-Reply" type="boolean" required="false" default="true">
+    <description>Send confirmation email to submitter</description>
+  </parameter>
+  <parameter id="confirmation_message" label="Confirmation Message" type="textarea" required="false" default="Thank you for your inquiry. We will respond within 3 business days.">
+    <description>Message shown to user after submission</description>
+  </parameter>
+</parameters></bpmn:documentation>
 
     <bpmn:startEvent id="StartEvent_1" name="Form Submitted">
       <bpmn:outgoing>Flow_1</bpmn:outgoing>

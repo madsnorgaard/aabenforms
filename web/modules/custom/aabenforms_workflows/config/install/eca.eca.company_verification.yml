@@ -1,0 +1,57 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - eca
+    - webform
+    - aabenforms_workflows
+id: company_verification
+label: 'Company Verification Workflow'
+modeller: fallback
+version: 1.0.0
+events:
+  webform_submit:
+    plugin: 'content_entity:insert'
+    configuration:
+      type: webform_submission
+    successors:
+      - id: mitid_auth
+        condition: ''
+gateways: {  }
+conditions: {  }
+actions:
+  mitid_auth:
+    plugin: aabenforms_mitid_validate
+    configuration:
+      workflow_id_token: workflow_id
+      result_token: mitid_valid
+      session_data_token: mitid_session
+    successors:
+      - id: cvr_lookup
+        condition: ''
+  cvr_lookup:
+    plugin: aabenforms_cvr_lookup
+    configuration:
+      cvr_token: cvr
+      result_token: company_data
+      use_cache: true
+    successors:
+      - id: cpr_lookup
+        condition: ''
+  cpr_lookup:
+    plugin: aabenforms_cpr_lookup
+    configuration:
+      cpr_token: cpr
+      result_token: person_data
+      use_cache: true
+    successors:
+      - id: audit_log
+        condition: ''
+  audit_log:
+    plugin: aabenforms_audit_log
+    configuration:
+      event_type: company_verification
+      message_template: 'Company verification for CVR [cvr] by [person_data:name]'
+      cpr_token: cpr
+      additional_data_token: company_data
+    successors: {  }

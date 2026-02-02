@@ -1,0 +1,56 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - eca
+    - webform
+    - aabenforms_workflows
+id: building_permit
+label: 'Building Permit Application'
+modeller: fallback
+version: 1.0.0
+events:
+  webform_submit:
+    plugin: 'content_entity:insert'
+    configuration:
+      type: webform_submission
+    successors:
+      - id: mitid_validate
+        condition: ''
+gateways: {  }
+conditions: {  }
+actions:
+  mitid_validate:
+    plugin: aabenforms_mitid_validate
+    configuration:
+      workflow_id_token: workflow_id
+      result_token: mitid_valid
+      session_data_token: mitid_session
+    successors:
+      - id: cpr_lookup
+        condition: ''
+  cpr_lookup:
+    plugin: aabenforms_cpr_lookup
+    configuration:
+      cpr_token: cpr
+      result_token: person_data
+      use_cache: true
+    successors:
+      - id: validate_address
+        condition: ''
+  validate_address:
+    plugin: eca_base_log
+    configuration:
+      level: info
+      message: 'Validating address: [webform_submission:values:address]'
+    successors:
+      - id: audit_log
+        condition: ''
+  audit_log:
+    plugin: aabenforms_audit_log
+    configuration:
+      event_type: building_permit_application
+      message_template: 'Building permit submitted by [person_data:name]'
+      cpr_token: cpr
+      additional_data_token: ''
+    successors: {  }

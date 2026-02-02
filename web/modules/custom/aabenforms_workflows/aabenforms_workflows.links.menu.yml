@@ -1,6 +1,13 @@
 aabenforms_workflows.template_browser:
   title: 'Workflow Templates'
-  description: 'Browse and manage BPMN workflow templates'
+  description: 'Create and manage approval workflows from templates'
   route_name: aabenforms_workflows.template_browser
   parent: system.admin_config_workflow
   weight: 10
+
+aabenforms_workflows.template_select:
+  title: 'BPMN Templates (Legacy)'
+  description: 'Browse and manage BPMN workflow templates (advanced)'
+  route_name: aabenforms_workflows.template_select
+  parent: system.admin_config_workflow
+  weight: 11

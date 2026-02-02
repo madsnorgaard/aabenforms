@@ -1,0 +1,114 @@
+# Configuration schema for workflow template instances.
+
+aabenforms_workflows.template_instance.*:
+  type: config_entity
+  label: 'Workflow Template Instance'
+  mapping:
+    id:
+      type: string
+      label: 'Machine name'
+    label:
+      type: label
+      label: 'Human-readable label'
+    template_id:
+      type: string
+      label: 'Template identifier'
+    webform_id:
+      type: string
+      label: 'Associated webform ID'
+    configuration:
+      type: mapping
+      label: 'Workflow configuration'
+      mapping:
+        label:
+          type: string
+          label: 'Workflow label'
+        webform_id:
+          type: string
+          label: 'Webform ID'
+        parameters:
+          type: sequence
+          label: 'Configuration parameters'
+          sequence:
+            type: string
+        actions:
+          type: sequence
+          label: 'Action configurations'
+          sequence:
+            type: mapping
+            mapping:
+              subject:
+                type: string
+                label: 'Email subject'
+              body:
+                type: text
+                label: 'Email body'
+              recipient:
+                type: email
+                label: 'Recipient email'
+              page_title:
+                type: string
+                label: 'Approval page title'
+              instructions:
+                type: text
+                label: 'Approval instructions'
+        visibility_mode:
+          type: string
+          label: 'Data visibility mode'
+        status:
+          type: boolean
+          label: 'Active status'
+    status:
+      type: boolean
+      label: 'Whether the workflow is active'
+    created:
+      type: timestamp
+      label: 'Creation timestamp'
+    updated:
+      type: timestamp
+      label: 'Last update timestamp'
+    routes:
+      type: sequence
+      label: 'Dynamic routes for this workflow'
+      sequence:
+        type: mapping
+        mapping:
+          path:
+            type: string
+            label: 'Route path'
+          controller:
+            type: string
+            label: 'Controller class'
+          title:
+            type: string
+            label: 'Page title'
+    email_templates:
+      type: sequence
+      label: 'Email templates'
+      sequence:
+        type: mapping
+        mapping:
+          subject:
+            type: string
+            label: 'Email subject'
+          body:
+            type: text
+            label: 'Email body'
+          recipient:
+            type: email
+            label: 'Recipient email'
+
+# Settings for the workflow module.
+aabenforms_workflows.settings:
+  type: config_object
+  label: 'Workflow Settings'
+  mapping:
+    default_approval_deadline:
+      type: integer
+      label: 'Default approval deadline in days'
+    enable_audit_logging:
+      type: boolean
+      label: 'Enable audit logging for all workflows'
+    notification_sender_email:
+      type: email
+      label: 'Default sender email for notifications'

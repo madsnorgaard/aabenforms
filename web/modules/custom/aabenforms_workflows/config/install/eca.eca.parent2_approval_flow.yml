@@ -1,0 +1,70 @@
+uuid: e2b3c4d5-f6e7-8901-2345-678901bcdefg
+langcode: en
+status: true
+dependencies:
+  module:
+    - aabenforms_workflows
+    - eca_content
+id: parent2_approval_flow
+weight: null
+template: null
+events:
+  parent2_starts_approval:
+    plugin: 'content_entity:update'
+    configuration:
+      type: webform_submission
+    successors:
+      - id: check_parent2_pending
+        condition: ''
+conditions:
+  check_parent2_pending:
+    plugin: eca_scalar
+    configuration:
+      left_value: '[webform_submission:data:parent2_status]'
+      operator: '=='
+      right_value: 'pending'
+    successors:
+      - id: parent2_mitid
+        condition: 'true'
+gateways: {  }
+actions:
+  parent2_mitid:
+    label: 'Parent 2: Validate MitID'
+    plugin: aabenforms_mitid_validate
+    configuration:
+      workflow_id_token: workflow_id_parent2
+      result_token: parent2_mitid_valid
+      session_data_token: parent2_session
+    successors:
+      - id: parent2_cpr
+        condition: ''
+
+  parent2_cpr:
+    label: 'Parent 2: CPR Lookup'
+    plugin: aabenforms_cpr_lookup
+    configuration:
+      cpr_token: '[parent2_session:cpr]'
+      result_token: parent2_data
+      use_cache: true
+    successors:
+      - id: parent2_audit
+        condition: ''
+
+  parent2_audit:
+    label: 'Parent 2: Audit Log'
+    plugin: aabenforms_audit_log
+    configuration:
+      event_type_token: parent2_approval
+      user_data_token: '[parent2_data:name]'
+      metadata_token: 'Parent 2 authenticated and approved'
+    successors:
+      - id: mark_parent2_complete
+        condition: ''
+
+  mark_parent2_complete:
+    label: 'Mark Parent 2 Complete'
+    plugin: eca_token_set_value
+    configuration:
+      token_name: parent2_status
+      token_value: 'complete'
+    successors: {  }

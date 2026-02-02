@@ -1,0 +1,27 @@
+{#
+/**
+ * @file
+ * Template for parent approval form page.
+ *
+ * Available variables:
+ * - form: The approval form render array.
+ */
+#}
+<div class="parent-approval-page">
+  <div class="approval-page-header">
+    <h1>{{ 'Review and Approve Request'|t }}</h1>
+    <p class="authenticated-notice">
+      {{ 'You are authenticated via MitID'|t }}
+    </p>
+  </div>
+
+  <div class="approval-form-wrapper">
+    {{ form }}
+  </div>
+
+  <div class="security-footer">
+    <p class="small-text">
+      {{ 'This page is secure and your identity has been verified. Your decision will be recorded and the case worker will be notified.'|t }}
+    </p>
+  </div>
+</div>

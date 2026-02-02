@@ -1,0 +1,72 @@
+uuid: a1b2c3d4-e5f6-7890-1234-567890abcdef
+langcode: en
+status: true
+dependencies:
+  module:
+    - aabenforms_workflows
+    - eca_content
+    - webform
+id: initial_request_flow
+weight: null
+template: null
+events:
+  submission_created:
+    plugin: 'webform:insert'
+    configuration:
+      webform_id: parent_request_form
+    successors:
+      - id: check_has_emails
+        condition: ''
+conditions:
+  check_has_emails:
+    plugin: eca_scalar
+    configuration:
+      left_value: '[webform_submission:data:parent1_email]'
+      operator: '!='
+      right_value: ''
+    successors:
+      - id: send_parent1_email
+        condition: 'true'
+      - id: log_error
+        condition: 'false'
+gateways: {}
+actions:
+  send_parent1_email:
+    label: 'Send Parent 1 Approval Email'
+    plugin: aabenforms_send_approval_email
+    configuration:
+      parent_number: '1'
+      email_field: parent1_email
+      submission_token: webform_submission
+    successors:
+      - id: send_parent2_email
+        condition: ''
+
+  send_parent2_email:
+    label: 'Send Parent 2 Approval Email'
+    plugin: aabenforms_send_approval_email
+    configuration:
+      parent_number: '2'
+      email_field: parent2_email
+      submission_token: webform_submission
+    successors:
+      - id: log_success
+        condition: ''
+
+  log_success:
+    label: 'Log Success'
+    plugin: aabenforms_audit_log
+    configuration:
+      event_type_token: parent_approval_emails_sent
+      user_data_token: 'system'
+      metadata_token: 'Approval emails sent to both parents'
+    successors: {}
+
+  log_error:
+    label: 'Log Missing Email Error'
+    plugin: aabenforms_audit_log
+    configuration:
+      event_type_token: parent_email_missing
+      user_data_token: 'system'
+      metadata_token: 'Parent email addresses missing from submission'
+    successors: {}

@@ -87,9 +87,9 @@ ddev launch
 ### Core Platform (Phase 1)
 | Module | Status | Description |
 |--------|--------|-------------|
-| `aabenforms_core` | Active | Base services, utilities, JSON:API config |
-| `aabenforms_tenant` | Active | Multi-tenancy via Domain module |
-| `aabenforms_workflows` | Active | ECA integration, workflow templates |
+| `aabenforms_core` | ✅ Active | Base services, utilities, JSON:API config |
+| `aabenforms_tenant` | ✅ Active | Multi-tenancy via Domain module |
+| `aabenforms_workflows` | ✅ Complete | ECA integration, BPMN templates, workflow wizard |
 
 ### Security & Auth (Phase 2)
 | Module | Status | Description |
@@ -106,6 +106,43 @@ ddev launch
 | `aabenforms_digital_post` |  Planned | SF1601 notifications |
 | `aabenforms_sbsys` |  Planned | SBSYS case management |
 | `aabenforms_get_organized` |  Planned | GetOrganized ESDH |
+
+## Workflow System
+
+ÅbenForms provides a powerful visual workflow automation system for Danish municipal processes:
+
+### Key Features
+- **Pre-built Templates**: 5 BPMN templates for common use cases (building permits, address changes, FOI requests, etc.)
+- **Visual Editor**: Create and modify workflows without programming
+- **Danish Integrations**: MitID authentication, CPR/CVR lookup, Digital Post notifications
+- **GDPR Compliant**: Automatic audit logging, encrypted CPR numbers, data retention policies
+
+### Quick Start
+1. Access workflow admin: `/admin/config/workflow/eca`
+2. Choose a template (Building Permit, Contact Form, etc.)
+3. Configure with the wizard (8 simple steps)
+4. Test with sample data
+5. Activate for production
+
+### Documentation
+- **[Municipal Admin Guide](docs/MUNICIPAL_ADMIN_GUIDE.md)** - Complete guide for non-technical administrators
+- **[Workflow Creation Tutorial](docs/tutorials/CREATE_APPROVAL_WORKFLOW.md)** - Step-by-step tutorial with examples
+- **[Approval Process Guide](docs/APPROVAL_PROCESS_GUIDE.md)** - End-to-end approval flow documentation
+- **[Workflow Templates Reference](docs/WORKFLOW_TEMPLATES.md)** - Detailed template specifications
+- **[Quick Reference Card](docs/QUICK_REFERENCE.md)** - One-page cheat sheet
+- **[Video Tutorial Script](docs/VIDEO_SCRIPT.md)** - 5-minute video guide
+
+### Testing Locally
+```bash
+# Create test workflow
+ddev drush aabenforms:create-test-workflow
+
+# Validate BPMN template
+ddev drush aabenforms:validate-template building_permit
+
+# Test approval flow
+ddev drush aabenforms:test-approval --workflow=daycare_enrollment
+```
 
 ## Development
 

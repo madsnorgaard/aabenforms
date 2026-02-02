@@ -1,0 +1,216 @@
+/**
+ * @file
+ * Styles for parent approval pages.
+ */
+
+.parent-approval-login,
+.parent-approval-page {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.approval-header,
+.approval-page-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid #e5e5e5;
+}
+
+.approval-header h1,
+.approval-page-header h1 {
+  margin: 0 0 0.5rem 0;
+  color: #003366;
+  font-size: 2rem;
+}
+
+.parent-label {
+  font-size: 1.1rem;
+  color: #666;
+  font-weight: 600;
+}
+
+.authenticated-notice {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.approval-summary {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-left: 4px solid #007bff;
+  border-radius: 4px;
+}
+
+.summary-item {
+  margin-bottom: 1rem;
+}
+
+.summary-item:last-child {
+  margin-bottom: 0;
+}
+
+.summary-item strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: #003366;
+}
+
+.mitid-login-section {
+  margin: 2rem 0;
+  text-align: center;
+}
+
+.security-notice {
+  padding: 1rem;
+  background: #fff3cd;
+  border: 1px solid #ffeeba;
+  border-radius: 4px;
+  color: #856404;
+  margin-bottom: 1.5rem;
+}
+
+.mitid-login-button-wrapper {
+  margin: 2rem 0;
+}
+
+.mitid-login-button {
+  display: inline-block;
+  padding: 1rem 2rem;
+  background: #003366;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+}
+
+.mitid-login-button:hover {
+  background: #002244;
+  color: #fff;
+  text-decoration: none;
+}
+
+.help-text {
+  margin-top: 2rem;
+  padding: 1rem;
+  background: #e9ecef;
+  border-radius: 4px;
+  text-align: left;
+}
+
+.help-text p {
+  margin: 0.5rem 0;
+}
+
+.help-text p:first-child {
+  font-weight: 600;
+  color: #003366;
+}
+
+.approval-form-wrapper {
+  margin: 2rem 0;
+}
+
+.approval-form-wrapper fieldset {
+  margin: 1.5rem 0;
+  padding: 1.5rem;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+}
+
+.approval-form-wrapper fieldset legend {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #003366;
+  padding: 0 0.5rem;
+}
+
+.approval-form-wrapper .form-item {
+  margin-bottom: 1.5rem;
+}
+
+.approval-form-wrapper .form-radios {
+  margin-top: 0.5rem;
+}
+
+.approval-form-wrapper .form-radios .form-item {
+  margin-bottom: 1rem;
+}
+
+.approval-form-wrapper textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+.approval-form-wrapper .form-actions {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.approval-form-wrapper .form-actions .button {
+  padding: 0.75rem 2rem;
+  font-size: 1.1rem;
+}
+
+.approval-footer,
+.security-footer {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e5e5e5;
+  text-align: center;
+}
+
+.small-text {
+  font-size: 0.9rem;
+  color: #6c757d;
+  line-height: 1.5;
+}
+
+.messages--warning {
+  padding: 1rem;
+  background: #fff3cd;
+  border: 1px solid #ffeeba;
+  border-radius: 4px;
+  color: #856404;
+  margin: 1rem 0;
+}
+
+.parent-approval-complete {
+  text-align: center;
+  padding: 2rem;
+}
+
+.parent-approval-complete p {
+  margin: 1rem 0;
+  font-size: 1.1rem;
+}
+
+@media (max-width: 768px) {
+  .parent-approval-login,
+  .parent-approval-page {
+    padding: 1rem;
+    margin: 1rem;
+  }
+
+  .approval-header h1,
+  .approval-page-header h1 {
+    font-size: 1.5rem;
+  }
+}
