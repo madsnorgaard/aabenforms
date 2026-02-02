@@ -39,7 +39,7 @@ class WorkflowPerformanceTest extends KernelTestBase {
   public function testActionPluginInstantiationPerformance(): void {
     $action_manager = \Drupal::service('plugin.manager.action');
 
-    $start = microtime(true);
+    $start = microtime(TRUE);
 
     // Instantiate all 4 action plugins 100 times.
     $actions = [
@@ -55,7 +55,7 @@ class WorkflowPerformanceTest extends KernelTestBase {
       }
     }
 
-    $duration = microtime(true) - $start;
+    $duration = microtime(TRUE) - $start;
 
     $this->assertLessThan(1.0, $duration,
       "Plugin instantiation took {$duration}s, should be under 1s");
@@ -67,14 +67,14 @@ class WorkflowPerformanceTest extends KernelTestBase {
   public function testTokenGenerationPerformance(): void {
     $token_service = \Drupal::service('aabenforms_workflows.approval_token');
 
-    $start = microtime(true);
+    $start = microtime(TRUE);
 
     // Generate 1000 tokens.
     for ($i = 0; $i < 1000; $i++) {
       $token_service->generateToken($i, 1);
     }
 
-    $duration = microtime(true) - $start;
+    $duration = microtime(TRUE) - $start;
 
     $this->assertLessThan(1.0, $duration,
       "Token generation took {$duration}s for 1000 tokens, should be under 1s");
@@ -89,14 +89,14 @@ class WorkflowPerformanceTest extends KernelTestBase {
     // Generate test token.
     $token = $token_service->generateToken(123, 1);
 
-    $start = microtime(true);
+    $start = microtime(TRUE);
 
     // Validate token 1000 times.
     for ($i = 0; $i < 1000; $i++) {
       $token_service->validateToken(123, 1, $token);
     }
 
-    $duration = microtime(true) - $start;
+    $duration = microtime(TRUE) - $start;
 
     $this->assertLessThan(0.5, $duration,
       "Token validation took {$duration}s for 1000 validations, should be under 0.5s");
@@ -108,7 +108,7 @@ class WorkflowPerformanceTest extends KernelTestBase {
   public function testBpmnTemplateLoadingPerformance(): void {
     $template_manager = \Drupal::service('aabenforms_workflows.bpmn_template_manager');
 
-    $start = microtime(true);
+    $start = microtime(TRUE);
 
     // Get available templates.
     $templates = $template_manager->getAvailableTemplates();
@@ -120,7 +120,7 @@ class WorkflowPerformanceTest extends KernelTestBase {
       }
     }
 
-    $duration = microtime(true) - $start;
+    $duration = microtime(TRUE) - $start;
 
     $this->assertLessThan(2.0, $duration,
       "Template loading took {$duration}s, should be under 2s");
@@ -139,7 +139,7 @@ class WorkflowPerformanceTest extends KernelTestBase {
       $this->markTestSkipped('No BPMN templates available for testing');
     }
 
-    $start = microtime(true);
+    $start = microtime(TRUE);
 
     // Validate each template 5 times.
     foreach (array_keys($templates) as $template_id) {
@@ -148,7 +148,7 @@ class WorkflowPerformanceTest extends KernelTestBase {
       }
     }
 
-    $duration = microtime(true) - $start;
+    $duration = microtime(TRUE) - $start;
 
     $template_count = count($templates);
     $this->assertLessThan(1.0, $duration,

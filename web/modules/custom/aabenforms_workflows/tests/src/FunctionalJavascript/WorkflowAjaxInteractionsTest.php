@@ -173,7 +173,7 @@ YAML
     $this->getSession()->wait(3000);
 
     // Company name field should be populated.
-    // $this->assertSession()->fieldValueEquals('company_name', 'Test Company A/S');
+    // $this->assertSession()->fieldValueEquals('company_name', 'Test Company A/S');.
   }
 
   /**
@@ -310,7 +310,7 @@ YAML
     $this->getSession()->wait(2000);
 
     // Should show error message (if error handling is implemented).
-    // $this->assertSession()->pageTextContains('An error occurred');
+    // $this->assertSession()->pageTextContains('An error occurred');.
   }
 
   /**
@@ -358,14 +358,13 @@ YAML
     $this->getSession()->wait(1000);
 
     // Should show "Too short" message.
-    // $this->assertSession()->pageTextContains('CPR number must be 10 digits');
-
+    // $this->assertSession()->pageTextContains('CPR number must be 10 digits');.
     // Complete CPR.
     $cpr_field->setValue('0101121234');
     $this->getSession()->wait(1000);
 
     // Error should disappear.
-    // $this->assertSession()->pageTextNotContains('CPR number must be 10 digits');
+    // $this->assertSession()->pageTextNotContains('CPR number must be 10 digits');.
   }
 
   /**

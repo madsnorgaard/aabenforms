@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\aabenforms_workflows\Kernel;
 
+use Symfony\Component\Yaml\Yaml;
 use Drupal\KernelTests\KernelTestBase;
 
 /**
@@ -216,7 +217,7 @@ class WorkflowsModuleTest extends KernelTestBase {
     $this->assertFileExists($routing_file, 'Routing file should exist');
 
     // Parse routing file to verify routes are defined.
-    $routes = \Symfony\Component\Yaml\Yaml::parseFile($routing_file);
+    $routes = Yaml::parseFile($routing_file);
     $this->assertIsArray($routes, 'Routes should be defined');
 
     // Verify key routes exist in routing file.

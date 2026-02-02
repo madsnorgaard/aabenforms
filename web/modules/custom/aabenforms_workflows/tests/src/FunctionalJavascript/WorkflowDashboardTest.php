@@ -335,7 +335,7 @@ YAML
 
     // Note: This may not work without actual WebSocket/polling implementation.
     // In that case, we'd need to manually refresh.
-    // $this->assertGreaterThan($initial_count, $updated_count);
+    // $this->assertGreaterThan($initial_count, $updated_count);.
   }
 
   /**

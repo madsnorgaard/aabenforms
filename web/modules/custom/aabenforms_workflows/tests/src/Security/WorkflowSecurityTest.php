@@ -62,15 +62,15 @@ class WorkflowSecurityTest extends KernelTestBase {
     $valid_token = $token_service->generateToken(123, 1);
 
     // Time validation of correct token.
-    $start1 = microtime(true);
+    $start1 = microtime(TRUE);
     $token_service->validateToken(123, 1, $valid_token);
-    $time1 = microtime(true) - $start1;
+    $time1 = microtime(TRUE) - $start1;
 
     // Time validation of incorrect token (same length).
     $wrong_token = str_repeat('a', strlen($valid_token));
-    $start2 = microtime(true);
+    $start2 = microtime(TRUE);
     $token_service->validateToken(123, 1, $wrong_token);
-    $time2 = microtime(true) - $start2;
+    $time2 = microtime(TRUE) - $start2;
 
     // Timing difference should be negligible (< 10ms for kernel test overhead).
     $diff = abs($time1 - $time2);
@@ -85,7 +85,8 @@ class WorkflowSecurityTest extends KernelTestBase {
     $token_service = \Drupal::service('aabenforms_workflows.approval_token');
 
     // Generate token with expired timestamp (8 days ago).
-    $expired_timestamp = time() - 691200; // 8 days
+    // 8 days.
+    $expired_timestamp = time() - 691200;
     $expired_token = $token_service->generateToken(123, 1, $expired_timestamp);
 
     // Verify token is detected as expired.
@@ -106,7 +107,8 @@ class WorkflowSecurityTest extends KernelTestBase {
     // Test various invalid token formats.
     $invalid_tokens = [
       'not-base64',
-      'bm90dmFsaWQ=', // Valid base64 but wrong format.
+    // Valid base64 but wrong format.
+      'bm90dmFsaWQ=',
       '',
       'xyz123',
       base64_encode('onlyonepart'),
