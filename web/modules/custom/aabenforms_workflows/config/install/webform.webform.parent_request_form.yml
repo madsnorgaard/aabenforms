@@ -68,10 +68,16 @@ elements: |-
     '#type': hidden
     '#title': 'Parent 1 Status'
     '#default_value': pending
+  parent1_comments:
+    '#type': hidden
+    '#title': 'Parent 1 Comments'
   parent2_status:
     '#type': hidden
     '#title': 'Parent 2 Status'
     '#default_value': pending
+  parent2_comments:
+    '#type': hidden
+    '#title': 'Parent 2 Comments'
   caseworker_status:
     '#type': hidden
     '#title': 'Case Worker Status'

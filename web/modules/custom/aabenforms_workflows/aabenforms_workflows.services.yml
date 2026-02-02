@@ -5,3 +5,25 @@ services:
       - '@extension.list.module'
       - '@file_system'
       - '@logger.factory'
+
+  aabenforms_workflows.template_metadata:
+    class: Drupal\aabenforms_workflows\Service\WorkflowTemplateMetadata
+    arguments:
+      - '@aabenforms_workflows.bpmn_template_manager'
+      - '@logger.factory'
+
+  aabenforms_workflows.template_instantiator:
+    class: Drupal\aabenforms_workflows\Service\WorkflowTemplateInstantiator
+    arguments:
+      - '@aabenforms_workflows.bpmn_template_manager'
+      - '@aabenforms_workflows.template_metadata'
+      - '@config.factory'
+      - '@entity_type.manager'
+      - '@router.builder'
+      - '@logger.factory'
+
+  aabenforms_workflows.approval_token:
+    class: Drupal\aabenforms_workflows\Service\ApprovalTokenService
+    arguments:
+      - '@private_key'
+      - '@logger.factory'
