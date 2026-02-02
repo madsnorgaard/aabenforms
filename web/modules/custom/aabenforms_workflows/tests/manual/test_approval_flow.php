@@ -6,7 +6,7 @@
  * Manual test script for parent approval system.
  *
  * Usage:
- *   ddev drush php:script web/modules/custom/aabenforms_workflows/tests/manual/test_approval_flow.php
+ *   ddev drush php:script web/modules/custom/aabenforms_workflows/tests/manual/test_approval_flow.php.
  */
 
 use Drupal\webform\Entity\Webform;
