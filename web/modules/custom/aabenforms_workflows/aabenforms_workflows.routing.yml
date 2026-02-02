@@ -1,0 +1,7 @@
+aabenforms_workflows.template_browser:
+  path: '/admin/config/workflow/aabenforms/templates'
+  defaults:
+    _form: '\Drupal\aabenforms_workflows\Form\TemplateSelectForm'
+    _title: 'BPMN Workflow Templates'
+  requirements:
+    _permission: 'administer workflows'

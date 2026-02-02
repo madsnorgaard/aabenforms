@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                   xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   id="Definitions_foi_request"
+                   targetNamespace="http://aabenforms.dk/bpmn"
+                   exporter="ÅbenForms"
+                   exporterVersion="1.0">
+
+  <bpmn:process id="foi_request_process" name="Freedom of Information Request" isExecutable="true">
+    <bpmn:documentation>[category: municipal]
+Process Freedom of Information (FOI) requests with deadline tracking.
+Supports both authenticated and anonymous requests with 7-day response deadline.</bpmn:documentation>
+
+    <bpmn:startEvent id="StartEvent_1" name="FOI Request Submitted">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="Task_ValidateRequest" name="Validate Request">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_RouteToDepartment" name="Route to Department">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:userTask id="Task_ReviewDocuments" name="Review Documents">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:incoming>Flow_Timeout</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:boundaryEvent id="Event_Deadline" name="7-Day Deadline" attachedToRef="Task_ReviewDocuments">
+      <bpmn:outgoing>Flow_Timeout</bpmn:outgoing>
+      <bpmn:timerEventDefinition>
+        <bpmn:timeDuration>P7D</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:boundaryEvent>
+
+    <bpmn:userTask id="Task_RedactSensitiveInfo" name="Redact Sensitive Information">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:exclusiveGateway id="Gateway_ReleaseDecision" name="Release Decision">
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_Approve</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Deny</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:serviceTask id="Task_ReleaseDocuments" name="Release Documents">
+      <bpmn:incoming>Flow_Approve</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_SendDenialNotice" name="Send Denial Notice">
+      <bpmn:incoming>Flow_Deny</bpmn:incoming>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_NotifyCitizen" name="Notify Citizen">
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+      <bpmn:outgoing>Flow_8</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_AuditLog" name="Log FOI Request">
+      <bpmn:incoming>Flow_8</bpmn:incoming>
+      <bpmn:outgoing>Flow_9</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="EndEvent_1" name="Request Complete">
+      <bpmn:incoming>Flow_9</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Task_ValidateRequest"/>
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_ValidateRequest" targetRef="Task_RouteToDepartment"/>
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_RouteToDepartment" targetRef="Task_ReviewDocuments"/>
+    <bpmn:sequenceFlow id="Flow_Timeout" sourceRef="Event_Deadline" targetRef="Task_ReviewDocuments"/>
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Task_ReviewDocuments" targetRef="Task_RedactSensitiveInfo"/>
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="Task_RedactSensitiveInfo" targetRef="Gateway_ReleaseDecision"/>
+    <bpmn:sequenceFlow id="Flow_Approve" name="Approve" sourceRef="Gateway_ReleaseDecision" targetRef="Task_ReleaseDocuments">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${decision == 'approve'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_Deny" name="Deny" sourceRef="Gateway_ReleaseDecision" targetRef="Task_SendDenialNotice">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${decision == 'deny'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="Task_ReleaseDocuments" targetRef="Task_NotifyCitizen"/>
+    <bpmn:sequenceFlow id="Flow_7" sourceRef="Task_SendDenialNotice" targetRef="Task_NotifyCitizen"/>
+    <bpmn:sequenceFlow id="Flow_8" sourceRef="Task_NotifyCitizen" targetRef="Task_AuditLog"/>
+    <bpmn:sequenceFlow id="Flow_9" sourceRef="Task_AuditLog" targetRef="EndEvent_1"/>
+  </bpmn:process>
+
+</bpmn:definitions>

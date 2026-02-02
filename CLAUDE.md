@@ -269,6 +269,161 @@ ddev drush domain:create odense.aabenforms.ddev.site "Odense Kommune"
 # 127.0.0.1 odense.aabenforms.ddev.site
 ```
 
+## BPMN Workflow Development
+
+### BpmnTemplateManager Service
+
+The `BpmnTemplateManager` service provides centralized template management:
+
+```php
+// Get the service
+$templateManager = \Drupal::service('aabenforms_workflows.bpmn_template_manager');
+
+// List available templates
+$templates = $templateManager->getAvailableTemplates();
+// Returns: ['building_permit', 'contact_form', 'company_verification', ...]
+
+// Load a template
+$xml = $templateManager->loadTemplate('building_permit');
+
+// Validate BPMN XML
+$isValid = $templateManager->validateTemplate($xml);
+if (!$isValid) {
+  $errors = $templateManager->getValidationErrors();
+}
+
+// Save custom template
+$templateManager->saveTemplate('my_custom_workflow', $customXml);
+
+// Export template
+$exported = $templateManager->exportTemplate('building_permit');
+file_put_contents('/tmp/workflow.bpmn', $exported);
+```
+
+### Creating Custom BPMN Templates
+
+BPMN templates are stored in `web/modules/custom/aabenforms_workflows/templates/bpmn/`:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:eca="https://drupal.org/project/eca"
+                  id="my_workflow">
+  <bpmn:process id="Process_1" name="My Custom Workflow">
+
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_1" name="Form Submitted">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <!-- Service Task with ECA Action -->
+    <bpmn:serviceTask id="Task_MitID" name="Validate MitID"
+                      eca:action="aabenforms_mitid_validate">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- User Task -->
+    <bpmn:userTask id="Task_Review" name="Manual Review">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_1" name="Workflow Complete">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <!-- Sequence Flows -->
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Task_MitID"/>
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_MitID" targetRef="Task_Review"/>
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_Review" targetRef="EndEvent_1"/>
+
+  </bpmn:process>
+</bpmn:definitions>
+```
+
+### ECA Action Plugins
+
+ÅbenForms provides 4 custom ECA action plugins for Danish workflows:
+
+#### 1. MitID Validation (`aabenforms_mitid_validate`)
+```php
+// Validates MitID authentication token
+// Configuration:
+// - token: MitID token from form submission
+// - level: Required assurance level (SUBSTANTIAL, HIGH)
+// Returns: User CPR, name, validation timestamp
+```
+
+#### 2. CPR Lookup (`aabenforms_cpr_lookup`)
+```php
+// Queries Serviceplatformen SF1520 for person data
+// Configuration:
+// - cpr: CPR number (encrypted)
+// - fields: Data fields to retrieve (address, family, etc.)
+// Returns: Person master data, address history
+```
+
+#### 3. CVR Lookup (`aabenforms_cvr_lookup`)
+```php
+// Queries Serviceplatformen SF1530 for company data
+// Configuration:
+// - cvr: CVR number
+// - include_units: Include P-numbers (production units)
+// Returns: Company data, industry codes, ownership
+```
+
+#### 4. Audit Log (`aabenforms_audit_log`)
+```php
+// Logs workflow actions for GDPR compliance
+// Configuration:
+// - action: Action performed (e.g., "cpr_lookup")
+// - entity_id: Related entity
+// - metadata: Additional context
+// Stored in: database table 'aabenforms_audit_log'
+```
+
+### Template Validation
+
+The template manager validates BPMN XML against BPMN 2.0 schema:
+
+```php
+$templateManager = \Drupal::service('aabenforms_workflows.bpmn_template_manager');
+
+$xml = file_get_contents('my_workflow.bpmn');
+$isValid = $templateManager->validateTemplate($xml);
+
+if (!$isValid) {
+  $errors = $templateManager->getValidationErrors();
+  foreach ($errors as $error) {
+    \Drupal::logger('aabenforms')->error('BPMN validation error: @error', [
+      '@error' => $error->message,
+    ]);
+  }
+}
+```
+
+Common validation errors:
+- Invalid XML structure
+- Missing required BPMN elements (process, startEvent, endEvent)
+- Invalid sequence flow references
+- Unknown ECA action plugin in serviceTask
+
+### Importing/Exporting via Admin UI
+
+1. Navigate to **Configuration > Workflows > BPMN Templates** (`/admin/config/workflow/bpmn-templates`)
+2. Click "Import Template"
+3. Upload `.bpmn` XML file or paste XML content
+4. Preview diagram (uses bpmn.io renderer)
+5. Save template with unique ID
+
+To export:
+1. Select template from list
+2. Click "Export"
+3. Download as `.bpmn` file
+4. Share with other installations or version control
+
 ## Security & GDPR Notes
 
 ### CPR Number Handling

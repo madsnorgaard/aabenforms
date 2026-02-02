@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                   xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   id="Definitions_address_change"
+                   targetNamespace="http://aabenforms.dk/bpmn"
+                   exporter="ÅbenForms"
+                   exporterVersion="1.0">
+
+  <bpmn:process id="address_change_process" name="Address Change Notification" isExecutable="true">
+    <bpmn:documentation>[category: municipal]
+Process address change notifications with parallel system updates.
+Validates address with DAWA, authenticates with MitID, updates multiple municipal systems.</bpmn:documentation>
+
+    <bpmn:startEvent id="StartEvent_1" name="Address Change Submitted">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="Task_MitIDAuth" name="Authenticate with MitID">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_CPRLookup" name="Verify Identity (CPR)">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_DAWAValidation" name="Validate Address (DAWA)">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:parallelGateway id="Gateway_ParallelUpdates" name="Update Systems">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_Portal</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Tax</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Waste</bpmn:outgoing>
+    </bpmn:parallelGateway>
+
+    <bpmn:serviceTask id="Task_UpdatePortal" name="Update Citizen Portal">
+      <bpmn:incoming>Flow_Portal</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_UpdateTax" name="Update Property Tax">
+      <bpmn:incoming>Flow_Tax</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_UpdateWaste" name="Update Waste Collection">
+      <bpmn:incoming>Flow_Waste</bpmn:incoming>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:parallelGateway id="Gateway_Join" name="Join">
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+      <bpmn:outgoing>Flow_8</bpmn:outgoing>
+    </bpmn:parallelGateway>
+
+    <bpmn:serviceTask id="Task_SendConfirmation" name="Send Confirmation (SF1601)">
+      <bpmn:incoming>Flow_8</bpmn:incoming>
+      <bpmn:outgoing>Flow_9</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_AuditLog" name="Log Address Change">
+      <bpmn:incoming>Flow_9</bpmn:incoming>
+      <bpmn:outgoing>Flow_10</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="EndEvent_1" name="Change Complete">
+      <bpmn:incoming>Flow_10</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Task_MitIDAuth"/>
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_MitIDAuth" targetRef="Task_CPRLookup"/>
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_CPRLookup" targetRef="Task_DAWAValidation"/>
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Task_DAWAValidation" targetRef="Gateway_ParallelUpdates"/>
+    <bpmn:sequenceFlow id="Flow_Portal" sourceRef="Gateway_ParallelUpdates" targetRef="Task_UpdatePortal"/>
+    <bpmn:sequenceFlow id="Flow_Tax" sourceRef="Gateway_ParallelUpdates" targetRef="Task_UpdateTax"/>
+    <bpmn:sequenceFlow id="Flow_Waste" sourceRef="Gateway_ParallelUpdates" targetRef="Task_UpdateWaste"/>
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="Task_UpdatePortal" targetRef="Gateway_Join"/>
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="Task_UpdateTax" targetRef="Gateway_Join"/>
+    <bpmn:sequenceFlow id="Flow_7" sourceRef="Task_UpdateWaste" targetRef="Gateway_Join"/>
+    <bpmn:sequenceFlow id="Flow_8" sourceRef="Gateway_Join" targetRef="Task_SendConfirmation"/>
+    <bpmn:sequenceFlow id="Flow_9" sourceRef="Task_SendConfirmation" targetRef="Task_AuditLog"/>
+    <bpmn:sequenceFlow id="Flow_10" sourceRef="Task_AuditLog" targetRef="EndEvent_1"/>
+  </bpmn:process>
+
+</bpmn:definitions>

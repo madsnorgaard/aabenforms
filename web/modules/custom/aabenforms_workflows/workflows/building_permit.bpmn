@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                   xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   id="Definitions_building_permit"
+                   targetNamespace="http://aabenforms.dk/bpmn"
+                   exporter="ÅbenForms"
+                   exporterVersion="1.0">
+
+  <bpmn:process id="building_permit_process" name="Building Permit Application" isExecutable="true">
+    <bpmn:documentation>[category: municipal]
+Complex building permit workflow with MitID authentication, document validation, case worker review, and SBSYS integration.
+Demonstrates full Danish municipal workflow pattern with GDPR compliance.</bpmn:documentation>
+
+    <bpmn:startEvent id="StartEvent_1" name="Application Submitted">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="Task_MitIDAuth" name="Authenticate with MitID">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_CPRLookup" name="Verify Identity (SF1520)">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_ValidateAddress" name="Validate Address (DAWA)">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_ValidateDocuments" name="Validate Documents">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:exclusiveGateway id="Gateway_DocumentsValid" name="Documents Valid?">
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_Valid</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Invalid</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:serviceTask id="Task_RequestChanges" name="Request Document Changes">
+      <bpmn:incoming>Flow_Invalid</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="EndEvent_Rejected" name="Application Rejected">
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:userTask id="Task_CaseWorkerReview" name="Case Worker Review">
+      <bpmn:incoming>Flow_Valid</bpmn:incoming>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:exclusiveGateway id="Gateway_Decision" name="Decision">
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+      <bpmn:outgoing>Flow_Approve</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Reject</bpmn:outgoing>
+      <bpmn:outgoing>Flow_RequestMore</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:serviceTask id="Task_CreateSBSYSCase" name="Create SBSYS Case">
+      <bpmn:incoming>Flow_Approve</bpmn:incoming>
+      <bpmn:outgoing>Flow_8</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_SendApproval" name="Send Approval (SF1601)">
+      <bpmn:incoming>Flow_8</bpmn:incoming>
+      <bpmn:outgoing>Flow_9</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_SendRejection" name="Send Rejection Notice">
+      <bpmn:incoming>Flow_Reject</bpmn:incoming>
+      <bpmn:outgoing>Flow_10</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_RequestInfo" name="Request Additional Info">
+      <bpmn:incoming>Flow_RequestMore</bpmn:incoming>
+      <bpmn:outgoing>Flow_11</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:eventBasedGateway id="Gateway_WaitResponse" name="Wait for Response">
+      <bpmn:incoming>Flow_11</bpmn:incoming>
+      <bpmn:outgoing>Flow_InfoReceived</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Timeout</bpmn:outgoing>
+    </bpmn:eventBasedGateway>
+
+    <bpmn:intermediateCatchEvent id="Event_InfoReceived" name="Info Received">
+      <bpmn:incoming>Flow_InfoReceived</bpmn:incoming>
+      <bpmn:outgoing>Flow_12</bpmn:outgoing>
+      <bpmn:messageEventDefinition/>
+    </bpmn:intermediateCatchEvent>
+
+    <bpmn:intermediateCatchEvent id="Event_Timeout" name="30 Days">
+      <bpmn:incoming>Flow_Timeout</bpmn:incoming>
+      <bpmn:outgoing>Flow_13</bpmn:outgoing>
+      <bpmn:timerEventDefinition>
+        <bpmn:timeDuration>P30D</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:intermediateCatchEvent>
+
+    <bpmn:serviceTask id="Task_AutoReject" name="Auto-Reject (Timeout)">
+      <bpmn:incoming>Flow_13</bpmn:incoming>
+      <bpmn:outgoing>Flow_14</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_AuditLog" name="Log Application">
+      <bpmn:incoming>Flow_9</bpmn:incoming>
+      <bpmn:incoming>Flow_10</bpmn:incoming>
+      <bpmn:incoming>Flow_14</bpmn:incoming>
+      <bpmn:outgoing>Flow_15</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="EndEvent_1" name="Application Complete">
+      <bpmn:incoming>Flow_15</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Task_MitIDAuth"/>
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_MitIDAuth" targetRef="Task_CPRLookup"/>
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_CPRLookup" targetRef="Task_ValidateAddress"/>
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Task_ValidateAddress" targetRef="Task_ValidateDocuments"/>
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="Task_ValidateDocuments" targetRef="Gateway_DocumentsValid"/>
+    <bpmn:sequenceFlow id="Flow_Valid" name="Yes" sourceRef="Gateway_DocumentsValid" targetRef="Task_CaseWorkerReview">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${documentsValid == true}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_Invalid" name="No" sourceRef="Gateway_DocumentsValid" targetRef="Task_RequestChanges">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${documentsValid == false}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="Task_RequestChanges" targetRef="EndEvent_Rejected"/>
+    <bpmn:sequenceFlow id="Flow_7" sourceRef="Task_CaseWorkerReview" targetRef="Gateway_Decision"/>
+    <bpmn:sequenceFlow id="Flow_Approve" name="Approve" sourceRef="Gateway_Decision" targetRef="Task_CreateSBSYSCase">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${decision == 'approve'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_Reject" name="Reject" sourceRef="Gateway_Decision" targetRef="Task_SendRejection">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${decision == 'reject'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_RequestMore" name="Request Info" sourceRef="Gateway_Decision" targetRef="Task_RequestInfo">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${decision == 'request_info'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_8" sourceRef="Task_CreateSBSYSCase" targetRef="Task_SendApproval"/>
+    <bpmn:sequenceFlow id="Flow_9" sourceRef="Task_SendApproval" targetRef="Task_AuditLog"/>
+    <bpmn:sequenceFlow id="Flow_10" sourceRef="Task_SendRejection" targetRef="Task_AuditLog"/>
+    <bpmn:sequenceFlow id="Flow_11" sourceRef="Task_RequestInfo" targetRef="Gateway_WaitResponse"/>
+    <bpmn:sequenceFlow id="Flow_InfoReceived" sourceRef="Gateway_WaitResponse" targetRef="Event_InfoReceived"/>
+    <bpmn:sequenceFlow id="Flow_Timeout" sourceRef="Gateway_WaitResponse" targetRef="Event_Timeout"/>
+    <bpmn:sequenceFlow id="Flow_12" sourceRef="Event_InfoReceived" targetRef="Task_CaseWorkerReview"/>
+    <bpmn:sequenceFlow id="Flow_13" sourceRef="Event_Timeout" targetRef="Task_AutoReject"/>
+    <bpmn:sequenceFlow id="Flow_14" sourceRef="Task_AutoReject" targetRef="Task_AuditLog"/>
+    <bpmn:sequenceFlow id="Flow_15" sourceRef="Task_AuditLog" targetRef="EndEvent_1"/>
+  </bpmn:process>
+
+</bpmn:definitions>

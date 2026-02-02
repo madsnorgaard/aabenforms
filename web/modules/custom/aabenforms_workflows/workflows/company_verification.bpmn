@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                   xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   id="Definitions_company_verification"
+                   targetNamespace="http://aabenforms.dk/bpmn"
+                   exporter="ÅbenForms"
+                   exporterVersion="1.0">
+
+  <bpmn:process id="company_verification_process" name="Company Registration Verification" isExecutable="true">
+    <bpmn:documentation>[category: municipal]
+Verify company registration and director authorization.
+Uses CVR lookup (SF1530) and CPR cross-reference for GDPR-compliant verification.</bpmn:documentation>
+
+    <bpmn:startEvent id="StartEvent_1" name="Verification Requested">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="Task_MitIDAuth" name="Authenticate with MitID">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_CVRLookup" name="CVR Lookup (SF1530)">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_CPRLookup" name="CPR Lookup (SF1520)">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:exclusiveGateway id="Gateway_DirectorCheck" name="Is Director?">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_Approved</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Rejected</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:serviceTask id="Task_IssueCertificate" name="Issue Certificate">
+      <bpmn:incoming>Flow_Approved</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_SendRejection" name="Send Rejection Notice">
+      <bpmn:incoming>Flow_Rejected</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_AuditLog" name="Log Verification">
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="EndEvent_1" name="Verification Complete">
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Task_MitIDAuth"/>
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_MitIDAuth" targetRef="Task_CVRLookup"/>
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_CVRLookup" targetRef="Task_CPRLookup"/>
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Task_CPRLookup" targetRef="Gateway_DirectorCheck"/>
+    <bpmn:sequenceFlow id="Flow_Approved" name="Yes" sourceRef="Gateway_DirectorCheck" targetRef="Task_IssueCertificate">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${isDirector == true}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_Rejected" name="No" sourceRef="Gateway_DirectorCheck" targetRef="Task_SendRejection">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${isDirector == false}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="Task_IssueCertificate" targetRef="Task_AuditLog"/>
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="Task_SendRejection" targetRef="Task_AuditLog"/>
+    <bpmn:sequenceFlow id="Flow_7" sourceRef="Task_AuditLog" targetRef="EndEvent_1"/>
+  </bpmn:process>
+
+</bpmn:definitions>
