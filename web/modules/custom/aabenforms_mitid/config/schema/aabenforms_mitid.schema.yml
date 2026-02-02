@@ -1,0 +1,78 @@
+# Configuration schema for ÅbenForms MitID module.
+
+aabenforms_mitid.settings:
+  type: config_object
+  label: 'ÅbenForms MitID settings'
+  mapping:
+    oidc:
+      type: mapping
+      label: 'OIDC Configuration'
+      mapping:
+        issuer:
+          type: string
+          label: 'OIDC Issuer URL'
+        authorization_endpoint:
+          type: string
+          label: 'Authorization endpoint URL'
+        token_endpoint:
+          type: string
+          label: 'Token endpoint URL'
+        userinfo_endpoint:
+          type: string
+          label: 'UserInfo endpoint URL'
+        client_id:
+          type: string
+          label: 'MitID OAuth client ID'
+        client_secret:
+          type: string
+          label: 'MitID OAuth client secret'
+        scopes:
+          type: sequence
+          label: 'OAuth scopes'
+          sequence:
+            type: string
+            label: 'Scope'
+        redirect_uri:
+          type: string
+          label: 'OAuth redirect URI'
+    session:
+      type: mapping
+      label: 'Session configuration'
+      mapping:
+        expiration:
+          type: integer
+          label: 'Session expiration (seconds)'
+        storage:
+          type: string
+          label: 'Storage backend'
+    security:
+      type: mapping
+      label: 'Security configuration'
+      mapping:
+        validate_tokens:
+          type: boolean
+          label: 'Validate tokens'
+        required_assurance_level:
+          type: string
+          label: 'Required assurance level'
+    production:
+      type: boolean
+      label: 'Production mode'
+    client_id:
+      type: string
+      label: 'Fallback client ID (for backwards compatibility)'
+    client_secret:
+      type: string
+      label: 'Fallback client secret (for backwards compatibility)'
+    authorization_endpoint:
+      type: string
+      label: 'Fallback authorization endpoint'
+    token_endpoint:
+      type: string
+      label: 'Fallback token endpoint'
+    userinfo_endpoint:
+      type: string
+      label: 'Fallback userinfo endpoint'
+    redirect_uri:
+      type: string
+      label: 'Fallback redirect URI'
