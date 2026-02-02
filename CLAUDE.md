@@ -575,12 +575,368 @@ git push origin main
 - **Frontend**: [madsnorgaard/aabenforms-frontend](https://github.com/madsnorgaard/aabenforms-frontend)
 - **Platform**: [madsnorgaard/aabenforms-platform](https://github.com/madsnorgaard/aabenforms-platform)
 
+---
+
+## Workflow Development
+
+### Creating New ECA Action Plugins
+
+ÅbenForms workflows use custom ECA action plugins for Danish integrations.
+
+**Location**: `web/modules/custom/aabenforms_workflows/src/Plugin/Action/`
+
+**Base Class**: All actions extend `AabenFormsActionBase`
+
+**Example**: Create a new action plugin
+
+```php
+<?php
+
+namespace Drupal\aabenforms_workflows\Plugin\Action;
+
+use Drupal\eca\Plugin\Action\ConfigurableActionBase;
+
+/**
+ * Sends SMS notification via Danish SMS gateway.
+ *
+ * @Action(
+ *   id = "aabenforms_send_sms",
+ *   label = @Translation("Send SMS Notification"),
+ *   description = @Translation("Sends SMS via Danish SMS gateway"),
+ *   type = "entity"
+ * )
+ */
+class SendSmsAction extends AabenFormsActionBase {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function execute(): void {
+    $phone = $this->tokenService->replaceClear($this->configuration['phone']);
+    $message = $this->tokenService->replaceClear($this->configuration['message']);
+
+    // Call SMS service
+    $this->smsService->send($phone, $message);
+
+    // Log action
+    $this->logger->info('SMS sent to @phone', ['@phone' => $phone]);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function defaultConfiguration(): array {
+    return [
+      'phone' => '',
+      'message' => '',
+    ] + parent::defaultConfiguration();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
+    $form = parent::buildConfigurationForm($form, $form_state);
+
+    $form['phone'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Phone Number'),
+      '#default_value' => $this->configuration['phone'],
+      '#description' => $this->t('Danish phone number (e.g., +4512345678)'),
+      '#required' => TRUE,
+    ];
+
+    $form['message'] = [
+      '#type' => 'textarea',
+      '#title' => $this->t('Message'),
+      '#default_value' => $this->configuration['message'],
+      '#description' => $this->t('SMS message (max 160 characters)'),
+      '#required' => TRUE,
+    ];
+
+    return $form;
+  }
+}
+```
+
+**Testing Actions**:
+```bash
+# Run action tests
+ddev exec phpunit web/modules/custom/aabenforms_workflows/tests/src/Unit/Plugin/Action/
+
+# Test specific action
+ddev exec phpunit --filter=SendSmsActionTest
+```
+
+### Template Development
+
+**Creating New BPMN Templates**:
+
+1. **Use BPMN Modeler**:
+   ```
+   Navigate to: /admin/config/workflow/eca/modeler
+   Create new model or import BPMN 2.0 XML
+   ```
+
+2. **Template Structure**:
+   ```xml
+   <?xml version="1.0" encoding="UTF-8"?>
+   <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                      id="Definitions_my_template"
+                      targetNamespace="http://aabenforms.dk/bpmn">
+
+     <bpmn:process id="my_process" name="My Workflow" isExecutable="true">
+       <bpmn:documentation>[category: municipal]
+       Description of workflow purpose and use case.
+       </bpmn:documentation>
+
+       <bpmn:startEvent id="StartEvent_1" name="Start">
+         <bpmn:outgoing>Flow_1</bpmn:outgoing>
+       </bpmn:startEvent>
+
+       <!-- Add tasks, gateways, events -->
+
+       <bpmn:endEvent id="EndEvent_1" name="Complete">
+         <bpmn:incoming>Flow_Final</bpmn:incoming>
+       </bpmn:endEvent>
+
+       <!-- Sequence flows -->
+     </bpmn:process>
+   </bpmn:definitions>
+   ```
+
+3. **Save Template**:
+   ```bash
+   # Save to workflows directory
+   cp my_template.bpmn web/modules/custom/aabenforms_workflows/workflows/
+
+   # Validate template
+   ddev drush aabenforms:validate-template my_template
+   ```
+
+4. **Add Metadata**:
+   Include category in documentation element:
+   - `[category: municipal]` - Complex municipal workflows
+   - `[category: citizen_service]` - Simple citizen interactions
+   - `[category: verification]` - Automated verifications
+
+**Template Best Practices**:
+- Always include start and end events
+- Add meaningful names to all elements
+- Document decision gateway conditions
+- Use boundary events for timeouts
+- Include audit logging tasks
+- Test with BpmnTemplateManager service
+
+### Testing Workflows
+
+**Local Testing Workflow**:
+
+```bash
+# 1. Create test data
+ddev drush aabenforms:create-test-data
+
+# 2. Test workflow execution
+ddev drush aabenforms:test-workflow building_permit
+
+# 3. Simulate parent approval
+ddev drush aabenforms:simulate-approval --workflow=daycare_enrollment \
+  --parent1=approve --parent2=approve
+
+# 4. View audit logs
+ddev drush aabenforms:audit-log --workflow=daycare_enrollment --limit=50
+```
+
+**Testing with Mock Services**:
+
+Mock Danish services are available in test environment:
+- **Mock MitID**: Test authentication without real MitID
+- **Mock CPR**: Test person lookups with fake CPR numbers
+- **Mock CVR**: Test company lookups with fake CVR numbers
+- **Mock Digital Post**: Test notifications without real delivery
+
+See: [docs/DDEV_MOCK_SERVICES_GUIDE.md](docs/DDEV_MOCK_SERVICES_GUIDE.md)
+
+**Integration Tests**:
+
+```php
+<?php
+
+namespace Drupal\Tests\aabenforms_workflows\Kernel\Integration;
+
+use Drupal\KernelTests\KernelTestBase;
+
+/**
+ * Tests multi-party workflow execution.
+ */
+class MultiPartyWorkflowTest extends KernelTestBase {
+
+  protected static $modules = [
+    'aabenforms_workflows',
+    'eca',
+    'webform',
+  ];
+
+  /**
+   * Test dual parent approval flow.
+   */
+  public function testDualParentApprovalFlow(): void {
+    // Create test workflow
+    $workflow = $this->createTestWorkflow('daycare_enrollment');
+
+    // Submit request
+    $submission = $this->submitWebform([
+      'child_name' => 'Test Barn',
+      'parent1_email' => 'parent1@test.dk',
+      'parent2_email' => 'parent2@test.dk',
+    ]);
+
+    // Simulate parent 1 approval
+    $this->simulateApproval($submission, 'parent1', TRUE);
+
+    // Verify workflow continues
+    $this->assertWorkflowStatus($submission, 'awaiting_parent2');
+
+    // Simulate parent 2 approval
+    $this->simulateApproval($submission, 'parent2', TRUE);
+
+    // Verify workflow proceeds to case worker
+    $this->assertWorkflowStatus($submission, 'case_worker_review');
+  }
+}
+```
+
+### Workflow Architecture
+
+**Three-Workflow Pattern**:
+
+ÅbenForms uses a three-workflow parallel approval pattern for dual-parent approvals:
+
+```
+Main Workflow: Orchestrates overall process
+    │
+    ├─ Workflow 1: Parent 1 Approval
+    │  ├─ MitID Authentication
+    │  ├─ CPR Lookup
+    │  ├─ Present Information
+    │  └─ Capture Decision
+    │
+    ├─ Workflow 2: Parent 2 Approval
+    │  ├─ MitID Authentication
+    │  ├─ CPR Lookup
+    │  ├─ Present Information
+    │  └─ Capture Decision
+    │
+    └─ Synchronization Point
+       └─ Both Approved? → Case Worker Review
+```
+
+**Benefits**:
+- Parallel processing (faster)
+- Independent auth sessions
+- Separate data visibility rules
+- Isolated failure handling
+
+**Implementation**:
+```yaml
+# In ECA model
+- event: webform_submission:insert
+  conditions:
+    - type: webform_id
+      value: parent_request_form
+  actions:
+    - type: trigger_subprocess
+      subprocess: parent1_approval_workflow
+      token: workflow1_id
+    - type: trigger_subprocess
+      subprocess: parent2_approval_workflow
+      token: workflow2_id
+    - type: wait_for_subprocesses
+      tokens: [workflow1_id, workflow2_id]
+    - type: evaluate_results
+      condition: all_approved
+```
+
+### Workflow Debugging
+
+**Enable Debug Logging**:
+```bash
+# Enable ECA debug mode
+ddev drush config:set eca.settings debug TRUE
+
+# Enable workflow logging
+ddev drush config:set aabenforms_workflows.settings log_level debug
+
+# Clear cache
+ddev drush cr
+```
+
+**View Workflow Execution Logs**:
+```bash
+# Real-time log monitoring
+ddev logs -f
+
+# Workflow-specific logs
+ddev drush watchdog:show --filter=aabenforms_workflows
+
+# Export logs for analysis
+ddev drush watchdog:show --format=json > workflow_logs.json
+```
+
+**Common Debugging Scenarios**:
+
+1. **Workflow Not Triggering**:
+   ```bash
+   # Check event subscriptions
+   ddev drush eca:list
+
+   # Verify webform ID matches
+   ddev drush webform:list
+
+   # Test event manually
+   ddev drush eca:trigger webform_submission:insert --id=123
+   ```
+
+2. **Token Not Resolving**:
+   ```bash
+   # List available tokens in context
+   ddev drush eca:tokens --context=webform_submission
+
+   # Test token replacement
+   ddev drush eca:token-replace "[webform_submission:field_child_name]" --id=123
+   ```
+
+3. **Action Failing Silently**:
+   ```php
+   // Add debug logging to action
+   $this->logger->debug('Action config: @config', [
+     '@config' => json_encode($this->configuration),
+   ]);
+   ```
+
+---
+
 ## Support
 
 - **Issues**: https://github.com/madsnorgaard/aabenforms/issues
 - **Drupal Docs**: https://www.drupal.org/docs
 - **ECA Docs**: https://www.drupal.org/docs/contributed-modules/eca-event-driven-actions
 - **Domain Docs**: https://www.drupal.org/docs/contributed-modules/domain-access
+- **BPMN Spec**: https://www.omg.org/spec/BPMN/2.0/
+
+## Documentation
+
+**For Municipal Administrators**:
+- [Municipal Admin Guide](docs/MUNICIPAL_ADMIN_GUIDE.md)
+- [Workflow Creation Tutorial](docs/tutorials/CREATE_APPROVAL_WORKFLOW.md)
+- [Approval Process Guide](docs/APPROVAL_PROCESS_GUIDE.md)
+- [Workflow Templates Reference](docs/WORKFLOW_TEMPLATES.md)
+- [Quick Reference Card](docs/QUICK_REFERENCE.md)
+
+**For Developers**:
+- [CLAUDE.md](CLAUDE.md) - This file
+- [CI/CD Strategy](docs/CI_CD_STRATEGY.md)
+- [Mock Services Guide](docs/DDEV_MOCK_SERVICES_GUIDE.md)
 
 ## License
 

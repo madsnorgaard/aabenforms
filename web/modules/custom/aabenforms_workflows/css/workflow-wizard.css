@@ -1,0 +1,196 @@
+/**
+ * Styles for the workflow template wizard.
+ */
+
+/* Wizard progress indicator */
+.wizard-progress {
+  display: flex;
+  justify-content: space-between;
+  margin: 2rem 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+}
+
+.wizard-step {
+  position: relative;
+  flex: 1;
+  text-align: center;
+  padding: 1rem;
+  font-weight: 600;
+  color: #666;
+}
+
+.wizard-step.current {
+  color: #0071b9;
+  background-color: #e3f2fd;
+  border-radius: 4px;
+}
+
+.wizard-step.completed {
+  color: #388e3c;
+}
+
+.wizard-step.completed::before {
+  content: "✓ ";
+  font-weight: bold;
+}
+
+/* Template browser */
+.template-browser-header {
+  margin-bottom: 2rem;
+}
+
+.template-browser-header h1 {
+  margin-bottom: 0.5rem;
+}
+
+.template-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  list-style: none;
+  padding: 0;
+}
+
+.template-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1.5rem;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease;
+}
+
+.template-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.template-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.template-card__header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #333;
+}
+
+.template-card__description {
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+  min-height: 3rem;
+}
+
+.template-card__actions {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+}
+
+/* Badge styles */
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  border-radius: 4px;
+  background-color: #e0e0e0;
+  color: #333;
+}
+
+.badge--municipal {
+  background-color: #e3f2fd;
+  color: #0071b9;
+}
+
+.badge--citizen_service {
+  background-color: #f3e5f5;
+  color: #7b1fa2;
+}
+
+.badge--business {
+  background-color: #fff3e0;
+  color: #f57c00;
+}
+
+/* Status indicators */
+.status-active {
+  color: #388e3c;
+  font-weight: 600;
+}
+
+.status-active::before {
+  content: "● ";
+}
+
+.status-inactive {
+  color: #d32f2f;
+  font-weight: 600;
+}
+
+.status-inactive::before {
+  content: "● ";
+}
+
+/* Instances table */
+.instances-table {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.instances-table td {
+  padding: 0.75rem;
+  vertical-align: middle;
+}
+
+/* Form layout */
+.workflow-wizard-form .form-item {
+  margin-bottom: 1.5rem;
+}
+
+.workflow-wizard-form .form-actions {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 2px solid #e0e0e0;
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Help text */
+.workflow-wizard-form .description {
+  font-size: 0.9rem;
+  color: #666;
+  margin-top: 0.25rem;
+}
+
+/* Accessibility improvements */
+.wizard-step:focus {
+  outline: 2px solid #0071b9;
+  outline-offset: 2px;
+}
+
+.template-card:focus-within {
+  outline: 2px solid #0071b9;
+  outline-offset: 2px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .wizard-progress {
+    flex-direction: column;
+  }
+
+  .wizard-step {
+    margin-bottom: 0.5rem;
+  }
+
+  .template-grid {
+    grid-template-columns: 1fr;
+  }
+}

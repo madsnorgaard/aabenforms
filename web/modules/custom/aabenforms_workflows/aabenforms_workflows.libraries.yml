@@ -1,0 +1,19 @@
+parent-approval:
+  version: 1.0
+  css:
+    theme:
+      css/parent-approval.css: {}
+  js:
+    js/parent-approval.js: {}
+  dependencies:
+    - core/drupal
+    - core/jquery
+
+workflow_wizard:
+  version: 1.0
+  css:
+    theme:
+      css/workflow-wizard.css: {}
+  dependencies:
+    - core/drupal
+    - core/jquery

@@ -19,3 +19,83 @@ function aabenforms_workflows_help(string $route_name, RouteMatchInterface $rout
   }
   return NULL;
 }
+
+/**
+ * Implements hook_mail().
+ */
+function aabenforms_workflows_mail(string $key, array &$message, array $params): void {
+  switch ($key) {
+    case 'parent_approval':
+      $message['subject'] = t('Approval Required: @child_name', [
+        '@child_name' => $params['child_name'],
+      ]);
+
+      $message['body'][] = t('Dear Parent @number,', [
+        '@number' => $params['parent_number'],
+      ]);
+
+      $message['body'][] = '';
+
+      $message['body'][] = t('A municipal request has been submitted for your child: @child_name', [
+        '@child_name' => $params['child_name'],
+      ]);
+
+      $message['body'][] = '';
+
+      $message['body'][] = t('Request Details:');
+      $message['body'][] = $params['request_details'];
+
+      $message['body'][] = '';
+
+      $message['body'][] = t('Please review and approve this request by @deadline.', [
+        '@deadline' => $params['deadline'],
+      ]);
+
+      $message['body'][] = '';
+
+      $message['body'][] = t('To approve or reject this request, click the secure link below:');
+      $message['body'][] = $params['approval_url'];
+
+      $message['body'][] = '';
+
+      $message['body'][] = t('You will be asked to authenticate with MitID to verify your identity before reviewing the request.');
+
+      $message['body'][] = '';
+
+      $message['body'][] = t('If you have any questions, please contact the case worker handling this request.');
+
+      $message['body'][] = '';
+
+      $message['body'][] = t('This link will expire in 7 days.');
+
+      $message['body'][] = '';
+
+      $message['body'][] = t('Reference Number: @sid', [
+        '@sid' => $params['submission_id'],
+      ]);
+      break;
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function aabenforms_workflows_theme(array $existing, string $type, string $theme, string $path): array {
+  return [
+    'parent_approval_login' => [
+      'variables' => [
+        'child_name' => NULL,
+        'parent_number' => NULL,
+        'request_summary' => NULL,
+        'mitid_login_url' => NULL,
+      ],
+      'template' => 'parent-approval-login',
+    ],
+    'parent_approval_page' => [
+      'variables' => [
+        'form' => NULL,
+      ],
+      'template' => 'parent-approval-page',
+    ],
+  ];
+}

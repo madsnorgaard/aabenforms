@@ -1,7 +1,49 @@
 aabenforms_workflows.template_browser:
+  path: '/admin/aabenforms/workflow-templates'
+  defaults:
+    _controller: '\Drupal\aabenforms_workflows\Controller\TemplateBrowserController::browse'
+    _title: 'Workflow Templates'
+  requirements:
+    _permission: 'administer workflows'
+
+aabenforms_workflows.template_wizard:
+  path: '/admin/aabenforms/workflow-templates/wizard'
+  defaults:
+    _form: '\Drupal\aabenforms_workflows\Form\WorkflowTemplateWizardForm'
+    _title: 'Create Workflow from Template'
+  requirements:
+    _permission: 'administer workflows'
+
+aabenforms_workflows.template_select:
   path: '/admin/config/workflow/aabenforms/templates'
   defaults:
     _form: '\Drupal\aabenforms_workflows\Form\TemplateSelectForm'
-    _title: 'BPMN Workflow Templates'
+    _title: 'BPMN Workflow Templates (Legacy)'
   requirements:
     _permission: 'administer workflows'
+
+aabenforms_workflows.instance_delete:
+  path: '/admin/aabenforms/workflow-templates/delete/{workflow_id}'
+  defaults:
+    _form: '\Drupal\aabenforms_workflows\Form\WorkflowInstanceDeleteForm'
+    _title: 'Delete Workflow Instance'
+  requirements:
+    _permission: 'administer workflows'
+
+aabenforms_workflows.parent_approval:
+  path: '/parent-approval/{parent_number}/{submission_id}/{token}'
+  defaults:
+    _controller: '\Drupal\aabenforms_workflows\Controller\ParentApprovalController::approvalPage'
+    _title: 'Parent Approval'
+  requirements:
+    _permission: 'access content'
+    parent_number: '1|2'
+
+aabenforms_workflows.parent_approval_complete:
+  path: '/parent-approval/complete/{action}'
+  defaults:
+    _controller: '\Drupal\aabenforms_workflows\Controller\ParentApprovalController::completePage'
+    _title: 'Approval Complete'
+  requirements:
+    _permission: 'access content'
+    action: 'approve|reject'

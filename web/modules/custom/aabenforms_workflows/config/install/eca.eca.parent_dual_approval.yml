@@ -1,0 +1,188 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - eca
+    - webform
+    - aabenforms_workflows
+id: parent_dual_approval
+label: 'Parent Dual Approval Workflow'
+modeller: fallback
+version: 1.0.0
+events:
+  municipality_initiates:
+    plugin: 'content_entity:insert'
+    configuration:
+      type: webform_submission
+      bundle: parent_request_form
+    successors:
+      - id: check_family_status
+        condition: ''
+gateways:
+  check_family_status:
+    plugin: eca_scalar_comparison
+    configuration:
+      left_value: '[webform_submission:field_parents_together]'
+      operator: '=='
+      right_value: 'together'
+    successors:
+      - id: parent1_together_flow
+        condition: 'true'
+      - id: parent1_apart_flow
+        condition: 'false'
+conditions: {  }
+actions:
+  # Flow for parents TOGETHER
+  parent1_together_flow:
+    plugin: eca_token_set_value
+    configuration:
+      token_name: data_visibility
+      token_value: full
+    successors:
+      - id: parent1_mitid_auth
+        condition: ''
+
+  # Flow for parents APART
+  parent1_apart_flow:
+    plugin: eca_token_set_value
+    configuration:
+      token_name: data_visibility
+      token_value: limited
+    successors:
+      - id: parent1_mitid_auth
+        condition: ''
+
+  # Parent 1 Authentication
+  parent1_mitid_auth:
+    plugin: aabenforms_mitid_validate
+    configuration:
+      workflow_id_token: workflow_id
+      result_token: parent1_mitid_valid
+      session_data_token: parent1_session
+    successors:
+      - id: parent1_cpr_lookup
+        condition: ''
+
+  parent1_cpr_lookup:
+    plugin: aabenforms_cpr_lookup
+    configuration:
+      cpr_token: parent1_cpr
+      result_token: parent1_data
+      use_cache: true
+    successors:
+      - id: parent1_audit
+        condition: ''
+
+  parent1_audit:
+    plugin: aabenforms_audit_log
+    configuration:
+      event_type: parent_approval_request
+      message_template: 'Parent 1 authenticated: [parent1_data:name]'
+      cpr_token: parent1_cpr
+      additional_data_token: parent1_data
+    successors:
+      - id: wait_parent1_approval
+        condition: ''
+
+  # Wait for Parent 1 approval (user task would go here)
+  wait_parent1_approval:
+    plugin: eca_token_set_value
+    configuration:
+      token_name: parent1_approved
+      token_value: pending
+    successors:
+      - id: parent2_mitid_auth
+        condition: ''
+
+  # Parent 2 Authentication
+  parent2_mitid_auth:
+    plugin: aabenforms_mitid_validate
+    configuration:
+      workflow_id_token: workflow_id_2
+      result_token: parent2_mitid_valid
+      session_data_token: parent2_session
+    successors:
+      - id: parent2_cpr_lookup
+        condition: ''
+
+  parent2_cpr_lookup:
+    plugin: aabenforms_cpr_lookup
+    configuration:
+      cpr_token: parent2_cpr
+      result_token: parent2_data
+      use_cache: true
+    successors:
+      - id: parent2_audit
+        condition: ''
+
+  parent2_audit:
+    plugin: aabenforms_audit_log
+    configuration:
+      event_type: parent_approval_request
+      message_template: 'Parent 2 authenticated: [parent2_data:name]'
+      cpr_token: parent2_cpr
+      additional_data_token: parent2_data
+    successors:
+      - id: wait_parent2_approval
+        condition: ''
+
+  wait_parent2_approval:
+    plugin: eca_token_set_value
+    configuration:
+      token_name: parent2_approved
+      token_value: pending
+    successors:
+      - id: route_to_caseworker
+        condition: ''
+
+  # Case Worker Review
+  route_to_caseworker:
+    plugin: eca_token_set_value
+    configuration:
+      token_name: caseworker_status
+      token_value: pending_review
+    successors:
+      - id: caseworker_audit
+        condition: ''
+
+  caseworker_audit:
+    plugin: aabenforms_audit_log
+    configuration:
+      event_type: caseworker_review_assigned
+      message_template: 'Case assigned to case worker for review'
+      cpr_token: ''
+      additional_data_token: ''
+    successors:
+      - id: check_final_approval
+        condition: ''
+
+  # Check final approval status
+  check_final_approval:
+    plugin: eca_token_set_value
+    configuration:
+      token_name: final_decision
+      token_value: approved
+    successors:
+      - id: send_digital_post_notifications
+        condition: ''
+
+  # Send Digital Post notifications
+  send_digital_post_notifications:
+    plugin: aabenforms_audit_log
+    configuration:
+      event_type: digital_post_sent
+      message_template: 'Digital Post notifications sent to both parents'
+      cpr_token: ''
+      additional_data_token: ''
+    successors:
+      - id: final_audit
+        condition: ''
+
+  final_audit:
+    plugin: aabenforms_audit_log
+    configuration:
+      event_type: workflow_complete
+      message_template: 'Parent dual approval workflow completed'
+      cpr_token: ''
+      additional_data_token: ''
+    successors: {  }

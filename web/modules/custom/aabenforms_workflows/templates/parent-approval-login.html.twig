@@ -1,0 +1,53 @@
+{#
+/**
+ * @file
+ * Template for parent approval MitID login page.
+ *
+ * Available variables:
+ * - child_name: The child's name.
+ * - parent_number: The parent number (1 or 2).
+ * - request_summary: Summary of the request.
+ * - mitid_login_url: URL for MitID authentication.
+ */
+#}
+<div class="parent-approval-login">
+  <div class="approval-header">
+    <h1>{{ 'Parent Approval Required'|t }}</h1>
+    <p class="parent-label">{{ 'Parent @number'|t({'@number': parent_number}) }}</p>
+  </div>
+
+  <div class="approval-summary">
+    <div class="summary-item">
+      <strong>{{ 'Child:'|t }}</strong> {{ child_name }}
+    </div>
+    <div class="summary-item">
+      <strong>{{ 'Request:'|t }}</strong>
+      <p>{{ request_summary }}</p>
+    </div>
+  </div>
+
+  <div class="mitid-login-section">
+    <p class="security-notice">
+      {{ 'To protect your privacy and verify your identity, you must authenticate with MitID before reviewing this request.'|t }}
+    </p>
+
+    <div class="mitid-login-button-wrapper">
+      <a href="{{ mitid_login_url }}" class="button button--primary mitid-login-button">
+        {{ 'Login with MitID'|t }}
+      </a>
+    </div>
+
+    <div class="help-text">
+      <p>{{ 'What is MitID?'|t }}</p>
+      <p class="small-text">
+        {{ 'MitID is the official digital identity solution used by Danish public authorities. It ensures that only you can access and approve this request.'|t }}
+      </p>
+    </div>
+  </div>
+
+  <div class="approval-footer">
+    <p class="small-text">
+      {{ 'If you have questions about this request, please contact the case worker handling your case.'|t }}
+    </p>
+  </div>
+</div>
