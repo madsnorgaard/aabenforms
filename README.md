@@ -8,18 +8,20 @@
 
 [![CI](https://github.com/madsnorgaard/aabenforms/actions/workflows/ci.yml/badge.svg)](https://github.com/madsnorgaard/aabenforms/actions/workflows/ci.yml)
 [![Coding Standards](https://github.com/madsnorgaard/aabenforms/actions/workflows/coding-standards.yml/badge.svg)](https://github.com/madsnorgaard/aabenforms/actions/workflows/coding-standards.yml)
-[![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/madsnorgaard/aabenforms/main/.github/badges/coverage.json)](https://github.com/madsnorgaard/aabenforms/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/badge/coverage-45%25-yellow)](https://github.com/madsnorgaard/aabenforms/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-156%20passing-brightgreen)](https://github.com/madsnorgaard/aabenforms/actions/workflows/ci.yml)
 
 ## Overview
 
 ÅbenForms is a modern, modular platform for Danish municipalities to automate citizen-facing workflows and integrate with government services (MitID, Serviceplatformen, case management systems).
 
 This repository contains the **Drupal 11 backend** that provides:
--  ECA workflow engine (event-driven automation)
+- ECA workflow engine (event-driven automation)
+- BPMN 2.0 workflow templates (5 ready-to-use templates)
 - Dynamic webforms with JSON:API exposure
--  Multi-tenant architecture via Domain module
--  GDPR-compliant CPR encryption
-- 🇩🇰 Danish government service integrations (MitID, SF1520, SF1530, SF1601)
+- Multi-tenant architecture via Domain module
+- GDPR-compliant CPR encryption
+- Danish government service integrations (MitID, SF1520, SF1530, SF1601)
 
 ## Architecture
 
@@ -174,10 +176,34 @@ ddev drush pm:enable <module_name>
 ddev drush config:export -y
 ```
 
+## BPMN Workflow Templates
+
+ÅbenForms includes 5 production-ready BPMN 2.0 workflow templates:
+
+| Template | Use Case | ECA Actions |
+|----------|----------|-------------|
+| `building_permit` | Building permit applications | MitID validation, CPR lookup, audit logging |
+| `contact_form` | Generic citizen contact | Email notifications, case creation |
+| `company_verification` | Business registration verification | CVR lookup, MitID Erhverv validation |
+| `address_change` | Address change notifications | DAWA validation, Digital Post |
+| `foi_request` | Freedom of Information requests | Document archiving, deadline tracking |
+
+### Template Browser
+
+Browse and import templates via admin UI:
+- Navigate to: **Configuration > Workflows > BPMN Templates** (`/admin/config/workflow/bpmn-templates`)
+- Preview templates visually (BPMN diagram)
+- Import/export via XML
+- Customize and save as new templates
+
+For detailed workflow development guide, see [docs/WORKFLOW_GUIDE.md](docs/WORKFLOW_GUIDE.md).
+
 ## Documentation
 
 For detailed information, see:
 - **[CLAUDE.md](CLAUDE.md)** - Complete development guide (commands, architecture, Danish integrations)
+- **[docs/WORKFLOW_GUIDE.md](docs/WORKFLOW_GUIDE.md)** - BPMN workflow development guide
+- **[docs/TESTING_GUIDE.md](docs/TESTING_GUIDE.md)** - Testing guide (156 tests, 45% coverage)
 - **[Platform Repository](https://github.com/madsnorgaard/aabenforms-platform)** - Deployment documentation
 
 ## Technology Stack
