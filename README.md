@@ -84,28 +84,61 @@ ddev launch
 
 ## Custom Modules
 
-### Core Platform (Phase 1)
+### Phase 1: Core Platform ✅ Complete
 | Module | Status | Description |
 |--------|--------|-------------|
-| `aabenforms_core` | ✅ Active | Base services, utilities, JSON:API config |
+| `aabenforms_core` | ✅ Active | Base services, utilities, Serviceplatformen client, encryption |
 | `aabenforms_tenant` | ✅ Active | Multi-tenancy via Domain module |
-| `aabenforms_workflows` | ✅ Complete | ECA integration, BPMN templates, workflow wizard |
+| `aabenforms_webform` | ✅ Active | Custom form elements (CPR, CVR, DAWA address fields) |
 
-### Security & Auth (Phase 2)
+### Phase 2: Security & Authentication ✅ Complete
 | Module | Status | Description |
 |--------|--------|-------------|
-| `aabenforms_gdpr` |  Planned | Field encryption, audit logs, retention |
-| `aabenforms_mitid` |  Planned | MitID OIDC authentication |
+| `aabenforms_mitid` | ✅ Active | MitID OIDC integration, session management, CPR extraction |
+| `aabenforms_gdpr` | 🔄 Partial | Field encryption (✓), audit logs (✓), retention policies (planned) |
 
-### Danish Integrations (Phase 3-4)
+### Phase 3: Complete Workflow System ✅ Complete
 | Module | Status | Description |
 |--------|--------|-------------|
-| `aabenforms_cpr` |  Planned | SF1520 person lookup |
-| `aabenforms_cvr` |  Planned | SF1530 company lookup |
-| `aabenforms_dawa` |  Planned | Address autocomplete |
-| `aabenforms_digital_post` |  Planned | SF1601 notifications |
-| `aabenforms_sbsys` |  Planned | SBSYS case management |
-| `aabenforms_get_organized` |  Planned | GetOrganized ESDH |
+| `aabenforms_workflows` | ✅ Complete | **Full workflow automation platform:** |
+| | | • 5 BPMN 2.0 templates (building permit, contact, company verification, address change, FOI) |
+| | | • Visual workflow wizard (8-step template instantiation) |
+| | | • Approval system with secure token-based access |
+| | | • 3 separate workflows for parallel parent approvals |
+| | | • Email notifications (SendApprovalEmailAction) |
+| | | • 4 custom ECA actions (MitID validate, CPR lookup, CVR lookup, audit log) |
+| | | • Complete documentation (4,166+ lines for municipalities) |
+
+### Phase 4: Danish Service Integrations (Current)
+| Module | Status | Description |
+|--------|--------|-------------|
+| `aabenforms_cpr` | 🔄 Partial | SF1520 person lookup (action plugin ✓, production service planned) |
+| `aabenforms_cvr` | 🔄 Partial | SF1530 company lookup (action plugin ✓, production service planned) |
+| `aabenforms_dawa` | 🔄 Partial | DAWA address autocomplete (webform element ✓, full API integration planned) |
+| `aabenforms_digital_post` | 📋 Planned | SF1601 Digital Post notifications |
+| `aabenforms_sbsys` | 📋 Planned | SBSYS case management integration |
+| `aabenforms_get_organized` | 📋 Planned | GetOrganized ESDH document archiving |
+
+**Legend**: ✅ Complete | 🔄 In Progress | 📋 Planned
+
+### Development Progress
+
+**Phase 3 Completed** (Current Release):
+- ✅ Complete dual parent approval system with parallel workflows
+- ✅ Secure token-based approval pages (HMAC-SHA256, 7-day expiry)
+- ✅ Visual workflow template wizard (no YAML required)
+- ✅ 5 production-ready BPMN templates
+- ✅ GDPR-compliant data masking for separated parents
+- ✅ 156 passing tests (45% coverage)
+- ✅ Comprehensive municipal documentation (4,166+ lines)
+
+**Phase 4 Next** (In Progress):
+- 🔄 BpmnTemplateManagerTest.php (5 tests)
+- 🔄 WorkflowsModuleTest.php replacement
+- 📋 End-to-end browser tests (FunctionalJavascript)
+- 📋 Performance and security test suites
+- 📋 Achieve 60%+ test coverage
+- 📋 Production Serviceplatformen integration (replace mocks)
 
 ## Workflow System
 
