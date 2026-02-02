@@ -2,6 +2,7 @@
 
 namespace Drupal\aabenforms_workflows\Form;
 
+use Drupal\Core\Url;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\aabenforms_workflows\Service\BpmnTemplateManager;
@@ -18,7 +19,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * 2. Webform configuration
  * 3. Action configuration
  * 4. Data visibility settings (if applicable)
- * 5. Preview and activation
+ * 5. Preview and activation.
  */
 class WorkflowTemplateWizardForm extends FormBase {
 
@@ -571,7 +572,7 @@ class WorkflowTemplateWizardForm extends FormBase {
     $form['actions']['cancel'] = [
       '#type' => 'link',
       '#title' => $this->t('Cancel'),
-      '#url' => \Drupal\Core\Url::fromRoute('aabenforms_workflows.template_browser'),
+      '#url' => Url::fromRoute('aabenforms_workflows.template_browser'),
       '#attributes' => ['class' => ['button']],
     ];
   }

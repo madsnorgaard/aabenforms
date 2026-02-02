@@ -356,14 +356,16 @@ class WorkflowTemplateInstantiator {
     }
 
     // Add initial action.
-    $actions = ['start_workflow' => [
-      'plugin' => 'eca_base_log',
-      'configuration' => [
-        'level' => 'info',
-        'message' => 'Starting workflow: ' . ($configuration['label'] ?? 'Workflow'),
+    $actions = [
+      'start_workflow' => [
+        'plugin' => 'eca_base_log',
+        'configuration' => [
+          'level' => 'info',
+          'message' => 'Starting workflow: ' . ($configuration['label'] ?? 'Workflow'),
+        ],
+        'successors' => [],
       ],
-      'successors' => [],
-    ]] + $actions;
+    ] + $actions;
 
     return $actions;
   }

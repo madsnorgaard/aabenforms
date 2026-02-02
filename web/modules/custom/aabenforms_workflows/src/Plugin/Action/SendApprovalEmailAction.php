@@ -4,7 +4,6 @@ namespace Drupal\aabenforms_workflows\Plugin\Action;
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Mail\MailManagerInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\aabenforms_workflows\Service\ApprovalTokenService;

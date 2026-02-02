@@ -268,7 +268,8 @@ class WorkflowTemplateMetadata {
     return [
       'description' => $template['description'],
       'steps' => $steps,
-      'diagram' => NULL, // Could be enhanced to generate SVG from BPMN.
+    // Could be enhanced to generate SVG from BPMN.
+      'diagram' => NULL,
     ];
   }
 

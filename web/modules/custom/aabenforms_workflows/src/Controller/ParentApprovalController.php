@@ -57,7 +57,7 @@ class ParentApprovalController extends ControllerBase {
   public function __construct(
     EntityTypeManagerInterface $entity_type_manager,
     ApprovalTokenService $token_service,
-    LoggerInterface $logger
+    LoggerInterface $logger,
   ) {
     $this->entityTypeManager = $entity_type_manager;
     $this->tokenService = $token_service;
@@ -279,9 +279,9 @@ class ParentApprovalController extends ControllerBase {
       ],
       'info' => [
         '#markup' => '<div class="parent-approval-complete">' .
-          '<p>' . $this->t('You may now close this window.') . '</p>' .
-          '<p>' . $this->t('If you have any questions, please contact the case worker handling this request.') . '</p>' .
-          '</div>',
+        '<p>' . $this->t('You may now close this window.') . '</p>' .
+        '<p>' . $this->t('If you have any questions, please contact the case worker handling this request.') . '</p>' .
+        '</div>',
       ],
     ];
   }

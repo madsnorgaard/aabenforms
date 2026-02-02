@@ -69,9 +69,9 @@ class TemplateBrowserController extends ControllerBase {
     // Page header.
     $build['header'] = [
       '#markup' => '<div class="template-browser-header">' .
-        '<h1>' . $this->t('Workflow Templates') . '</h1>' .
-        '<p>' . $this->t('Create new approval workflows from pre-built templates designed for Danish municipalities. No technical knowledge required.') . '</p>' .
-        '</div>',
+      '<h1>' . $this->t('Workflow Templates') . '</h1>' .
+      '<p>' . $this->t('Create new approval workflows from pre-built templates designed for Danish municipalities. No technical knowledge required.') . '</p>' .
+      '</div>',
     ];
 
     // Available templates section.

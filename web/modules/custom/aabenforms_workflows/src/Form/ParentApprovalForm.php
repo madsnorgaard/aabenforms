@@ -79,7 +79,7 @@ class ParentApprovalForm extends FormBase {
   public function __construct(
     EntityTypeManagerInterface $entity_type_manager,
     ApprovalTokenService $token_service,
-    LoggerInterface $logger
+    LoggerInterface $logger,
   ) {
     $this->entityTypeManager = $entity_type_manager;
     $this->tokenService = $token_service;
@@ -141,8 +141,8 @@ class ParentApprovalForm extends FormBase {
     if (!$this->parentsTogether) {
       $form['child_info']['gdpr_notice'] = [
         '#markup' => '<div class="messages messages--warning">' .
-          $this->t('Note: Some information is masked for privacy as parents are registered as living apart.') .
-          '</div>',
+        $this->t('Note: Some information is masked for privacy as parents are registered as living apart.') .
+        '</div>',
       ];
     }
 
