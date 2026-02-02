@@ -1,0 +1,57 @@
+uuid: d3c4d5e6-f7e8-9012-3456-789012cdefgh
+langcode: en
+status: true
+dependencies:
+  module:
+    - aabenforms_workflows
+    - eca_content
+id: caseworker_review_flow
+weight: null
+template: null
+events:
+  both_parents_complete:
+    plugin: 'content_entity:update'
+    configuration:
+      type: webform_submission
+    successors:
+      - id: check_both_complete
+        condition: ''
+conditions:
+  check_both_complete:
+    plugin: eca_scalar
+    configuration:
+      left_value: '[webform_submission:data:parent1_status][webform_submission:data:parent2_status]'
+      operator: '=='
+      right_value: 'completecomplete'
+    successors:
+      - id: check_caseworker_pending
+        condition: 'true'
+  check_caseworker_pending:
+    plugin: eca_scalar
+    configuration:
+      left_value: '[webform_submission:data:caseworker_status]'
+      operator: '=='
+      right_value: 'pending'
+    successors:
+      - id: caseworker_audit
+        condition: 'true'
+gateways: {  }
+actions:
+  caseworker_audit:
+    label: 'Case Worker: Audit Assignment'
+    plugin: aabenforms_audit_log
+    configuration:
+      event_type_token: caseworker_review
+      user_data_token: 'Both parents approved'
+      metadata_token: 'Assigned to case worker for review'
+    successors:
+      - id: mark_caseworker_assigned
+        condition: ''
+
+  mark_caseworker_assigned:
+    label: 'Mark Case Worker Assigned'
+    plugin: eca_token_set_value
+    configuration:
+      token_name: caseworker_status
+      token_value: 'assigned'
+    successors: {  }

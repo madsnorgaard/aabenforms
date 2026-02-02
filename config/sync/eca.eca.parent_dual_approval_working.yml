@@ -1,0 +1,120 @@
+uuid: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+langcode: en
+status: true
+dependencies:
+  module:
+    - aabenforms_workflows
+    - eca_content
+id: parent_dual_approval_working
+weight: null
+template: null
+events:
+  municipality_request:
+    plugin: 'content_entity:insert'
+    configuration:
+      type: webform_submission
+    successors:
+      - id: parent1_mitid
+        condition: ''
+      - id: parent2_mitid
+        condition: ''
+conditions: {  }
+gateways: {  }
+actions:
+  # Parent 1 Flow
+  parent1_mitid:
+    label: 'Parent 1: Validate MitID'
+    plugin: aabenforms_mitid_validate
+    configuration:
+      workflow_id_token: workflow_id_parent1
+      result_token: parent1_mitid_valid
+      session_data_token: parent1_session
+    successors:
+      - id: parent1_cpr
+        condition: ''
+
+  parent1_cpr:
+    label: 'Parent 1: CPR Lookup'
+    plugin: aabenforms_cpr_lookup
+    configuration:
+      cpr_token: '[parent1_session:cpr]'
+      result_token: parent1_data
+      use_cache: true
+    successors:
+      - id: parent1_audit
+        condition: ''
+
+  parent1_audit:
+    label: 'Parent 1: Audit Log'
+    plugin: aabenforms_audit_log
+    configuration:
+      event_type_token: parent1_approval
+      user_data_token: '[parent1_data:name]'
+      metadata_token: 'Parent 1 authenticated'
+    successors:
+      - id: mark_parent1_complete
+        condition: ''
+
+  mark_parent1_complete:
+    label: 'Mark Parent 1 Complete'
+    plugin: eca_token_set_value
+    configuration:
+      token_name: parent1_complete
+      token_value: 'true'
+    successors:
+      - id: caseworker_audit
+        condition: ''
+
+  # Parent 2 Flow
+  parent2_mitid:
+    label: 'Parent 2: Validate MitID'
+    plugin: aabenforms_mitid_validate
+    configuration:
+      workflow_id_token: workflow_id_parent2
+      result_token: parent2_mitid_valid
+      session_data_token: parent2_session
+    successors:
+      - id: parent2_cpr
+        condition: ''
+
+  parent2_cpr:
+    label: 'Parent 2: CPR Lookup'
+    plugin: aabenforms_cpr_lookup
+    configuration:
+      cpr_token: '[parent2_session:cpr]'
+      result_token: parent2_data
+      use_cache: true
+    successors:
+      - id: parent2_audit
+        condition: ''
+
+  parent2_audit:
+    label: 'Parent 2: Audit Log'
+    plugin: aabenforms_audit_log
+    configuration:
+      event_type_token: parent2_approval
+      user_data_token: '[parent2_data:name]'
+      metadata_token: 'Parent 2 authenticated'
+    successors:
+      - id: mark_parent2_complete
+        condition: ''
+
+  mark_parent2_complete:
+    label: 'Mark Parent 2 Complete'
+    plugin: eca_token_set_value
+    configuration:
+      token_name: parent2_complete
+      token_value: 'true'
+    successors:
+      - id: caseworker_audit
+        condition: ''
+
+  # Case Worker Review
+  caseworker_audit:
+    label: 'Case Worker: Audit Assignment'
+    plugin: aabenforms_audit_log
+    configuration:
+      event_type_token: caseworker_review
+      user_data_token: 'Both parents approved'
+      metadata_token: 'Assigned to case worker for review'
+    successors: {  }
