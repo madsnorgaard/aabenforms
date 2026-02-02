@@ -11,7 +11,28 @@
   <bpmn:process id="building_permit_process" name="Building Permit Application" isExecutable="true">
     <bpmn:documentation>[category: municipal]
 Complex building permit workflow with MitID authentication, document validation, case worker review, and SBSYS integration.
-Demonstrates full Danish municipal workflow pattern with GDPR compliance.</bpmn:documentation>
+Demonstrates full Danish municipal workflow pattern with GDPR compliance.
+
+<parameters>
+  <parameter id="applicant_email_field" label="Applicant Email Field" type="webform_field" required="true" default="email">
+    <description>Webform field containing the applicant email address</description>
+  </parameter>
+  <parameter id="cpr_field" label="CPR Number Field" type="webform_field" required="true" default="cpr">
+    <description>Webform field containing the CPR number</description>
+  </parameter>
+  <parameter id="address_field" label="Address Field" type="webform_field" required="true" default="address">
+    <description>Webform field containing the property address</description>
+  </parameter>
+  <parameter id="caseworker_email" label="Case Worker Email" type="email" required="true" default="">
+    <description>Email address for case worker notifications</description>
+  </parameter>
+  <parameter id="approval_deadline_days" label="Approval Deadline (days)" type="integer" required="false" default="30">
+    <description>Number of days before application auto-rejects</description>
+  </parameter>
+  <parameter id="sbsys_integration" label="SBSYS Integration" type="boolean" required="false" default="false">
+    <description>Create case in SBSYS when approved</description>
+  </parameter>
+</parameters></bpmn:documentation>
 
     <bpmn:startEvent id="StartEvent_1" name="Application Submitted">
       <bpmn:outgoing>Flow_1</bpmn:outgoing>
