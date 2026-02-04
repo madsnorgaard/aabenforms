@@ -475,7 +475,7 @@ class SendSmsActionTest extends UnitTestCase {
   /**
    * Data provider for phone number normalization tests.
    */
-  public function phoneNumberProvider(): array {
+  public static function phoneNumberProvider(): array {
     return [
       ['12345678', '+4512345678'],
       ['+4512345678', '+4512345678'],
