@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                   xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                   id="Definitions_parking_permit"
+                   targetNamespace="http://aabenforms.dk/bpmn"
+                   exporter="ÅbenForms"
+                   exporterVersion="1.0">
+
+  <bpmn:process id="parking_permit_process" name="Parking Permit Application" isExecutable="true">
+    <bpmn:documentation>[category: citizen_service]
+Simple parking permit workflow demonstrating payment processing, PDF generation, and SMS notifications.
+Perfect starter workflow for Danish municipalities looking to digitize citizen services.
+
+<parameters>
+  <parameter id="email_field" label="Email Field" type="webform_field" required="true" default="email">
+    <description>Webform field containing applicant email address</description>
+  </parameter>
+  <parameter id="phone_field" label="Phone Field" type="webform_field" required="true" default="phone">
+    <description>Webform field containing applicant phone number</description>
+  </parameter>
+  <parameter id="vehicle_registration_field" label="Vehicle Registration Field" type="webform_field" required="true" default="vehicle_registration">
+    <description>Webform field containing vehicle registration number</description>
+  </parameter>
+  <parameter id="address_field" label="Address Field" type="webform_field" required="true" default="address">
+    <description>Webform field containing parking address</description>
+  </parameter>
+  <parameter id="duration_field" label="Duration Field" type="webform_field" required="true" default="duration">
+    <description>Webform field containing permit duration in months</description>
+  </parameter>
+  <parameter id="amount_field" label="Amount Field" type="webform_field" required="true" default="amount">
+    <description>Webform field containing payment amount in øre (e.g., 10000 = 100 DKK)</description>
+  </parameter>
+  <parameter id="parking_zone" label="Parking Zone" type="string" required="false" default="Zone A">
+    <description>Default parking zone for pricing calculation</description>
+  </parameter>
+  <parameter id="enable_mitid" label="Enable MitID Authentication" type="boolean" required="false" default="false">
+    <description>Require MitID authentication for permit application</description>
+  </parameter>
+</parameters></bpmn:documentation>
+
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_1" name="Citizen Submits Application">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <!-- Optional MitID Authentication Gateway -->
+    <bpmn:exclusiveGateway id="Gateway_MitID" name="MitID Enabled?">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_MitID_Yes</bpmn:outgoing>
+      <bpmn:outgoing>Flow_MitID_No</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <!-- MitID Authentication (Optional) -->
+    <bpmn:serviceTask id="Task_MitIDAuth" name="Authenticate with MitID">
+      <bpmn:extensionElements>
+        <eca:action xmlns:eca="http://aabenforms.dk/eca">aabenforms_mitid_validate</eca:action>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_MitID_Yes</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- Merge Gateway -->
+    <bpmn:exclusiveGateway id="Gateway_Merge1" name="">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:incoming>Flow_MitID_No</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <!-- Validate Address with DAWA -->
+    <bpmn:serviceTask id="Task_ValidateAddress" name="Validate Address (DAWA)">
+      <bpmn:extensionElements>
+        <eca:action xmlns:eca="http://aabenforms.dk/eca">aabenforms_dawa_validate</eca:action>
+        <eca:config xmlns:eca="http://aabenforms.dk/eca">
+          <eca:address_field>address</eca:address_field>
+        </eca:config>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- Calculate Fee -->
+    <bpmn:serviceTask id="Task_CalculateFee" name="Calculate Parking Fee">
+      <bpmn:extensionElements>
+        <eca:action xmlns:eca="http://aabenforms.dk/eca">custom_calculate_fee</eca:action>
+        <eca:config xmlns:eca="http://aabenforms.dk/eca">
+          <eca:zone_field>parking_zone</eca:zone_field>
+          <eca:duration_field>duration</eca:duration_field>
+          <eca:result_field>amount</eca:result_field>
+        </eca:config>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- Process Payment -->
+    <bpmn:serviceTask id="Task_ProcessPayment" name="Process Payment (Nets Easy)">
+      <bpmn:extensionElements>
+        <eca:action xmlns:eca="http://aabenforms.dk/eca">aabenforms_process_payment</eca:action>
+        <eca:config xmlns:eca="http://aabenforms.dk/eca">
+          <eca:amount_field>amount</eca:amount_field>
+          <eca:currency>DKK</eca:currency>
+          <eca:payment_method>nets_easy</eca:payment_method>
+        </eca:config>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- Payment Success Gateway -->
+    <bpmn:exclusiveGateway id="Gateway_PaymentSuccess" name="Payment Successful?">
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+      <bpmn:outgoing>Flow_Payment_Success</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Payment_Failed</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <!-- Payment Failed -->
+    <bpmn:serviceTask id="Task_PaymentFailedEmail" name="Send Payment Failed Email">
+      <bpmn:extensionElements>
+        <eca:action xmlns:eca="http://aabenforms.dk/eca">email_send</eca:action>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_Payment_Failed</bpmn:incoming>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="EndEvent_PaymentFailed" name="Application Failed">
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <!-- Generate PDF Permit -->
+    <bpmn:serviceTask id="Task_GeneratePDF" name="Generate Parking Permit PDF">
+      <bpmn:extensionElements>
+        <eca:action xmlns:eca="http://aabenforms.dk/eca">aabenforms_generate_pdf</eca:action>
+        <eca:config xmlns:eca="http://aabenforms.dk/eca">
+          <eca:template>parking_permit</eca:template>
+          <eca:filename_pattern>parking_permit_{submission_id}.pdf</eca:filename_pattern>
+        </eca:config>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_Payment_Success</bpmn:incoming>
+      <bpmn:outgoing>Flow_8</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- Send SMS Confirmation -->
+    <bpmn:serviceTask id="Task_SendSMS" name="Send SMS Confirmation">
+      <bpmn:extensionElements>
+        <eca:action xmlns:eca="http://aabenforms.dk/eca">aabenforms_send_sms</eca:action>
+        <eca:config xmlns:eca="http://aabenforms.dk/eca">
+          <eca:phone_field>phone</eca:phone_field>
+          <eca:message>Din parkeringslicens er godkendt. Sagsnr: [submission:id]. Licens sendt til [submission:email]</eca:message>
+          <eca:sender_name>Kommune</eca:sender_name>
+        </eca:config>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_8</bpmn:incoming>
+      <bpmn:outgoing>Flow_9</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- Email PDF to Citizen -->
+    <bpmn:serviceTask id="Task_EmailPDF" name="Email Permit to Citizen">
+      <bpmn:extensionElements>
+        <eca:action xmlns:eca="http://aabenforms.dk/eca">email_send</eca:action>
+        <eca:config xmlns:eca="http://aabenforms.dk/eca">
+          <eca:to_field>email</eca:to_field>
+          <eca:subject>Din parkeringslicens er klar</eca:subject>
+          <eca:attach_pdf>true</eca:attach_pdf>
+        </eca:config>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_9</bpmn:incoming>
+      <bpmn:outgoing>Flow_10</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- Audit Log -->
+    <bpmn:serviceTask id="Task_AuditLog" name="Log Permit Issuance">
+      <bpmn:extensionElements>
+        <eca:action xmlns:eca="http://aabenforms.dk/eca">aabenforms_audit_log</eca:action>
+        <eca:config xmlns:eca="http://aabenforms.dk/eca">
+          <eca:action>parking_permit_issued</eca:action>
+          <eca:log_level>info</eca:log_level>
+        </eca:config>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_10</bpmn:incoming>
+      <bpmn:outgoing>Flow_11</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_Success" name="Permit Issued Successfully">
+      <bpmn:incoming>Flow_11</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <!-- Sequence Flows -->
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Gateway_MitID"/>
+    <bpmn:sequenceFlow id="Flow_MitID_Yes" name="Yes" sourceRef="Gateway_MitID" targetRef="Task_MitIDAuth">
+      <bpmn:conditionExpression>${enable_mitid == true}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_MitID_No" name="No" sourceRef="Gateway_MitID" targetRef="Gateway_Merge1">
+      <bpmn:conditionExpression>${enable_mitid == false}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_MitIDAuth" targetRef="Gateway_Merge1"/>
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Gateway_Merge1" targetRef="Task_ValidateAddress"/>
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Task_ValidateAddress" targetRef="Task_CalculateFee"/>
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="Task_CalculateFee" targetRef="Task_ProcessPayment"/>
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="Task_ProcessPayment" targetRef="Gateway_PaymentSuccess"/>
+    <bpmn:sequenceFlow id="Flow_Payment_Success" name="Success" sourceRef="Gateway_PaymentSuccess" targetRef="Task_GeneratePDF">
+      <bpmn:conditionExpression>${payment_status == 'completed'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_Payment_Failed" name="Failed" sourceRef="Gateway_PaymentSuccess" targetRef="Task_PaymentFailedEmail">
+      <bpmn:conditionExpression>${payment_status == 'failed'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_7" sourceRef="Task_PaymentFailedEmail" targetRef="EndEvent_PaymentFailed"/>
+    <bpmn:sequenceFlow id="Flow_8" sourceRef="Task_GeneratePDF" targetRef="Task_SendSMS"/>
+    <bpmn:sequenceFlow id="Flow_9" sourceRef="Task_SendSMS" targetRef="Task_EmailPDF"/>
+    <bpmn:sequenceFlow id="Flow_10" sourceRef="Task_EmailPDF" targetRef="Task_AuditLog"/>
+    <bpmn:sequenceFlow id="Flow_11" sourceRef="Task_AuditLog" targetRef="EndEvent_Success"/>
+
+  </bpmn:process>
+
+  <!-- BPMN Diagram Interchange (Visual Layout) -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="parking_permit_process">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="180" y="160" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Success_di" bpmnElement="EndEvent_Success">
+        <dc:Bounds x="1400" y="160" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_PaymentFailed_di" bpmnElement="EndEvent_PaymentFailed">
+        <dc:Bounds x="800" y="300" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn:definitions>

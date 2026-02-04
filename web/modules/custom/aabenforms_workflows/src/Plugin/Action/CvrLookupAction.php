@@ -3,19 +3,24 @@
 namespace Drupal\aabenforms_workflows\Plugin\Action;
 
 use Drupal\aabenforms_core\Service\ServiceplatformenClient;
+use Drupal\Core\Action\Attribute\Action;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\eca\Attribute\EcaAction;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * ECA Action: CVR Company Lookup via Serviceplatformen SF1530.
- *
- * @Action(
- *   id = "aabenforms_cvr_lookup",
- *   label = @Translation("CVR Company Lookup"),
- *   description = @Translation("Looks up company data from Serviceplatformen SF1530 using CVR number."),
- *   type = "aabenforms"
- * )
  */
+#[Action(
+  id: 'aabenforms_cvr_lookup',
+  label: new TranslatableMarkup('CVR Company Lookup'),
+  type: 'aabenforms',
+)]
+#[EcaAction(
+  description: new TranslatableMarkup('Looks up company data from Serviceplatformen SF1530 using CVR number.'),
+  version_introduced: '2.0.0',
+)]
 class CvrLookupAction extends AabenFormsActionBase {
 
   /**

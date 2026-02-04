@@ -114,9 +114,10 @@ class TemplateBrowserController extends ControllerBase {
       $build['instances_section']['table'] = $this->buildInstancesTable($instances);
     }
 
-    // Attach CSS.
+    // Attach CSS and JS.
     $build['#attached']['library'][] = 'system/admin';
     $build['#attached']['library'][] = 'aabenforms_workflows/workflow_wizard';
+    $build['#attached']['library'][] = 'aabenforms_workflows/bpmn_preview';
 
     return $build;
   }
@@ -148,16 +149,23 @@ class TemplateBrowserController extends ControllerBase {
         ucfirst(str_replace('_', ' ', $template['category'])) .
         '</span>';
 
-      $item = '<div class="template-card">' .
-        '<div class="template-card__header">' .
-        '<h3>' . $template['name'] . '</h3>' .
-        $category_badge .
-        '</div>' .
-        '<div class="template-card__description">' . $description . '</div>' .
-        '<div class="template-card__actions">' . $use_link->toString() . '</div>' .
-        '</div>';
+      // Generate BPMN preview placeholder.
+      $preview_url = Url::fromRoute('aabenforms_workflows.template_preview', [
+        'template_id' => $template_id,
+      ])->toString();
 
-      $items[] = ['#markup' => $item];
+      $item = [
+        '#theme' => 'workflow_template_card',
+        '#template_id' => $template_id,
+        '#template_name' => $template['name'],
+        '#category' => $template['category'],
+        '#category_badge' => $category_badge,
+        '#description' => $description,
+        '#preview_url' => $preview_url,
+        '#use_link' => $use_link,
+      ];
+
+      $items[] = $item;
     }
 
     return $items;
@@ -250,6 +258,46 @@ class TemplateBrowserController extends ControllerBase {
   public function startWizard(string $template_id): array {
     // This will be handled by the wizard form route.
     return [];
+  }
+
+  /**
+   * Displays a visual preview of a BPMN template.
+   *
+   * @param string $template_id
+   *   The template ID.
+   *
+   * @return array
+   *   Render array with BPMN preview.
+   */
+  public function templatePreview(string $template_id): array {
+    $bpmn_xml = $this->templateManager->loadTemplate($template_id, TRUE);
+
+    if (!$bpmn_xml) {
+      return [
+        '#markup' => '<p>' . $this->t('Template not found.') . '</p>',
+      ];
+    }
+
+    $build = [
+      '#type' => 'container',
+      '#attributes' => [
+        'id' => 'bpmn-preview-container',
+        'class' => ['bpmn-preview-wrapper'],
+      ],
+    ];
+
+    $build['canvas'] = [
+      '#markup' => '<div id="bpmn-preview-canvas" class="bpmn-preview-canvas"></div>',
+    ];
+
+    $build['#attached']['library'][] = 'bpmn_io/ui';
+    $build['#attached']['library'][] = 'aabenforms_workflows/bpmn_preview';
+    $build['#attached']['drupalSettings']['aabenforms_workflows']['preview'] = [
+      'xml' => $bpmn_xml,
+      'template_id' => $template_id,
+    ];
+
+    return $build;
   }
 
 }

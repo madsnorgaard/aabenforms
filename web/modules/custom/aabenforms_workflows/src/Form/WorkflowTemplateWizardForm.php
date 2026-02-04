@@ -9,6 +9,7 @@ use Drupal\aabenforms_workflows\Service\BpmnTemplateManager;
 use Drupal\aabenforms_workflows\Service\WorkflowTemplateMetadata;
 use Drupal\aabenforms_workflows\Service\WorkflowTemplateInstantiator;
 use Drupal\webform\Entity\Webform;
+use Drupal\modeler_api\Api as ModelerApi;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -16,10 +17,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * This user-friendly wizard guides municipality staff through:
  * 1. Template selection
- * 2. Webform configuration
- * 3. Action configuration
- * 4. Data visibility settings (if applicable)
- * 5. Preview and activation.
+ * 2. Visual workflow editor (BPMN.io)
+ * 3. Webform configuration
+ * 4. Action configuration
+ * 5. Data visibility settings (if applicable)
+ * 6. Preview and activation.
  */
 class WorkflowTemplateWizardForm extends FormBase {
 
@@ -45,6 +47,13 @@ class WorkflowTemplateWizardForm extends FormBase {
   protected WorkflowTemplateInstantiator $instantiator;
 
   /**
+   * The Modeler API service.
+   *
+   * @var \Drupal\modeler_api\Api
+   */
+  protected ModelerApi $modelerApi;
+
+  /**
    * Constructs a WorkflowTemplateWizardForm object.
    *
    * @param \Drupal\aabenforms_workflows\Service\BpmnTemplateManager $template_manager
@@ -53,15 +62,19 @@ class WorkflowTemplateWizardForm extends FormBase {
    *   The template metadata service.
    * @param \Drupal\aabenforms_workflows\Service\WorkflowTemplateInstantiator $instantiator
    *   The template instantiator service.
+   * @param \Drupal\modeler_api\Api $modeler_api
+   *   The Modeler API service.
    */
   public function __construct(
     BpmnTemplateManager $template_manager,
     WorkflowTemplateMetadata $template_metadata,
     WorkflowTemplateInstantiator $instantiator,
+    ModelerApi $modeler_api,
   ) {
     $this->templateManager = $template_manager;
     $this->templateMetadata = $template_metadata;
     $this->instantiator = $instantiator;
+    $this->modelerApi = $modeler_api;
   }
 
   /**
@@ -71,7 +84,8 @@ class WorkflowTemplateWizardForm extends FormBase {
     return new static(
       $container->get('aabenforms_workflows.bpmn_template_manager'),
       $container->get('aabenforms_workflows.template_metadata'),
-      $container->get('aabenforms_workflows.template_instantiator')
+      $container->get('aabenforms_workflows.template_instantiator'),
+      $container->get('modeler_api.service')
     );
   }
 
@@ -109,18 +123,22 @@ class WorkflowTemplateWizardForm extends FormBase {
         break;
 
       case 2:
-        $this->buildStepConfigureWebform($form, $form_state);
+        $this->buildStepVisualEditor($form, $form_state);
         break;
 
       case 3:
-        $this->buildStepConfigureActions($form, $form_state);
+        $this->buildStepConfigureWebform($form, $form_state);
         break;
 
       case 4:
-        $this->buildStepDataVisibility($form, $form_state);
+        $this->buildStepConfigureActions($form, $form_state);
         break;
 
       case 5:
+        $this->buildStepDataVisibility($form, $form_state);
+        break;
+
+      case 6:
         $this->buildStepPreviewActivate($form, $form_state);
         break;
     }
@@ -200,7 +218,72 @@ class WorkflowTemplateWizardForm extends FormBase {
   }
 
   /**
-   * Builds Step 2: Configure Webform.
+   * Builds Step 2: Visual Workflow Editor.
+   */
+  protected function buildStepVisualEditor(array &$form, FormStateInterface $form_state): void {
+    $template_id = $form_state->getValue('template_id');
+
+    $form['step_title'] = [
+      '#markup' => '<h2>' . $this->t('Step 2: Visual Workflow Editor') . '</h2>',
+    ];
+
+    $form['help'] = [
+      '#markup' => '<p>' . $this->t('Customize your workflow visually using the BPMN editor. Add, remove, or modify workflow steps to match your exact needs.') . '</p>',
+    ];
+
+    // Load template BPMN XML.
+    $bpmn_xml = $form_state->get('bpmn_xml');
+    if (!$bpmn_xml) {
+      $bpmn_xml = $this->templateManager->loadTemplate($template_id, TRUE);
+      $form_state->set('bpmn_xml', $bpmn_xml);
+    }
+
+    // BPMN.io editor container.
+    $form['bpmn_editor'] = [
+      '#type' => 'container',
+      '#attributes' => [
+        'id' => 'bpmn-io-container',
+        'class' => ['bpmn-editor-wrapper'],
+      ],
+    ];
+
+    // Canvas for BPMN.io.
+    $form['bpmn_editor']['canvas'] = [
+      '#markup' => '<div id="bpmn-canvas" class="bpmn-canvas"></div>',
+    ];
+
+    // Hidden field to store BPMN XML.
+    $form['bpmn_xml'] = [
+      '#type' => 'hidden',
+      '#default_value' => $bpmn_xml,
+      '#attributes' => [
+        'id' => 'bpmn-xml-data',
+      ],
+    ];
+
+    // Validation status.
+    $form['validation_status'] = [
+      '#type' => 'container',
+      '#attributes' => [
+        'id' => 'bpmn-validation-status',
+        'class' => ['bpmn-validation-status'],
+      ],
+      '#markup' => '<div class="validation-message"></div>',
+    ];
+
+    // Attach BPMN.io libraries and custom palette.
+    $form['#attached']['library'][] = 'bpmn_io/ui';
+    $form['#attached']['library'][] = 'aabenforms_workflows/bpmn_editor';
+    $form['#attached']['drupalSettings']['aabenforms_workflows']['bpmn'] = [
+      'xml' => $bpmn_xml,
+      'template_id' => $template_id,
+      'auto_save_url' => Url::fromRoute('aabenforms_workflows.wizard_autosave')->toString(),
+      'validate_url' => Url::fromRoute('aabenforms_workflows.wizard_validate')->toString(),
+    ];
+  }
+
+  /**
+   * Builds Step 3: Configure Webform.
    */
   protected function buildStepConfigureWebform(array &$form, FormStateInterface $form_state): void {
     $template_id = $form_state->getValue('template_id');
@@ -522,10 +605,11 @@ class WorkflowTemplateWizardForm extends FormBase {
   protected function getProgressSteps(int $current_step): array {
     $steps = [
       1 => $this->t('Select Template'),
-      2 => $this->t('Configure Webform'),
-      3 => $this->t('Configure Actions'),
-      4 => $this->t('Data Visibility'),
-      5 => $this->t('Preview & Activate'),
+      2 => $this->t('Visual Editor'),
+      3 => $this->t('Configure Webform'),
+      4 => $this->t('Configure Actions'),
+      5 => $this->t('Data Visibility'),
+      6 => $this->t('Preview & Activate'),
     ];
 
     $items = [];
@@ -553,7 +637,7 @@ class WorkflowTemplateWizardForm extends FormBase {
       ];
     }
 
-    if ($step < 5) {
+    if ($step < 6) {
       $form['actions']['next'] = [
         '#type' => 'submit',
         '#value' => $this->t('Next'),
@@ -585,10 +669,66 @@ class WorkflowTemplateWizardForm extends FormBase {
   }
 
   /**
+   * AJAX callback for autosaving BPMN XML.
+   */
+  public function autosaveBpmn(array &$form, FormStateInterface $form_state) {
+    $bpmn_xml = $form_state->getValue('bpmn_xml');
+    $form_state->set('bpmn_xml', $bpmn_xml);
+
+    // Return success response.
+    return [
+      '#type' => 'ajax',
+      '#commands' => [
+        [
+          'command' => 'invoke',
+          'method' => 'trigger',
+          'selector' => '#bpmn-validation-status',
+          'arguments' => ['bpmn:autosaved'],
+        ],
+      ],
+    ];
+  }
+
+  /**
+   * AJAX callback for validating BPMN XML.
+   */
+  public function validateBpmn(array &$form, FormStateInterface $form_state) {
+    $bpmn_xml = $form_state->getValue('bpmn_xml');
+
+    // Validate using BpmnTemplateManager.
+    $is_valid = $this->templateManager->validateTemplate($bpmn_xml);
+    $errors = $is_valid ? [] : $this->templateManager->getValidationErrors();
+
+    $response = [
+      'valid' => $is_valid,
+      'errors' => $errors,
+    ];
+
+    return [
+      '#type' => 'ajax',
+      '#commands' => [
+        [
+          'command' => 'invoke',
+          'method' => 'trigger',
+          'selector' => '#bpmn-validation-status',
+          'arguments' => ['bpmn:validated', [$response]],
+        ],
+      ],
+    ];
+  }
+
+  /**
    * Submit handler for next step.
    */
   public function nextStep(array &$form, FormStateInterface $form_state): void {
     $step = $form_state->get('step');
+
+    // Save BPMN XML when leaving step 2.
+    if ($step === 2) {
+      $bpmn_xml = $form_state->getValue('bpmn_xml');
+      $form_state->set('bpmn_xml', $bpmn_xml);
+    }
+
     $form_state->set('step', $step + 1);
     $form_state->setRebuild(TRUE);
   }

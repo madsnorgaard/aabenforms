@@ -3,19 +3,24 @@
 namespace Drupal\aabenforms_workflows\Plugin\Action;
 
 use Drupal\aabenforms_mitid\Service\MitIdSessionManager;
+use Drupal\Core\Action\Attribute\Action;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\eca\Attribute\EcaAction;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * ECA Action: Validate MitID session.
- *
- * @Action(
- *   id = "aabenforms_mitid_validate",
- *   label = @Translation("Validate MitID Session"),
- *   description = @Translation("Validates that a MitID authentication session is active and valid."),
- *   type = "aabenforms"
- * )
  */
+#[Action(
+  id: 'aabenforms_mitid_validate',
+  label: new TranslatableMarkup('Validate MitID Session'),
+  type: 'aabenforms',
+)]
+#[EcaAction(
+  description: new TranslatableMarkup('Validates that a MitID authentication session is active and valid.'),
+  version_introduced: '2.0.0',
+)]
 class MitIdValidateAction extends AabenFormsActionBase {
 
   /**
