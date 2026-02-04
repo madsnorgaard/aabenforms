@@ -4,7 +4,7 @@
 
 ---
 
-## 🚀 Quick Demo (15 minutes)
+##  Quick Demo (15 minutes)
 
 ### Prerequisites
 ```bash
@@ -45,7 +45,7 @@ Transaction ID: TXN-ABCDEF123456
 Amount: 300 DKK
 ```
 
-✅ **XFlow Feature Parity**: Payment processing works!
+ **XFlow Feature Parity**: Payment processing works!
 
 ---
 
@@ -74,7 +74,7 @@ Message ID: SMS-xxx-1234567890
 Segments: 1
 ```
 
-✅ **XFlow Feature Parity**: SMS notifications work!
+ **XFlow Feature Parity**: SMS notifications work!
 
 ---
 
@@ -98,7 +98,7 @@ echo "File URL: " . $result["file_url"] . "\n";
 '
 ```
 
-✅ **XFlow Feature Parity**: PDF generation works!
+ **XFlow Feature Parity**: PDF generation works!
 
 ---
 
@@ -129,13 +129,13 @@ echo "Booking ID: " . $booking["booking_id"] . "\n";
 '
 ```
 
-✅ **XFlow Feature Parity**: Calendar/booking works!
+ **XFlow Feature Parity**: Calendar/booking works!
 
 ---
 
 ### Demo 5: GIS Zoning Validation (3 minutes)
 
-**🎯 This feature EXCEEDS XFlow capabilities!**
+** This feature EXCEEDS XFlow capabilities!**
 
 ```bash
 echo "=== Testing GIS Service (Zoning Validation) ==="
@@ -167,7 +167,7 @@ foreach ($neighbors["neighbors"] as $neighbor) {
 '
 ```
 
-✅ **EXCEEDS XFlow**: Automatic GIS validation and neighbor discovery!
+ **EXCEEDS XFlow**: Automatic GIS validation and neighbor discovery!
 
 ---
 
@@ -190,21 +190,21 @@ $payment_result = $services["payment"]->processPayment([
   "order_id" => "WORKFLOW-DEMO-001",
   "payment_method" => "nets_easy",
 ]);
-echo "  ✅ Payment " . $payment_result["status"] . "\n";
+echo "   Payment " . $payment_result["status"] . "\n";
 
 echo "\nStep 2: Generate PDF permit...\n";
 $pdf_result = $services["pdf"]->generatePdf("parking_permit", [
   "vehicle_registration" => "DEMO123",
   "valid_until" => "2026-08-02",
 ]);
-echo "  ✅ PDF generated: " . $pdf_result["filename"] . "\n";
+echo "   PDF generated: " . $pdf_result["filename"] . "\n";
 
 echo "\nStep 3: Send SMS confirmation...\n";
 $sms_result = $services["sms"]->sendSms(
   "+4512345678",
   "Din parkeringslicens er godkendt! Se vedhæftet PDF."
 );
-echo "  ✅ SMS " . $sms_result["status"] . "\n";
+echo "   SMS " . $sms_result["status"] . "\n";
 
 echo "\n🎉 Complete workflow executed successfully!\n";
 echo "This is what XFlow does - but we did it with open source!\n";
@@ -213,20 +213,20 @@ echo "This is what XFlow does - but we did it with open source!\n";
 
 ---
 
-## 📊 Summary: ÅbenForms vs XFlow
+##  Summary: ÅbenForms vs XFlow
 
 | Feature | XFlow | ÅbenForms | Status |
 |---------|-------|-----------|--------|
-| Payment Processing | ✅ | ✅ Demonstrated | **PARITY** |
-| SMS Notifications | ✅ | ✅ Demonstrated | **PARITY** |
-| PDF Generation | ✅ | ✅ Demonstrated | **PARITY** |
-| Calendar Booking | ✅ | ✅ Demonstrated | **PARITY** |
-| GIS Validation | ⚠️ Limited | ✅ Full GIS + neighbors | **EXCEEDS** |
+| Payment Processing |  |  Demonstrated | **PARITY** |
+| SMS Notifications |  |  Demonstrated | **PARITY** |
+| PDF Generation |  |  Demonstrated | **PARITY** |
+| Calendar Booking |  |  Demonstrated | **PARITY** |
+| GIS Validation |  Limited |  Full GIS + neighbors | **EXCEEDS** |
 | Cost | €75K/5yr | €0 software license | **59% SAVINGS** |
 
 ---
 
-## 🎯 Key Talking Points for Demo
+##  Key Talking Points for Demo
 
 1. **"This is what XFlow does for €75,000 over 5 years..."**
    - Show payment processing
@@ -250,12 +250,12 @@ echo "This is what XFlow does - but we did it with open source!\n";
 
 ---
 
-## 🚀 Next Steps
+##  Next Steps
 
-1. ✅ **Core functionality works** (as demonstrated)
+1.  **Core functionality works** (as demonstrated)
 2. 🚧 **Complete UI** (frontend components)
 3. 🚧 **Add tests** (quality assurance)
-4. 📝 **Write docs** (user guides)
+4.  **Write docs** (user guides)
 5. 🎥 **Record videos** (training materials)
 
 **Status**: **Ready for pilot deployment in forward-thinking municipality!**

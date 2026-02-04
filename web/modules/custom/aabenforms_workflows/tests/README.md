@@ -57,90 +57,90 @@ ddev exec phpunit --coverage-html coverage web/modules/custom/aabenforms_workflo
 ## Unit Tests (35 tests)
 
 ### ProcessPaymentActionTest.php (5 tests)
-- ✅ `testSuccessfulPayment` - Verifies payment processing with mock service
-- ✅ `testFailedPayment` - Tests payment failure handling
-- ✅ `testInvalidAmount` - Validates amount validation (negative, zero)
-- ✅ `testMissingConfiguration` - Tests error handling for missing fields
-- ✅ `testPaymentServiceIntegration` - Verifies correct data passed to service
+-  `testSuccessfulPayment` - Verifies payment processing with mock service
+-  `testFailedPayment` - Tests payment failure handling
+-  `testInvalidAmount` - Validates amount validation (negative, zero)
+-  `testMissingConfiguration` - Tests error handling for missing fields
+-  `testPaymentServiceIntegration` - Verifies correct data passed to service
 
 ### SendSmsActionTest.php (5 tests)
-- ✅ `testSuccessfulSmsSend` - Tests SMS sending with Danish phone number
-- ✅ `testInvalidPhoneNumber` - Validates phone number format checking
-- ✅ `testTokenReplacement` - Tests dynamic token substitution
-- ✅ `testBulkSms` - Tests sending SMS to multiple recipients
-- ✅ `testSmsServiceIntegration` - Verifies service integration
+-  `testSuccessfulSmsSend` - Tests SMS sending with Danish phone number
+-  `testInvalidPhoneNumber` - Validates phone number format checking
+-  `testTokenReplacement` - Tests dynamic token substitution
+-  `testBulkSms` - Tests sending SMS to multiple recipients
+-  `testSmsServiceIntegration` - Verifies service integration
 
 ### GeneratePdfActionTest.php (5 tests)
-- ✅ `testPdfGeneration` - Tests PDF creation from template
-- ✅ `testTemplateRendering` - Tests template with data mapping
-- ✅ `testFieldMapping` - Validates field mapping configuration
-- ✅ `testFileEntityCreation` - Tests file entity creation
-- ✅ `testPdfServiceIntegration` - Verifies PDF service integration
+-  `testPdfGeneration` - Tests PDF creation from template
+-  `testTemplateRendering` - Tests template with data mapping
+-  `testFieldMapping` - Validates field mapping configuration
+-  `testFileEntityCreation` - Tests file entity creation
+-  `testPdfServiceIntegration` - Verifies PDF service integration
 
 ### FetchAvailableSlotsActionTest.php (5 tests)
-- ✅ `testSlotsFetch` - Tests retrieving available time slots
-- ✅ `testDateRangeFiltering` - Tests date range constraints
-- ✅ `testSlotDuration` - Tests different slot durations (30, 60, 90 min)
-- ✅ `testEmptySlots` - Tests handling when no slots available
-- ✅ `testCalendarServiceIntegration` - Verifies calendar service integration
+-  `testSlotsFetch` - Tests retrieving available time slots
+-  `testDateRangeFiltering` - Tests date range constraints
+-  `testSlotDuration` - Tests different slot durations (30, 60, 90 min)
+-  `testEmptySlots` - Tests handling when no slots available
+-  `testCalendarServiceIntegration` - Verifies calendar service integration
 
 ### BookAppointmentActionTest.php (5 tests)
-- ✅ `testSuccessfulBooking` - Tests booking a time slot
-- ✅ `testDoubleBookingPrevention` - Tests double-booking prevention
-- ✅ `testMultipleAttendees` - Tests booking with 2 attendees (marriage)
-- ✅ `testInvalidSlot` - Tests error handling for invalid slot
-- ✅ `testBookingServiceIntegration` - Verifies service integration
+-  `testSuccessfulBooking` - Tests booking a time slot
+-  `testDoubleBookingPrevention` - Tests double-booking prevention
+-  `testMultipleAttendees` - Tests booking with 2 attendees (marriage)
+-  `testInvalidSlot` - Tests error handling for invalid slot
+-  `testBookingServiceIntegration` - Verifies service integration
 
 ### SendReminderActionTest.php (5 tests)
-- ✅ `testReminderScheduling` - Tests scheduling future reminders
-- ✅ `testEmailReminder` - Tests email reminder sending
-- ✅ `testSmsReminder` - Tests SMS reminder sending
-- ✅ `testDelayCalculation` - Tests delay calculation (7 days before)
-- ✅ `testQueueIntegration` - Verifies queue system integration
+-  `testReminderScheduling` - Tests scheduling future reminders
+-  `testEmailReminder` - Tests email reminder sending
+-  `testSmsReminder` - Tests SMS reminder sending
+-  `testDelayCalculation` - Tests delay calculation (7 days before)
+-  `testQueueIntegration` - Verifies queue system integration
 
 ### ValidateZoningActionTest.php (5 tests)
-- ✅ `testZoningValidation` - Tests GIS zoning lookup
-- ✅ `testAllowedConstruction` - Tests permitted construction types
-- ✅ `testProhibitedConstruction` - Tests prohibited construction types
-- ✅ `testInvalidAddress` - Tests error handling for invalid address
-- ✅ `testGisServiceIntegration` - Verifies GIS service integration
+-  `testZoningValidation` - Tests GIS zoning lookup
+-  `testAllowedConstruction` - Tests permitted construction types
+-  `testProhibitedConstruction` - Tests prohibited construction types
+-  `testInvalidAddress` - Tests error handling for invalid address
+-  `testGisServiceIntegration` - Verifies GIS service integration
 
 ## Integration Tests (8 tests)
 
 ### DemoWorkflowsIntegrationTest.php
-- ✅ `testParkingPermitWorkflow` - Tests full 11-step parking permit workflow
-- ✅ `testMarriageBookingWorkflow` - Tests full 19-step marriage booking workflow
-- ✅ `testBuildingPermitWorkflow` - Tests building permit with GIS validation
-- ✅ `testWorkflowErrorHandling` - Tests error recovery
-- ✅ `testWorkflowPerformance` - Tests performance with 10 submissions
+-  `testParkingPermitWorkflow` - Tests full 11-step parking permit workflow
+-  `testMarriageBookingWorkflow` - Tests full 19-step marriage booking workflow
+-  `testBuildingPermitWorkflow` - Tests building permit with GIS validation
+-  `testWorkflowErrorHandling` - Tests error recovery
+-  `testWorkflowPerformance` - Tests performance with 10 submissions
 
 **Parking Permit Workflow (11 steps tested):**
 1. Form Submitted
 2. MitID Validation
 3. CPR Lookup
 4. Calculate Fee
-5. Process Payment ✅
-6. Generate Permit PDF ✅
-7. Send SMS Confirmation ✅
+5. Process Payment 
+6. Generate Permit PDF 
+7. Send SMS Confirmation 
 8. Send Email with PDF
 9. Update Case Management
 10. Audit Log
-11. Workflow Complete ✅
+11. Workflow Complete 
 
 **Marriage Booking Workflow (19 steps tested):**
 1. Form Submitted
 2. Partner 1 Details
 3. Partner 2 Details
-4. Fetch Available Slots ✅
+4. Fetch Available Slots 
 5. Display Calendar
 6. Select Time Slot
-7. Book Appointment ✅
-8. Double-Booking Prevention ✅
+7. Book Appointment 
+8. Double-Booking Prevention 
 9. Confirmation Email to Partner 1
 10. Confirmation Email to Partner 2
-11. Confirmation SMS to Partner 1 ✅
-12. Confirmation SMS to Partner 2 ✅
-13. Schedule Reminder (7 days before) ✅
+11. Confirmation SMS to Partner 1 
+12. Confirmation SMS to Partner 2 
+13. Schedule Reminder (7 days before) 
 14. Generate Ceremony Certificate
 15. Send to Case Worker
 16. Audit Log
@@ -152,14 +152,14 @@ ddev exec phpunit --coverage-html coverage web/modules/custom/aabenforms_workflo
 1. Form Submitted
 2. Property Details
 3. Construction Type
-4. GIS Zoning Validation ✅
-5. Fetch Neighbors (50m radius) ✅
+4. GIS Zoning Validation 
+5. Fetch Neighbors (50m radius) 
 6. Notify Neighbors
-7. Generate Application PDF ✅
+7. Generate Application PDF 
 8. Assign to Case Worker
 9. Under Review
 10. Approval/Rejection
-11. Workflow Complete ✅
+11. Workflow Complete 
 
 ## Test Coverage
 

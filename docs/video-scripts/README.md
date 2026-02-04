@@ -694,14 +694,14 @@ Each page includes:
 - Post as native video (better reach than YouTube link)
 - Caption format:
   ```
-  🚀 [Compelling hook question or statement]
+   [Compelling hook question or statement]
 
   [2-3 sentences explaining value]
 
   Key takeaways:
-  ✓ [Benefit 1]
-  ✓ [Benefit 2]
-  ✓ [Benefit 3]
+   [Benefit 1]
+   [Benefit 2]
+   [Benefit 3]
 
   Watch full video: [link]
 

@@ -76,9 +76,9 @@
 - Animated bar chart showing cost comparison
 - Highlight "90% savings" in bold
 - Show checkmarks for benefits:
-  - ✓ No vendor lock-in
-  - ✓ Full data sovereignty
-  - ✓ Community-driven development
+  -  No vendor lock-in
+  -  Full data sovereignty
+  -  Community-driven development
 
 #### RECORDING TIPS
 - Pause for 2 seconds on cost comparison chart
@@ -102,14 +102,14 @@
 
 | Feature | XFlow | ÅbenForms |
 |---------|-------|-----------|
-| MitID Integration | ✓ | ✓ |
-| Payment Processing | ✓ | ✓ |
-| PDF Generation | ✓ | ✓ |
-| SMS Notifications | ✓ | ✓ |
-| GIS Zoning Validation | ✗ | ✓ |
-| Visual Workflow Builder | Limited | ✓ |
-| Open Source | ✗ | ✓ |
-| Self-Hosting | ✗ | ✓ |
+| MitID Integration |  |  |
+| Payment Processing |  |  |
+| PDF Generation |  |  |
+| SMS Notifications |  |  |
+| GIS Zoning Validation | ✗ |  |
+| Visual Workflow Builder | Limited |  |
+| Open Source | ✗ |  |
+| Self-Hosting | ✗ |  |
 
 #### VISUAL CALLOUTS
 - Highlight each feature with animated checkmark

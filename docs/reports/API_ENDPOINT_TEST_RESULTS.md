@@ -33,7 +33,7 @@
 | jsonapi_frontend | 1.0.10 | Enabled | Frontend integration |
 | jsonapi_frontend_webform | 1.0.3 | Enabled | Webform JSON:API support |
 
-**Result:** ✅ PASS - All required modules installed and enabled
+**Result:**  PASS - All required modules installed and enabled
 
 ---
 
@@ -80,7 +80,7 @@ curl https://aabenforms.ddev.site/jsonapi
 }
 ```
 
-**Result:** ✅ PASS - JSON:API accessible and returns proper structure
+**Result:**  PASS - JSON:API accessible and returns proper structure
 
 ---
 
@@ -98,9 +98,9 @@ validate_configuration_integrity: true
 ```
 
 **Impact:**
-- ❌ POST requests to JSON:API endpoints return 405 Method Not Allowed
-- ❌ Cannot create webform submissions via standard JSON:API
-- ✅ Custom API endpoints bypass this restriction
+-  POST requests to JSON:API endpoints return 405 Method Not Allowed
+-  Cannot create webform submissions via standard JSON:API
+-  Custom API endpoints bypass this restriction
 
 **Error Response:**
 ```json
@@ -115,7 +115,7 @@ validate_configuration_integrity: true
 
 **Recommendation:** Either enable write operations in JSON:API or rely on custom endpoints.
 
-**Result:** ⚠️ WARNING - Write operations disabled
+**Result:**  WARNING - Write operations disabled
 
 ---
 
@@ -153,7 +153,7 @@ curl https://aabenforms.ddev.site/jsonapi/webform/webform
 
 **Issue:** Anonymous users cannot view webform configurations (requires "access webform configuration" permission)
 
-**Result:** ⚠️ WARNING - Requires authentication
+**Result:**  WARNING - Requires authentication
 
 ---
 
@@ -177,7 +177,7 @@ curl https://aabenforms.ddev.site/jsonapi/webform/webform/01750a1d-773f-4189-938
 }
 ```
 
-**Result:** ❌ FAIL - Requires admin permissions
+**Result:**  FAIL - Requires admin permissions
 
 ---
 
@@ -233,7 +233,7 @@ curl https://aabenforms.ddev.site/api/webform/test
 }
 ```
 
-**Result:** ✅ PASS - Returns complete webform schema
+**Result:**  PASS - Returns complete webform schema
 
 ### Test: POST /api/webform/{id}/submit
 
@@ -263,7 +263,7 @@ Argument #1 ($string) must be of type string, null given
 
 **Issue:** Bug in AuditLogAction plugin when processing webform submissions. The submission is being created, but post-processing workflow actions are failing.
 
-**Result:** ⚠️ PARTIAL - Submission accepted but workflow action fails
+**Result:**  PARTIAL - Submission accepted but workflow action fails
 
 ---
 
@@ -306,7 +306,7 @@ curl https://aabenforms.ddev.site/api/workflow/calendar/slots?start=2026-02-10
 <title>Page not found</title>
 ```
 
-**Result:** ❌ FAIL - Endpoint not defined (mock service endpoint not implemented)
+**Result:**  FAIL - Endpoint not defined (mock service endpoint not implemented)
 
 ### Test: Auth Status Endpoint
 
@@ -320,7 +320,7 @@ curl https://aabenforms.ddev.site/api/auth/status
 <title>Page not found</title>
 ```
 
-**Result:** ❌ FAIL - Endpoint not defined
+**Result:**  FAIL - Endpoint not defined
 
 ---
 
@@ -345,7 +345,7 @@ aabenforms_mitid.logout:
     _access: 'TRUE'
 ```
 
-**Result:** ✅ DEFINED - Routes exist but require MitID configuration
+**Result:**  DEFINED - Routes exist but require MitID configuration
 
 ---
 
@@ -370,12 +370,12 @@ vary: Access-Control-Request-Method
 ```
 
 **Analysis:**
-- ✅ Wildcard origin (`*`) allows all domains
-- ✅ All HTTP methods allowed
-- ✅ Required headers supported (content-type, accept, authorization)
-- ⚠️ Max-age: 0 means preflight requests not cached (may impact performance)
+-  Wildcard origin (`*`) allows all domains
+-  All HTTP methods allowed
+-  Required headers supported (content-type, accept, authorization)
+-  Max-age: 0 means preflight requests not cached (may impact performance)
 
-**Result:** ✅ PASS - CORS properly configured for headless frontend
+**Result:**  PASS - CORS properly configured for headless frontend
 
 ---
 
@@ -397,7 +397,7 @@ runtimeConfig: {
 
 **Note:** No `.env` file exists in frontend (uses default configuration)
 
-**Result:** ✅ PASS - Frontend configured with correct backend URL
+**Result:**  PASS - Frontend configured with correct backend URL
 
 ---
 
@@ -466,7 +466,7 @@ runtimeConfig: {
 }
 ```
 
-**Result:** ✅ PASS - Both formats follow standards
+**Result:**  PASS - Both formats follow standards
 
 ---
 
@@ -474,17 +474,17 @@ runtimeConfig: {
 
 | Test Category | Status | Pass Rate |
 |--------------|--------|-----------|
-| JSON:API Module Status | ✅ Pass | 100% |
-| JSON:API Base Endpoint | ✅ Pass | 100% |
-| JSON:API Configuration | ⚠️ Warning | 50% |
-| Webform List Endpoint | ⚠️ Warning | 50% |
-| Webform Schema (JSON:API) | ❌ Fail | 0% |
-| Custom Webform API | ⚠️ Partial | 75% |
-| Workflow Endpoints | ❌ Fail | 0% |
-| MitID Endpoints | ✅ Defined | 100% |
-| CORS Configuration | ✅ Pass | 100% |
-| Frontend Configuration | ✅ Pass | 100% |
-| Error Handling | ⚠️ Issues | 33% |
+| JSON:API Module Status |  Pass | 100% |
+| JSON:API Base Endpoint |  Pass | 100% |
+| JSON:API Configuration |  Warning | 50% |
+| Webform List Endpoint |  Warning | 50% |
+| Webform Schema (JSON:API) |  Fail | 0% |
+| Custom Webform API |  Partial | 75% |
+| Workflow Endpoints |  Fail | 0% |
+| MitID Endpoints |  Defined | 100% |
+| CORS Configuration |  Pass | 100% |
+| Frontend Configuration |  Pass | 100% |
+| Error Handling |  Issues | 33% |
 
 **Overall Pass Rate: 58%**
 

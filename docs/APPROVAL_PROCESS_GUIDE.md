@@ -652,8 +652,8 @@ T+2h:   Parent 1 notified of rejection
 **Outcomes**:
 - ✗ No case worker review
 - ✗ No SBSYS case created
-- ✓ Municipality can resubmit with adjusted details
-- ✓ All actions logged for audit
+-  Municipality can resubmit with adjusted details
+-  All actions logged for audit
 
 ### Scenario 3: Timeout (No Response)
 
@@ -673,8 +673,8 @@ T+14d:    Parent 2 notified of missed deadline
 
 **Outcomes**:
 - ✗ Request not approved
-- ✓ Can be resubmitted
-- ✓ All parties notified of timeout
+-  Can be resubmitted
+-  All parties notified of timeout
 
 ### Scenario 4: Case Worker Requests More Information
 
@@ -694,9 +694,9 @@ T+72h:    Workflow completes
 ```
 
 **Outcomes**:
-- ✓ Workflow pauses, doesn't timeout
-- ✓ Citizen has 7 days to respond
-- ✓ If citizen doesn't respond → auto-reject
+-  Workflow pauses, doesn't timeout
+-  Citizen has 7 days to respond
+-  If citizen doesn't respond → auto-reject
 
 ### Scenario 5: Escalation to Supervisor
 
@@ -713,9 +713,9 @@ T+48h:    Workflow completes
 ```
 
 **Outcomes**:
-- ✓ Proper approval authority
-- ✓ Decision documented
-- ✓ Exception noted in audit log
+-  Proper approval authority
+-  Decision documented
+-  Exception noted in audit log
 
 ---
 

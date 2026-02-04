@@ -94,19 +94,19 @@
 1. Show requirements page with sections:
 
    **Krav til ansøgere:**
-   - ✓ Begge parter skal være fyldt 18 år
-   - ✓ Ingen af parterne må være gift i forvejen
-   - ✓ Mindst én part skal være folkeregistreret i kommunen
+   -  Begge parter skal være fyldt 18 år
+   -  Ingen af parterne må være gift i forvejen
+   -  Mindst én part skal være folkeregistreret i kommunen
 
    **Hvad skal I bruge:**
-   - ✓ MitID for begge parter
-   - ✓ Oplysninger om 2 vidner (navn, CPR)
-   - ✓ Betalingskort (1.200 kr)
+   -  MitID for begge parter
+   -  Oplysninger om 2 vidner (navn, CPR)
+   -  Betalingskort (1.200 kr)
 
    **Bookning:**
-   - ✓ Vælg mellem 3 ceremoniesteder
-   - ✓ Ledige datoer 3 uger frem
-   - ✓ Ceremonier afholdes tirs-lør kl. 10-16
+   -  Vælg mellem 3 ceremoniesteder
+   -  Ledige datoer 3 uger frem
+   -  Ceremonier afholdes tirs-lør kl. 10-16
 
 2. Click "Start booking" button
 
@@ -145,12 +145,12 @@
    - **Navn**: Anna Andersen
    - **CPR**: 010185-1234
    - **Adresse**: Vestergade 45, 8000 Aarhus C
-   - **Civilstand**: Ugift ✓
-   - **Folkeregister**: Aarhus Kommune ✓
+   - **Civilstand**: Ugift 
+   - **Folkeregister**: Aarhus Kommune 
 6. Show validation checkmarks:
-   - ✓ Over 18 år
-   - ✓ Ugift
-   - ✓ Folkeregistreret i kommunen
+   -  Over 18 år
+   -  Ugift
+   -  Folkeregistreret i kommunen
 7. Show contact information pre-filled:
    - Email: anna.andersen@example.dk
    - Telefon: +45 20 12 34 56
@@ -160,8 +160,8 @@
 - Highlight "Part 1" badge (blue)
 - Show MitID authentication flow diagram overlay
 - Animate validation checkmarks (green, one by one)
-- Circle marital status verification: "Ugift ✓"
-- Highlight residence verification: "Aarhus Kommune ✓"
+- Circle marital status verification: "Ugift "
+- Highlight residence verification: "Aarhus Kommune "
 - Show data flow: MitID → CPR Register → ÅbenForms
 - Box pre-filled contact information
 
@@ -185,7 +185,7 @@
 #### SCREEN ACTIONS
 1. Show "Trin 1b - Part 2 godkendelse"
 2. Display message:
-   "Anna Andersen er godkendt ✓
+   "Anna Andersen er godkendt 
    Nu skal part 2 logge ind med MitID"
 3. Show "Log ud Anna" option (grayed out for security)
 4. Click "Part 2: Log ind med MitID"
@@ -197,18 +197,18 @@
    - **Navn**: Bo Bertelsen
    - **CPR**: 020288-1234
    - **Adresse**: Nørregade 12, 8200 Aarhus N
-   - **Civilstand**: Ugift ✓
-   - **Folkeregister**: Aarhus Kommune ✓
+   - **Civilstand**: Ugift 
+   - **Folkeregister**: Aarhus Kommune 
 7. Show validation checkmarks:
-   - ✓ Over 18 år
-   - ✓ Ugift
-   - ✓ Folkeregistreret i kommunen
-   - ✓ Ikke i familie med part 1 (automatic check)
+   -  Over 18 år
+   -  Ugift
+   -  Folkeregistreret i kommunen
+   -  Ikke i familie med part 1 (automatic check)
 8. Show contact information:
    - Email: bo.bertelsen@example.dk
    - Telefon: +45 30 12 34 56
 9. Show summary panel:
-   "Begge parter godkendt ✓
+   "Begge parter godkendt 
    - Part 1: Anna Andersen
    - Part 2: Bo Bertelsen"
 10. Click "Fortsæt til booking"
@@ -217,7 +217,7 @@
 - Highlight "Part 2" badge (green, different from Part 1)
 - Show both partners' data side by side
 - Animate checkmark when both are validated
-- Display relationship validation: "Ikke i familie ✓"
+- Display relationship validation: "Ikke i familie "
 - Show security feature: Can't proceed without both logins
 - Highlight summary panel showing both names
 
@@ -247,7 +247,7 @@
 3. Click on available date: **23. februar 2024**
 4. Show time slot selector:
    - 10:00 (Optaget)
-   - 11:00 (Ledig) ✓
+   - 11:00 (Ledig) 
    - 12:00 (Ledig)
    - 13:00 (Optaget)
    - 14:00 (Ledig)
@@ -310,18 +310,18 @@
    - Efternavn: **Christensen**
    - CPR: **1510901234**
    - Relation: **Veninde** (dropdown)
-   - Validation: ✓ Over 18 år
+   - Validation:  Over 18 år
 
    **Vidne 2:**
    - Fornavn: **David**
    - Efternavn: **Davidsen**
    - CPR: **2010851234**
    - Relation: **Ven** (dropdown)
-   - Validation: ✓ Over 18 år
+   - Validation:  Over 18 år
 
 3. Show age validation (automatic from CPR)
 4. Optional field: "Vil I have særlige ønsker?"
-   - Checkbox: ✓ Vi medbringer egen musik
+   - Checkbox:  Vi medbringer egen musik
    - Text field: "Vi vil gerne have 'A Thousand Years' spillet"
 5. Click "Fortsæt til betaling"
 
@@ -365,7 +365,7 @@
    - CVV: 123
 4. Click "Betal 1.200 kr"
 5. Show processing (2 seconds)
-6. Show success page: "✓ Jeres vielse er booket!"
+6. Show success page: " Jeres vielse er booket!"
 
 #### VISUAL CALLOUTS
 - Box total amount: **1.200 kr**

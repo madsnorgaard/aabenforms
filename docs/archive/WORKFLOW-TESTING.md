@@ -4,7 +4,7 @@
 
 The ÅbenForms ECA workflow system is **functional and tested**. This guide shows how to test workflows with mock MitID data.
 
-## What Works ✅
+## What Works 
 
 ### 1. ECA Action Plugins
 All 4 action plugins are registered and functional:
@@ -156,7 +156,7 @@ Complete
 
 ### ECA Token Configuration
 The workflow configuration needs proper token mapping to pass data between actions. Currently:
-- Actions execute ✓
+- Actions execute 
 - Token environment not fully configured ✗
 
 **Workaround**: Use unit tests and integration tests to verify functionality. The tests mock the token environment and prove workflows work correctly.
@@ -169,7 +169,7 @@ Missing default for `message_template` configuration key.
 
 ## Production Readiness
 
-### What's Ready ✅
+### What's Ready 
 - Action plugins (fully tested)
 - MitID session management
 - CPR/CVR lookup integration
