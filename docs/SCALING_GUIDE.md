@@ -1456,18 +1456,18 @@ k6 run load-test.js
   scenarios: (100.00%) 1 scenario, 100 max VUs, 16m30s max duration (incl. graceful stop):
            * default: Up to 100 looping VUs for 16m0s over 5 stages (gracefulRampDown: 30s, gracefulStop: 30s)
 
-     ✓ homepage status 200
-     ✓ login page status 200
-     ✓ API status 200
+      homepage status 200
+      login page status 200
+      API status 200
 
-     checks.........................: 100.00% ✓ 9000      ✗ 0
+     checks.........................: 100.00%  9000      ✗ 0
      data_received..................: 180 MB  190 kB/s
      data_sent......................: 1.2 MB  1.3 kB/s
      http_req_blocked...............: avg=1.2ms    min=0s     med=0s      max=120ms   p(90)=0s      p(95)=0s
      http_req_connecting............: avg=0.8ms    min=0s     med=0s      max=80ms    p(90)=0s      p(95)=0s
-   ✓ http_req_duration..............: avg=428ms    min=120ms  med=380ms   max=1.8s    p(90)=720ms   p(95)=980ms
+    http_req_duration..............: avg=428ms    min=120ms  med=380ms   max=1.8s    p(90)=720ms   p(95)=980ms
        { expected_response:true }...: avg=428ms    min=120ms  med=380ms   max=1.8s    p(90)=720ms   p(95)=980ms
-   ✓ http_req_failed................: 0.00%   ✓ 0         ✗ 9000
+    http_req_failed................: 0.00%    0         ✗ 9000
      http_req_receiving.............: avg=2.1ms    min=0s     med=1.2ms   max=50ms    p(90)=4.5ms   p(95)=6.2ms
      http_req_sending...............: avg=0.1ms    min=0s     med=0s      max=5ms     p(90)=0.2ms   p(95)=0.4ms
      http_req_tls_handshaking.......: avg=0.4ms    min=0s     med=0s      max=40ms    p(90)=0s      p(95)=0s
@@ -1480,10 +1480,10 @@ k6 run load-test.js
 ```
 
 **Interpretation**:
-- ✅ All checks passed (100% success rate)
-- ✅ 95th percentile < 2s (980ms, within threshold)
-- ✅ Error rate 0% (target: < 1%)
-- ✅ System stable under 100 concurrent users
+-  All checks passed (100% success rate)
+-  95th percentile < 2s (980ms, within threshold)
+-  Error rate 0% (target: < 1%)
+-  System stable under 100 concurrent users
 
 ---
 

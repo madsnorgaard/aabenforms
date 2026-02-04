@@ -29,9 +29,9 @@
 
 ### On-Screen Text
 ```
-✓ No technical knowledge required
-✓ Pre-built templates available
-✓ GDPR compliant by default
+ No technical knowledge required
+ Pre-built templates available
+ GDPR compliant by default
 ```
 
 ---
@@ -95,11 +95,11 @@ Select Existing Form: [dagtilbud_form]
 
 **On-Screen**:
 ```
-✓ Require MitID Authentication
+ Require MitID Authentication
 Authentication Level: High
 Who Must Authenticate:
-  ✓ Parent 1
-  ✓ Parent 2
+   Parent 1
+   Parent 2
 ```
 
 > "Vi kræver MitID-godkendelse med højt sikkerhedsniveau for begge forældre."
@@ -123,8 +123,8 @@ Both Parents Must Approve: Yes
 
 **On-Screen**:
 ```
-✓ Email
-✓ Digital Post
+ Email
+ Digital Post
 Data Visibility: Parents Living Apart → Limited
 ```
 
@@ -148,11 +148,11 @@ Data Visibility: Parents Living Apart → Limited
 
 **On-Screen**:
 ```
-✓ Workflow ID: dagtilbud_indskrivning_aarhus
-✓ Authentication: MitID High
-✓ Approval Flow: Parallel, both parents
-✓ Notifications: Email + Digital Post
-✓ GDPR: Fully compliant
+ Workflow ID: dagtilbud_indskrivning_aarhus
+ Authentication: MitID High
+ Approval Flow: Parallel, both parents
+ Notifications: Email + Digital Post
+ GDPR: Fully compliant
 ```
 
 > "Her er en oversigt over vores workflow. Alt ser godt ud!"
@@ -234,8 +234,8 @@ Parent 2: test-parent2@aarhus.dk
 Task Queue:
   Dagtilbudsindskrivning - Test Barn
   Status: Awaiting Review
-  Parent 1: ✓ Approved (2026-02-02 09:30)
-  Parent 2: ✓ Approved (2026-02-02 11:20)
+  Parent 1:  Approved (2026-02-02 09:30)
+  Parent 2:  Approved (2026-02-02 11:20)
 ```
 
 > "Nu ser sagsbehandleren opgaven i deres kø."
@@ -254,12 +254,12 @@ Task Queue:
 
 **On-Screen**:
 ```
-✓ Test Completed Successfully
-✓ Both parents approved
-✓ Case worker approved
-✓ SBSYS case created (#98765)
-✓ Digital Post sent to both parents
-✓ All actions logged
+ Test Completed Successfully
+ Both parents approved
+ Case worker approved
+ SBSYS case created (#98765)
+ Digital Post sent to both parents
+ All actions logged
 ```
 
 > "Succes! Workflowet fungerer perfekt."
@@ -344,9 +344,9 @@ Audit Log:
 
 **On-Screen**:
 ```
-✓ Workflow Activated
-✓ Now accepting live submissions
-✓ Citizens can submit at: /form/dagtilbud-aarhus
+ Workflow Activated
+ Now accepting live submissions
+ Citizens can submit at: /form/dagtilbud-aarhus
 ```
 
 > "Og nu er workflowet live!"
@@ -369,10 +369,10 @@ Audit Log:
 **On-Screen**:
 ```
 What You've Learned:
-  ✓ Choose the right template
-  ✓ Configure with the wizard
-  ✓ Test before going live
-  ✓ Monitor active workflows
+   Choose the right template
+   Configure with the wizard
+   Test before going live
+   Monitor active workflows
 ```
 
 > "ÅbenForms gør det nemt at automatisere kommunale processer uden teknisk viden."
