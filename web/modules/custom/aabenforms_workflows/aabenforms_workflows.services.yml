@@ -27,3 +27,29 @@ services:
     arguments:
       - '@private_key'
       - '@logger.factory'
+
+  aabenforms_workflows.payment_service:
+    class: Drupal\aabenforms_workflows\Service\PaymentService
+    arguments:
+      - '@logger.factory'
+
+  aabenforms_workflows.sms_service:
+    class: Drupal\aabenforms_workflows\Service\SmsService
+    arguments:
+      - '@logger.factory'
+
+  aabenforms_workflows.pdf_service:
+    class: Drupal\aabenforms_workflows\Service\PdfService
+    arguments:
+      - '@file_system'
+      - '@logger.factory'
+
+  aabenforms_workflows.calendar_service:
+    class: Drupal\aabenforms_workflows\Service\CalendarService
+    arguments:
+      - '@logger.factory'
+
+  aabenforms_workflows.gis_service:
+    class: Drupal\aabenforms_workflows\Service\GisService
+    arguments:
+      - '@logger.factory'

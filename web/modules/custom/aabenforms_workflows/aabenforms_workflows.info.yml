@@ -8,3 +8,5 @@ dependencies:
   - aabenforms_core:aabenforms_core
   - eca:eca
   - webform:webform
+  - modeler_api:modeler_api
+  - bpmn_io:bpmn_io

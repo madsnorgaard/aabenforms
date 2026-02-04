@@ -3,19 +3,24 @@
 namespace Drupal\aabenforms_workflows\Plugin\Action;
 
 use Drupal\aabenforms_core\Service\AuditLogger;
+use Drupal\Core\Action\Attribute\Action;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\eca\Attribute\EcaAction;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * ECA Action: Audit Log Entry.
- *
- * @Action(
- *   id = "aabenforms_audit_log",
- *   label = @Translation("Audit Log"),
- *   description = @Translation("Creates an audit log entry for GDPR compliance."),
- *   type = "aabenforms"
- * )
  */
+#[Action(
+  id: 'aabenforms_audit_log',
+  label: new TranslatableMarkup('Audit Log'),
+  type: 'aabenforms',
+)]
+#[EcaAction(
+  description: new TranslatableMarkup('Creates an audit log entry for GDPR compliance.'),
+  version_introduced: '2.0.0',
+)]
 class AuditLogAction extends AabenFormsActionBase {
 
   /**

@@ -1,0 +1,52 @@
+{#
+/**
+ * @file
+ * Template for workflow template card with visual preview.
+ *
+ * Available variables:
+ * - template_id: Template identifier.
+ * - template_name: Human-readable template name.
+ * - category: Template category.
+ * - category_badge: HTML for category badge.
+ * - description: Template description.
+ * - preview_url: URL for BPMN preview.
+ * - use_link: Link render array for "Use This Template" button.
+ */
+#}
+<div class="template-card" data-template-id="{{ template_id }}">
+  <div class="template-card__preview">
+    <div class="bpmn-preview-thumbnail" data-preview-url="{{ preview_url }}">
+      <div class="bpmn-preview-loading">
+        <span class="loading-spinner"></span>
+        <span class="loading-text">Loading preview...</span>
+      </div>
+      <div class="bpmn-preview-canvas" id="preview-{{ template_id }}"></div>
+    </div>
+  </div>
+
+  <div class="template-card__content">
+    <div class="template-card__header">
+      <h3 class="template-card__title">{{ template_name }}</h3>
+      <div class="template-card__badge">
+        {{ category_badge|raw }}
+      </div>
+    </div>
+
+    <div class="template-card__description">
+      {{ description }}
+    </div>
+
+    <div class="template-card__meta">
+      <span class="template-id-label">Template ID:</span>
+      <code class="template-id-value">{{ template_id }}</code>
+    </div>
+
+    <div class="template-card__actions">
+      {{ use_link }}
+      <a href="{{ preview_url }}" class="button button--small preview-button" target="_blank">
+        <span class="preview-icon">👁</span>
+        View Full Preview
+      </a>
+    </div>
+  </div>
+</div>

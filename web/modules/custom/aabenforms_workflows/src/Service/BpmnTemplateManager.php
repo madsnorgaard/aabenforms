@@ -105,11 +105,13 @@ class BpmnTemplateManager {
    *
    * @param string $template_id
    *   The template identifier.
+   * @param bool $as_string
+   *   If TRUE, returns XML string. If FALSE, returns SimpleXMLElement.
    *
-   * @return \SimpleXMLElement|null
+   * @return \SimpleXMLElement|string|null
    *   The parsed BPMN XML or NULL if not found/invalid.
    */
-  public function loadTemplate(string $template_id): ?\SimpleXMLElement {
+  public function loadTemplate(string $template_id, bool $as_string = FALSE): \SimpleXMLElement|string|null {
     $file = $this->getTemplatePath($template_id);
 
     if (!file_exists($file)) {
@@ -120,6 +122,10 @@ class BpmnTemplateManager {
     }
 
     try {
+      if ($as_string) {
+        return file_get_contents($file);
+      }
+
       $xml = simplexml_load_file($file, 'SimpleXMLElement', LIBXML_NONET | LIBXML_NOENT);
       return $xml !== FALSE ? $xml : NULL;
     }
@@ -133,30 +139,43 @@ class BpmnTemplateManager {
   }
 
   /**
+   * Validation errors storage.
+   *
+   * @var array
+   */
+  protected array $validationErrors = [];
+
+  /**
    * Validates a BPMN template against schema.
    *
-   * @param string $template_id
-   *   The template identifier.
+   * @param string $template_id_or_xml
+   *   The template identifier or raw XML string.
    *
-   * @return array
-   *   Validation results with 'valid' boolean and 'errors' array.
+   * @return bool
+   *   TRUE if valid, FALSE otherwise.
    */
-  public function validateTemplate(string $template_id): array {
-    $xml = $this->loadTemplate($template_id);
+  public function validateTemplate(string $template_id_or_xml): bool {
+    // Determine if input is XML or template ID.
+    $is_xml = str_starts_with(trim($template_id_or_xml), '<?xml');
 
-    if (!$xml) {
-      return [
-        'valid' => FALSE,
-        'errors' => ['Failed to load template'],
-      ];
+    if ($is_xml) {
+      $xml = $this->parseXmlString($template_id_or_xml);
+    }
+    else {
+      $xml = $this->loadTemplate($template_id_or_xml);
     }
 
-    $errors = [];
+    if (!$xml) {
+      $this->validationErrors = ['Failed to load or parse template'];
+      return FALSE;
+    }
+
+    $this->validationErrors = [];
 
     // Check for required BPMN 2.0 namespace.
     $namespaces = $xml->getNamespaces(TRUE);
     if (!isset($namespaces['bpmn']) && !isset($namespaces['bpmn2'])) {
-      $errors[] = 'Missing BPMN 2.0 namespace';
+      $this->validationErrors[] = 'Missing BPMN 2.0 namespace';
     }
 
     // Register namespace for XPath queries.
@@ -168,25 +187,77 @@ class BpmnTemplateManager {
     // Check for at least one process.
     $processes = $xml->xpath('//bpmn:process');
     if (empty($processes)) {
-      $errors[] = 'No BPMN process found';
+      $this->validationErrors[] = 'No BPMN process found';
     }
 
     // Check for start event.
     $start_events = $xml->xpath('//bpmn:startEvent');
     if (empty($start_events)) {
-      $errors[] = 'No start event found';
+      $this->validationErrors[] = 'No start event found - every workflow must have a start point';
     }
 
     // Check for end event.
     $end_events = $xml->xpath('//bpmn:endEvent');
     if (empty($end_events)) {
-      $errors[] = 'No end event found';
+      $this->validationErrors[] = 'No end event found - every workflow must have an end point';
     }
 
-    return [
-      'valid' => empty($errors),
-      'errors' => $errors,
-    ];
+    // Validate sequence flows reference valid elements.
+    $sequence_flows = $xml->xpath('//bpmn:sequenceFlow');
+    if ($sequence_flows) {
+      $all_elements = $xml->xpath('//*[@id]');
+      $element_ids = [];
+      foreach ($all_elements as $element) {
+        $element_ids[] = (string) $element['id'];
+      }
+
+      foreach ($sequence_flows as $flow) {
+        $source_ref = (string) $flow['sourceRef'];
+        $target_ref = (string) $flow['targetRef'];
+
+        if (!in_array($source_ref, $element_ids)) {
+          $this->validationErrors[] = "Sequence flow references invalid source: $source_ref";
+        }
+
+        if (!in_array($target_ref, $element_ids)) {
+          $this->validationErrors[] = "Sequence flow references invalid target: $target_ref";
+        }
+      }
+    }
+
+    return empty($this->validationErrors);
+  }
+
+  /**
+   * Gets validation errors from the last validation.
+   *
+   * @return array
+   *   Array of validation error messages.
+   */
+  public function getValidationErrors(): array {
+    return $this->validationErrors;
+  }
+
+  /**
+   * Parses an XML string into a SimpleXMLElement.
+   *
+   * @param string $xml_string
+   *   The XML string.
+   *
+   * @return \SimpleXMLElement|null
+   *   The parsed XML or NULL on failure.
+   */
+  protected function parseXmlString(string $xml_string): ?\SimpleXMLElement {
+    try {
+      $xml = simplexml_load_string($xml_string, 'SimpleXMLElement', LIBXML_NONET | LIBXML_NOENT);
+      return $xml !== FALSE ? $xml : NULL;
+    }
+    catch (\Exception $e) {
+      $this->logger->error('Failed to parse XML string: @message', [
+        '@message' => $e->getMessage(),
+      ]);
+      return NULL;
+    }
   }
 
   /**

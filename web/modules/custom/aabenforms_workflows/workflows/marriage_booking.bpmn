@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                   xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                   id="Definitions_marriage_booking"
+                   targetNamespace="http://aabenforms.dk/bpmn"
+                   exporter="ÅbenForms"
+                   exporterVersion="1.0">
+
+  <bpmn:process id="marriage_booking_process" name="Marriage Ceremony Booking" isExecutable="true">
+    <bpmn:documentation>[category: citizen_service]
+Marriage ceremony booking workflow with dual MitID authentication, calendar slot selection, payment, and automated reminders.
+Demonstrates complex multi-party workflows with appointment booking for Danish municipalities.
+
+<parameters>
+  <parameter id="partner1_email_field" label="Partner 1 Email Field" type="webform_field" required="true" default="partner1_email">
+    <description>Webform field containing partner 1 email address</description>
+  </parameter>
+  <parameter id="partner2_email_field" label="Partner 2 Email Field" type="webform_field" required="true" default="partner2_email">
+    <description>Webform field containing partner 2 email address</description>
+  </parameter>
+  <parameter id="partner1_phone_field" label="Partner 1 Phone Field" type="webform_field" required="true" default="partner1_phone">
+    <description>Webform field containing partner 1 phone number</description>
+  </parameter>
+  <parameter id="partner2_phone_field" label="Partner 2 Phone Field" type="webform_field" required="true" default="partner2_phone">
+    <description>Webform field containing partner 2 phone number</description>
+  </parameter>
+  <parameter id="ceremony_type_field" label="Ceremony Type Field" type="webform_field" required="true" default="ceremony_type">
+    <description>Webform field for ceremony type (church/civil)</description>
+  </parameter>
+  <parameter id="ceremony_date_field" label="Ceremony Date Field" type="webform_field" required="true" default="ceremony_date">
+    <description>Selected ceremony date from calendar</description>
+  </parameter>
+  <parameter id="booking_fee" label="Booking Fee (øre)" type="integer" required="false" default="50000">
+    <description>Booking fee in øre (e.g., 50000 = 500 DKK)</description>
+  </parameter>
+  <parameter id="enable_reminders" label="Enable Reminders" type="boolean" required="false" default="true">
+    <description>Send automated reminders before ceremony</description>
+  </parameter>
+</parameters></bpmn:documentation>
+
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_1" name="Couple Initiates Booking">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <!-- Partner 1 MitID Authentication -->
+    <bpmn:serviceTask id="Task_Partner1_MitID" name="Partner 1 MitID Authentication">
+      <bpmn:extensionElements>
+        <eca:action xmlns:eca="http://aabenforms.dk/eca">aabenforms_mitid_validate</eca:action>
+        <eca:config xmlns:eca="http://aabenforms.dk/eca">
+          <eca:partner>partner1</eca:partner>
+        </eca:config>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- Partner 1 CPR Lookup -->
+    <bpmn:serviceTask id="Task_Partner1_CPR" name="Partner 1 CPR Lookup (SF1520)">
+      <bpmn:extensionElements>
+        <eca:action xmlns:eca="http://aabenforms.dk/eca">aabenforms_cpr_lookup</eca:action>
+        <eca:config xmlns:eca="http://aabenforms.dk/eca">
+          <eca:cpr_field>partner1_cpr</eca:cpr_field>
+          <eca:store_in>partner1_data</eca:store_in>
+        </eca:config>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- Partner 2 MitID Authentication -->
+    <bpmn:serviceTask id="Task_Partner2_MitID" name="Partner 2 MitID Authentication">
+      <bpmn:extensionElements>
+        <eca:action xmlns:eca="http://aabenforms.dk/eca">aabenforms_mitid_validate</eca:action>
+        <eca:config xmlns:eca="http://aabenforms.dk/eca">
+          <eca:partner>partner2</eca:partner>
+        </eca:config>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- Partner 2 CPR Lookup -->
+    <bpmn:serviceTask id="Task_Partner2_CPR" name="Partner 2 CPR Lookup (SF1520)">
+      <bpmn:extensionElements>
+        <eca:action xmlns:eca="http://aabenforms.dk/eca">aabenforms_cpr_lookup</eca:action>
+        <eca:config xmlns:eca="http://aabenforms.dk/eca">
+          <eca:cpr_field>partner2_cpr</eca:cpr_field>
+          <eca:store_in>partner2_data</eca:store_in>
+        </eca:config>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- Fetch Available Ceremony Slots -->
+    <bpmn:serviceTask id="Task_FetchSlots" name="Fetch Available Ceremony Slots">
+      <bpmn:extensionElements>
+        <eca:action xmlns:eca="http://aabenforms.dk/eca">aabenforms_fetch_available_slots</eca:action>
+        <eca:config xmlns:eca="http://aabenforms.dk/eca">
+          <eca:start_date_field>preferred_date</eca:start_date_field>
+          <eca:date_range_days>90</eca:date_range_days>
+          <eca:slot_duration>60</eca:slot_duration>
+          <eca:location>Rådhus - Vielsessal</eca:location>
+        </eca:config>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- User Task: Calendar Selection (Frontend) -->
+    <bpmn:userTask id="Task_SelectCeremonySlot" name="Select Ceremony Date/Time">
+      <bpmn:documentation>Display calendar picker with available slots. User selects preferred ceremony date/time.</bpmn:documentation>
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <!-- User Task: Ceremony Preferences -->
+    <bpmn:userTask id="Task_CeremonyPreferences" name="Enter Ceremony Preferences">
+      <bpmn:documentation>Collect ceremony preferences: type (church/civil), number of witnesses, special requests.</bpmn:documentation>
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+      <bpmn:outgoing>Flow_8</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <!-- Calculate Booking Fee -->
+    <bpmn:serviceTask id="Task_CalculateFee" name="Calculate Booking Fee">
+      <bpmn:extensionElements>
+        <eca:action xmlns:eca="http://aabenforms.dk/eca">custom_calculate_fee</eca:action>
+        <eca:config xmlns:eca="http://aabenforms.dk/eca">
+          <eca:ceremony_type_field>ceremony_type</eca:ceremony_type_field>
+          <eca:base_fee>50000</eca:base_fee>
+          <eca:result_field>booking_amount</eca:result_field>
+        </eca:config>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_8</bpmn:incoming>
+      <bpmn:outgoing>Flow_9</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- Process Payment -->
+    <bpmn:serviceTask id="Task_ProcessPayment" name="Process Booking Payment">
+      <bpmn:extensionElements>
+        <eca:action xmlns:eca="http://aabenforms.dk/eca">aabenforms_process_payment</eca:action>
+        <eca:config xmlns:eca="http://aabenforms.dk/eca">
+          <eca:amount_field>booking_amount</eca:amount_field>
+          <eca:currency>DKK</eca:currency>
+          <eca:payment_method>nets_easy</eca:payment_method>
+          <eca:description_field>Booking fee for marriage ceremony</eca:description_field>
+        </eca:config>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_9</bpmn:incoming>
+      <bpmn:outgoing>Flow_10</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- Book Appointment -->
+    <bpmn:serviceTask id="Task_BookAppointment" name="Book Ceremony Slot">
+      <bpmn:extensionElements>
+        <eca:action xmlns:eca="http://aabenforms.dk/eca">aabenforms_book_appointment</eca:action>
+        <eca:config xmlns:eca="http://aabenforms.dk/eca">
+          <eca:slot_id_field>selected_slot_id</eca:slot_id_field>
+          <eca:attendee_name_field>partner1_name</eca:attendee_name_field>
+          <eca:attendee_email_field>partner1_email</eca:attendee_email_field>
+          <eca:attendee_phone_field>partner1_phone</eca:attendee_phone_field>
+        </eca:config>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_10</bpmn:incoming>
+      <bpmn:outgoing>Flow_11</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- Generate Marriage Certificate PDF -->
+    <bpmn:serviceTask id="Task_GenerateCertificate" name="Generate Marriage Certificate">
+      <bpmn:extensionElements>
+        <eca:action xmlns:eca="http://aabenforms.dk/eca">aabenforms_generate_pdf</eca:action>
+        <eca:config xmlns:eca="http://aabenforms.dk/eca">
+          <eca:template>marriage_certificate</eca:template>
+          <eca:filename_pattern>vielsesattest_{submission_id}.pdf</eca:filename_pattern>
+        </eca:config>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_11</bpmn:incoming>
+      <bpmn:outgoing>Flow_12</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- Send Confirmation Email to Partner 1 -->
+    <bpmn:serviceTask id="Task_EmailPartner1" name="Email Confirmation to Partner 1">
+      <bpmn:extensionElements>
+        <eca:action xmlns:eca="http://aabenforms.dk/eca">email_send</eca:action>
+        <eca:config xmlns:eca="http://aabenforms.dk/eca">
+          <eca:to_field>partner1_email</eca:to_field>
+          <eca:subject>Bekræftelse: Din vielse er booket</eca:subject>
+          <eca:attach_pdf>true</eca:attach_pdf>
+        </eca:config>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_12</bpmn:incoming>
+      <bpmn:outgoing>Flow_13</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- Send Confirmation Email to Partner 2 -->
+    <bpmn:serviceTask id="Task_EmailPartner2" name="Email Confirmation to Partner 2">
+      <bpmn:extensionElements>
+        <eca:action xmlns:eca="http://aabenforms.dk/eca">email_send</eca:action>
+        <eca:config xmlns:eca="http://aabenforms.dk/eca">
+          <eca:to_field>partner2_email</eca:to_field>
+          <eca:subject>Bekræftelse: Din vielse er booket</eca:subject>
+          <eca:attach_pdf>true</eca:attach_pdf>
+        </eca:config>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_13</bpmn:incoming>
+      <bpmn:outgoing>Flow_14</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- Send SMS to Partner 1 -->
+    <bpmn:serviceTask id="Task_SmsPartner1" name="SMS Confirmation to Partner 1">
+      <bpmn:extensionElements>
+        <eca:action xmlns:eca="http://aabenforms.dk/eca">aabenforms_send_sms</eca:action>
+        <eca:config xmlns:eca="http://aabenforms.dk/eca">
+          <eca:phone_field>partner1_phone</eca:phone_field>
+          <eca:message>Din vielse er booket til [ceremony_date]. Bekræftelse sendt til mail.</eca:message>
+        </eca:config>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_14</bpmn:incoming>
+      <bpmn:outgoing>Flow_15</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- Send SMS to Partner 2 -->
+    <bpmn:serviceTask id="Task_SmsPartner2" name="SMS Confirmation to Partner 2">
+      <bpmn:extensionElements>
+        <eca:action xmlns:eca="http://aabenforms.dk/eca">aabenforms_send_sms</eca:action>
+        <eca:config xmlns:eca="http://aabenforms.dk/eca">
+          <eca:phone_field>partner2_phone</eca:phone_field>
+          <eca:message>Din vielse er booket til [ceremony_date]. Bekræftelse sendt til mail.</eca:message>
+        </eca:config>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_15</bpmn:incoming>
+      <bpmn:outgoing>Flow_16</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- Schedule 7-Day Reminder -->
+    <bpmn:serviceTask id="Task_Reminder7Days" name="Schedule 7-Day Reminder">
+      <bpmn:extensionElements>
+        <eca:action xmlns:eca="http://aabenforms.dk/eca">aabenforms_send_reminder</eca:action>
+        <eca:config xmlns:eca="http://aabenforms.dk/eca">
+          <eca:reminder_type>both</eca:reminder_type>
+          <eca:delay_days>7</eca:delay_days>
+          <eca:event_date_field>ceremony_date</eca:event_date_field>
+          <eca:recipient_email_field>partner1_email</eca:recipient_email_field>
+          <eca:recipient_phone_field>partner1_phone</eca:recipient_phone_field>
+          <eca:message>Påmindelse: Din vielse finder sted om 7 dage den [event_date]</eca:message>
+        </eca:config>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_16</bpmn:incoming>
+      <bpmn:outgoing>Flow_17</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- Schedule 1-Day Reminder -->
+    <bpmn:serviceTask id="Task_Reminder1Day" name="Schedule 1-Day Reminder">
+      <bpmn:extensionElements>
+        <eca:action xmlns:eca="http://aabenforms.dk/eca">aabenforms_send_reminder</eca:action>
+        <eca:config xmlns:eca="http://aabenforms.dk/eca">
+          <eca:reminder_type>sms</eca:reminder_type>
+          <eca:delay_days>1</eca:delay_days>
+          <eca:event_date_field>ceremony_date</eca:event_date_field>
+          <eca:recipient_email_field>partner1_email</eca:recipient_email_field>
+          <eca:recipient_phone_field>partner1_phone</eca:recipient_phone_field>
+          <eca:message>Påmindelse: Din vielse er i morgen! Vi ses [event_date]</eca:message>
+        </eca:config>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_17</bpmn:incoming>
+      <bpmn:outgoing>Flow_18</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- Audit Log -->
+    <bpmn:serviceTask id="Task_AuditLog" name="Log Marriage Booking">
+      <bpmn:extensionElements>
+        <eca:action xmlns:eca="http://aabenforms.dk/eca">aabenforms_audit_log</eca:action>
+        <eca:config xmlns:eca="http://aabenforms.dk/eca">
+          <eca:action>marriage_ceremony_booked</eca:action>
+          <eca:log_level>info</eca:log_level>
+        </eca:config>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_18</bpmn:incoming>
+      <bpmn:outgoing>Flow_19</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_Success" name="Ceremony Booked Successfully">
+      <bpmn:incoming>Flow_19</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <!-- Sequence Flows -->
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Task_Partner1_MitID"/>
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_Partner1_MitID" targetRef="Task_Partner1_CPR"/>
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_Partner1_CPR" targetRef="Task_Partner2_MitID"/>
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Task_Partner2_MitID" targetRef="Task_Partner2_CPR"/>
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="Task_Partner2_CPR" targetRef="Task_FetchSlots"/>
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="Task_FetchSlots" targetRef="Task_SelectCeremonySlot"/>
+    <bpmn:sequenceFlow id="Flow_7" sourceRef="Task_SelectCeremonySlot" targetRef="Task_CeremonyPreferences"/>
+    <bpmn:sequenceFlow id="Flow_8" sourceRef="Task_CeremonyPreferences" targetRef="Task_CalculateFee"/>
+    <bpmn:sequenceFlow id="Flow_9" sourceRef="Task_CalculateFee" targetRef="Task_ProcessPayment"/>
+    <bpmn:sequenceFlow id="Flow_10" sourceRef="Task_ProcessPayment" targetRef="Task_BookAppointment"/>
+    <bpmn:sequenceFlow id="Flow_11" sourceRef="Task_BookAppointment" targetRef="Task_GenerateCertificate"/>
+    <bpmn:sequenceFlow id="Flow_12" sourceRef="Task_GenerateCertificate" targetRef="Task_EmailPartner1"/>
+    <bpmn:sequenceFlow id="Flow_13" sourceRef="Task_EmailPartner1" targetRef="Task_EmailPartner2"/>
+    <bpmn:sequenceFlow id="Flow_14" sourceRef="Task_EmailPartner2" targetRef="Task_SmsPartner1"/>
+    <bpmn:sequenceFlow id="Flow_15" sourceRef="Task_SmsPartner1" targetRef="Task_SmsPartner2"/>
+    <bpmn:sequenceFlow id="Flow_16" sourceRef="Task_SmsPartner2" targetRef="Task_Reminder7Days"/>
+    <bpmn:sequenceFlow id="Flow_17" sourceRef="Task_Reminder7Days" targetRef="Task_Reminder1Day"/>
+    <bpmn:sequenceFlow id="Flow_18" sourceRef="Task_Reminder1Day" targetRef="Task_AuditLog"/>
+    <bpmn:sequenceFlow id="Flow_19" sourceRef="Task_AuditLog" targetRef="EndEvent_Success"/>
+
+  </bpmn:process>
+
+</bpmn:definitions>

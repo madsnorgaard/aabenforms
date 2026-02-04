@@ -24,13 +24,6 @@ use Psr\Log\LoggerInterface;
 class ParentApprovalController extends ControllerBase {
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected EntityTypeManagerInterface $entityTypeManager;
-
-  /**
    * The approval token service.
    *
    * @var \Drupal\aabenforms_workflows\Service\ApprovalTokenService

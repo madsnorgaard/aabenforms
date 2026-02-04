@@ -1,0 +1,264 @@
+/**
+ * @file
+ * Styles for workflow template browser and cards.
+ */
+
+.template-browser-header {
+  margin-bottom: 2rem;
+  padding: 2rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.template-browser-header h1 {
+  margin: 0 0 0.5rem 0;
+  color: #1a1a1a;
+}
+
+.template-browser-header p {
+  margin: 0;
+  color: #666;
+  font-size: 16px;
+}
+
+/* Template card grid */
+.template-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 2rem;
+  list-style: none;
+  padding: 0;
+  margin: 2rem 0;
+}
+
+.template-card {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+
+.template-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Preview section */
+.template-card__preview {
+  position: relative;
+  background-color: #f8f8f8;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.bpmn-preview-thumbnail {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+}
+
+.bpmn-preview-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid #e0e0e0;
+  border-top-color: #2196f3;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 0.5rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.bpmn-preview-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+/* Card content */
+.template-card__content {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.template-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.template-card__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+  flex-grow: 1;
+}
+
+.template-card__badge {
+  margin-left: 1rem;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.badge--municipal {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
+.badge--citizen_service {
+  background-color: #f3e5f5;
+  color: #7b1fa2;
+}
+
+.badge--verification {
+  background-color: #e8f5e9;
+  color: #388e3c;
+}
+
+.badge--other {
+  background-color: #f5f5f5;
+  color: #616161;
+}
+
+.template-card__description {
+  margin-bottom: 1rem;
+  color: #666;
+  font-size: 14px;
+  line-height: 1.6;
+  flex-grow: 1;
+}
+
+.template-card__meta {
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.template-id-label {
+  color: #666;
+  margin-right: 0.5rem;
+}
+
+.template-id-value {
+  padding: 0.125rem 0.5rem;
+  background-color: #e0e0e0;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 11px;
+}
+
+.template-card__actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: auto;
+}
+
+.template-card__actions .button {
+  flex: 1;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.preview-button {
+  background-color: #fff;
+  border: 1px solid #2196f3;
+  color: #2196f3;
+}
+
+.preview-button:hover {
+  background-color: #e3f2fd;
+}
+
+.preview-icon {
+  margin-right: 0.25rem;
+}
+
+/* Full preview page */
+.bpmn-preview-wrapper {
+  margin: 2rem 0;
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.bpmn-preview-canvas {
+  width: 100%;
+  height: 600px;
+  background-color: #f8f8f8;
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Instances table */
+.instances-table {
+  margin-top: 2rem;
+}
+
+.status-active {
+  color: #4caf50;
+  font-weight: 600;
+}
+
+.status-inactive {
+  color: #f44336;
+  font-weight: 600;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .template-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .template-card__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .template-card__badge {
+    margin-left: 0;
+    margin-top: 0.5rem;
+  }
+
+  .template-card__actions {
+    flex-direction: column;
+  }
+
+  .template-card__actions .button {
+    width: 100%;
+  }
+}

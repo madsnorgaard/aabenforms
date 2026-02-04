@@ -97,5 +97,17 @@ function aabenforms_workflows_theme(array $existing, string $type, string $theme
       ],
       'template' => 'parent-approval-page',
     ],
+    'workflow_template_card' => [
+      'variables' => [
+        'template_id' => NULL,
+        'template_name' => NULL,
+        'category' => NULL,
+        'category_badge' => NULL,
+        'description' => NULL,
+        'preview_url' => NULL,
+        'use_link' => NULL,
+      ],
+      'template' => 'workflow-template-card',
+    ],
   ];
 }
