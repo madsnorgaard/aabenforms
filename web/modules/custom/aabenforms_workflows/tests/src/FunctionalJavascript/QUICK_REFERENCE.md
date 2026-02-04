@@ -1,6 +1,6 @@
 # FunctionalJavascript Tests - Quick Reference Card
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### Install Chromedriver
 ```bash
@@ -115,7 +115,7 @@ ddev exec phpunit --group functional_javascript --stop-on-failure
 --filter testBulkTaskActions
 ```
 
-## 🔧 Debugging Tips
+##  Debugging Tips
 
 ### Take Screenshot on Failure
 ```php
@@ -146,7 +146,7 @@ Edit `phpunit.xml` - remove `--headless` from chrome args:
 <env name="MINK_DRIVER_ARGS_WEBDRIVER" value='["chrome", {"browserName":"chrome","goog:chromeOptions":{"args":["--disable-gpu","--no-sandbox"]}}, "http://localhost:9515"]'/>
 ```
 
-## 📊 Common Assertions
+##  Common Assertions
 
 ```php
 // Page status

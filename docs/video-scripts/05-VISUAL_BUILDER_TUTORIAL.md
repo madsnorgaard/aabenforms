@@ -92,8 +92,8 @@
    **Left Panel - Task Palette (Værktøjskasse):**
    - 📋 Start Event (Start)
    - 🔐 MitID Authentication
-   - 📝 Form Task (Formular)
-   - ✅ Validation Task (Validering)
+   -  Form Task (Formular)
+   -  Validation Task (Validering)
    - 💳 Payment Task (Betaling)
    - 📧 Email Task (Email)
    - 📱 SMS Task (SMS)
@@ -104,7 +104,7 @@
    - 👤 User Task (Manual opgave)
    - ⚙️ Service Task (Automatisk opgave)
    - ❓ Gateway (Beslutning)
-   - 📊 Subprocess (Underproces)
+   -  Subprocess (Underproces)
    - 🏁 End Event (Slut)
 
    **Center Panel - Canvas:**
@@ -172,9 +172,9 @@
    - Label: "Log ind med MitID"
    - Assurance level: "Substantial"
    - Attributes to fetch:
-     - ✓ CPR number
-     - ✓ Name
-     - ✓ Address
+     -  CPR number
+     -  Name
+     -  Address
    - Error handling: "Show error message"
 
 **Step 3: Connect Start to MitID (0:30-0:35)**
@@ -184,7 +184,7 @@
 4. Sequence flow created automatically
 
 **Step 4: Add Form Task (0:35-0:50)**
-1. Drag "📝 Form Task" to canvas
+1. Drag " Form Task" to canvas
 2. Place below MitID
 3. Configure properties:
    - Label: "Hundens oplysninger"
@@ -358,10 +358,10 @@
    - Label: "Valider adresse og zonering"
    - Input address: ${mitid.address}
    - Validation checks:
-     - ✓ Address exists in DAR (Danish Address Register)
-     - ✓ Fetch zone type
-     - ✓ Calculate building coverage
-     - ✓ Check distance to boundaries
+     -  Address exists in DAR (Danish Address Register)
+     -  Fetch zone type
+     -  Calculate building coverage
+     -  Check distance to boundaries
    - Output variables:
      - ${gis.zoneType}
      - ${gis.buildingCoverage}
@@ -376,8 +376,8 @@
    - Notification radius: 25 meters
    - Auto-identify neighbors: Yes (via GIS)
    - Notification method:
-     - ✓ Digital Post
-     - ✓ Email (if no Digital Post)
+     -  Digital Post
+     -  Email (if no Digital Post)
      - Physical letter (fallback)
    - Objection period: 14 days
    - Template: "neighbor_notification_building"
@@ -442,13 +442,13 @@
 
    **Validation Results:**
 
-   ✓ **Structure validation**: PASS
+    **Structure validation**: PASS
      - All tasks connected
      - Start event present
      - End event present
      - No orphaned tasks
 
-   ✓ **Configuration validation**: PASS
+    **Configuration validation**: PASS
      - All required properties set
      - Valid variable syntax
      - Correct data types
@@ -458,7 +458,7 @@
      - Suggestion: "Add error handling for email delivery failures"
      - Warning: "Consider adding timeout to payment task"
 
-   ✓ **No errors detected - Workflow ready to deploy**
+    **No errors detected - Workflow ready to deploy**
 
 **Step 2: Simulation Mode (0:20-0:50)**
 1. Click "Test workflow" button
@@ -475,7 +475,7 @@
    - Execution path: Start → MitID → Form → Gateway → Payment (automatic path) → PDF → Email → End
    - Execution time: 2.3 seconds (simulated)
 5. Show simulation results:
-   - ✓ Workflow completed successfully
+   -  Workflow completed successfully
    - Generated PDF: [preview thumbnail]
    - Email sent to: test@example.dk
    - Total steps: 7
@@ -533,7 +533,7 @@
    - Tags: "hund, registrering, betaling, simpel"
    - Beskrivelse: "Registrering af ny hund med automatisk eller manuel godkendelse baseret på race"
 3. Click "Gem"
-4. Success message: "Workflow gemt i galleriet ✓"
+4. Success message: "Workflow gemt i galleriet "
 
 **Step 2: Template Gallery Browse (0:20-0:40)**
 1. Return to Template Gallery
@@ -561,10 +561,10 @@
 **Step 3: Export/Import (0:40-1:00)**
 1. Click "Eksporter" on Hunderegistrering workflow
 2. Show export options:
-   - ✓ BPMN 2.0 XML (standard format)
-   - ✓ JSON (ÅbenForms format with config)
-   - ✓ SVG (visual diagram)
-   - ✓ PNG (image)
+   -  BPMN 2.0 XML (standard format)
+   -  JSON (ÅbenForms format with config)
+   -  SVG (visual diagram)
+   -  PNG (image)
 3. Click "Download BPMN XML"
 4. File downloads: `hunderegistrering-v1.0.0.bpmn`
 5. Show brief XML preview in text editor:
@@ -616,7 +616,7 @@
 #### SCREEN ACTIONS
 
 **Feature 1: Subprocess (0:00-0:15)**
-1. Drag "📊 Subprocess" to canvas
+1. Drag " Subprocess" to canvas
 2. Show properties:
    - Label: "Standard MitID + Betaling"
    - Reusable subprocess: Yes
@@ -686,14 +686,14 @@
 1. Show completed workflow one more time (zoom out to see full flow)
 2. Transition to summary slide showing:
    - **Key Takeaways:**
-     - ✓ No coding required
-     - ✓ 16 Danish municipal task types
-     - ✓ BPMN 2.0 industry standard
-     - ✓ Automatic validation
-     - ✓ Simulation and testing
-     - ✓ Template gallery
-     - ✓ Community sharing
-     - ✓ Import/export workflows
+     -  No coding required
+     -  16 Danish municipal task types
+     -  BPMN 2.0 industry standard
+     -  Automatic validation
+     -  Simulation and testing
+     -  Template gallery
+     -  Community sharing
+     -  Import/export workflows
 
 3. Show call-to-action:
    - "Start building workflows today!"
@@ -782,8 +782,8 @@ Complete reference for demonstration:
 
 1. **📋 Start Event** - Workflow start trigger
 2. **🔐 MitID Authentication** - Citizen authentication
-3. **📝 Form Task** - Data collection forms
-4. **✅ Validation Task** - Data validation logic
+3. ** Form Task** - Data collection forms
+4. ** Validation Task** - Data validation logic
 5. **💳 Payment Task** - Nets payment processing
 6. **📧 Email Task** - Email notifications
 7. **📱 SMS Task** - SMS notifications
@@ -794,7 +794,7 @@ Complete reference for demonstration:
 12. **👤 User Task** - Manual staff task
 13. **⚙️ Service Task** - Automated background task
 14. **❓ Gateway** - Decision point (XOR/AND/OR/Event)
-15. **📊 Subprocess** - Reusable workflow component
+15. ** Subprocess** - Reusable workflow component
 16. **🏁 End Event** - Workflow completion
 
 ---

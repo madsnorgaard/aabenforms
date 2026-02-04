@@ -769,7 +769,7 @@ old_system_count=25
 aabenforms_count=25
 
 if [ $old_system_count -eq $aabenforms_count ]; then
-  echo "✓ Counts match"
+  echo " Counts match"
 else
   echo "✗ Discrepancy: $old_system_count vs $aabenforms_count"
 fi

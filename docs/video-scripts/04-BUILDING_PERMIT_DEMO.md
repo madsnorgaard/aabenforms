@@ -118,12 +118,12 @@
 
 2. Click "Tilbygning"
 3. Show expanded requirements:
-   - ✓ Situationsplan (1:500)
-   - ✓ Plantegninger (1:100)
-   - ✓ Facadetegninger (1:100)
-   - ✓ Snittegninger (1:100)
-   - ✓ BBR-udskrift
-   - ✓ Energiberegninger (BR18)
+   -  Situationsplan (1:500)
+   -  Plantegninger (1:100)
+   -  Facadetegninger (1:100)
+   -  Snittegninger (1:100)
+   -  BBR-udskrift
+   -  Energiberegninger (BR18)
 4. Click "Start ansøgning"
 
 #### VISUAL CALLOUTS
@@ -205,10 +205,10 @@
 1. Show "Automatisk validering" progress screen:
    - Loading animation
    - Progress indicators:
-     - ✓ Henter ejendomsdata fra BBR
-     - ✓ Analyserer zonering
-     - ✓ Tjekker lokalplan nr. 451
-     - ✓ Validerer byggelovgivning
+     -  Henter ejendomsdata fra BBR
+     -  Analyserer zonering
+     -  Tjekker lokalplan nr. 451
+     -  Validerer byggelovgivning
      - ⏳ Beregner bebyggelsesprocent
      - ⏳ Tjekker afstand til skel
 
@@ -219,27 +219,27 @@
    - Lokalplan: Nr. 451 "Skovkvarteret"
    - Gældende fra: 2018
 
-   **Automatiske tjek - GODKENDT ✓**
+   **Automatiske tjek - GODKENDT **
 
-   ✓ **Bebyggelsesprocent**:
+    **Bebyggelsesprocent**:
      - Nuværende: 22%
      - Med tilbygning: 28%
      - Maksimum: 30%
      - Status: OK (2% margin)
 
-   ✓ **Afstand til skel**:
-     - Nord: 5.2 m (krav: 2.5 m) ✓
-     - Syd: 3.1 m (krav: 2.5 m) ✓
-     - Øst: 7.5 m (krav: 2.5 m) ✓
-     - Vest: 12.0 m (krav: 2.5 m) ✓
+    **Afstand til skel**:
+     - Nord: 5.2 m (krav: 2.5 m) 
+     - Syd: 3.1 m (krav: 2.5 m) 
+     - Øst: 7.5 m (krav: 2.5 m) 
+     - Vest: 12.0 m (krav: 2.5 m) 
 
-   ✓ **Højde**:
+    **Højde**:
      - Planlagt: 6.2 m
-     - Maksimum: 8.5 m ✓
+     - Maksimum: 8.5 m 
 
-   ✓ **Parkering**:
+    **Parkering**:
      - Eksisterende: 2 pladser
-     - Påkrævet: 2 pladser ✓
+     - Påkrævet: 2 pladser 
      - Ingen ændring nødvendig
 
    ⚠ **Bemærkning**:
@@ -254,7 +254,7 @@
 #### VISUAL CALLOUTS
 - Animate progress checkmarks appearing one by one
 - Highlight each validation result with color coding:
-  - Green ✓: Approved
+  - Green : Approved
   - Red ✗: Rejected
   - Yellow ⚠: Warning/Note
 - Show building coverage calculation:
@@ -263,7 +263,7 @@
   - New total: 190 m² / 750 m² = 25.3%
 - Display distance measurements on map with arrows and dimensions
 - Circle the warning about neighbor notification
-- Box the GIS validation badge: "Automatisk GIS-validering ✓"
+- Box the GIS validation badge: "Automatisk GIS-validering "
 
 #### RECORDING TIPS
 - **CRITICAL SECTION** - this is the main differentiator
@@ -289,21 +289,21 @@
 2. Document upload interface with sections:
 
    **Påkrævet:**
-   - Situationsplan (1:500): [Upload] → Upload: situationsplan.pdf (1.2 MB) ✓
-   - Plantegninger (1:100): [Upload] → Upload: plantegninger.pdf (2.5 MB) ✓
-   - Facadetegninger (1:100): [Upload] → Upload: facade.pdf (1.8 MB) ✓
-   - Snittegninger (1:100): [Upload] → Upload: snit.pdf (1.1 MB) ✓
+   - Situationsplan (1:500): [Upload] → Upload: situationsplan.pdf (1.2 MB) 
+   - Plantegninger (1:100): [Upload] → Upload: plantegninger.pdf (2.5 MB) 
+   - Facadetegninger (1:100): [Upload] → Upload: facade.pdf (1.8 MB) 
+   - Snittegninger (1:100): [Upload] → Upload: snit.pdf (1.1 MB) 
 
    **Valgfrit:**
-   - Konstruktionsberegninger: [Upload] → Upload: beregninger.pdf (0.8 MB) ✓
+   - Konstruktionsberegninger: [Upload] → Upload: beregninger.pdf (0.8 MB) 
    - Energiberegninger: [Upload]
-   - Visualiseringer: [Upload] → Upload: 3d-visualisering.jpg (4.2 MB) ✓
+   - Visualiseringer: [Upload] → Upload: 3d-visualisering.jpg (4.2 MB) 
 
 3. Show file validation:
-   - File format check: PDF ✓
-   - File size check: < 10 MB ✓
-   - Drawing scale validation (OCR): 1:100 detected ✓
-   - Virus scan: Clean ✓
+   - File format check: PDF 
+   - File size check: < 10 MB 
+   - Drawing scale validation (OCR): 1:100 detected 
+   - Virus scan: Clean 
 
 4. Fill in project description:
    **Projektbeskrivelse:**
@@ -324,7 +324,7 @@
 #### VISUAL CALLOUTS
 - Show upload progress bars for each file
 - Display file validation checkmarks
-- Highlight scale detection: "1:100 detected fra tegning ✓"
+- Highlight scale detection: "1:100 detected fra tegning "
 - Show thumbnail preview of uploaded drawings
 - Box the contractor information section
 - Display timeline visualization for construction period
@@ -358,21 +358,21 @@
    - Ejendom: 751-12344
    - Afstand: 8.2 m (vest)
    - Ejer: Jens Nielsen
-   - Status: Automatisk brev sendt 02-02-2024 ✓
+   - Status: Automatisk brev sendt 02-02-2024 
 
    **Nabo 2:**
    - Adresse: Skovvej 17
    - Ejendom: 751-12346
    - Afstand: 7.9 m (øst)
    - Ejer: Karen Larsen
-   - Status: Automatisk brev sendt 02-02-2024 ✓
+   - Status: Automatisk brev sendt 02-02-2024 
 
    **Nabo 3:**
    - Adresse: Parkvej 22
    - Ejendom: 751-12401
    - Afstand: 22.5 m (syd)
    - Ejer: Peter Petersen
-   - Status: Automatisk brev sendt 02-02-2024 ✓
+   - Status: Automatisk brev sendt 02-02-2024 
 
 3. Show interactive map with:
    - Applicant property (blue)
@@ -389,14 +389,14 @@
    - Contact information
 
 5. Checkboxes:
-   - ✓ Send brev med Digital Post
-   - ✓ Send kopi til min email
-   - ✓ Giv mig besked når naboer har set brevet
+   -  Send brev med Digital Post
+   -  Send kopi til min email
+   -  Giv mig besked når naboer har set brevet
 
 6. Click "Send naboorientering"
 
 #### VISUAL CALLOUTS
-- Highlight GIS automation: "Automatisk identificeret via GIS ✓"
+- Highlight GIS automation: "Automatisk identificeret via GIS "
 - Show distance calculations on map
 - Animate notification radius circle
 - Display neighbor properties highlighted in yellow
@@ -423,10 +423,10 @@
 "After submission, the application goes through an intelligent multi-stage workflow. First, an AI assistant validates technical requirements. Then the case is automatically distributed to the right caseworker based on workload and competencies. Finally, it's approved by a building inspector. All this is orchestrated by the ÅbenForms BPMN workflow engine."
 
 #### SCREEN ACTIONS
-1. Show "Ansøgning indsendt ✓" confirmation
+1. Show "Ansøgning indsendt " confirmation
 2. Display workflow visualization:
 
-   **Stage 1: Automatisk validering** (Completed ✓)
+   **Stage 1: Automatisk validering** (Completed )
    - AI-validering af dokumenter
    - Tjek af bebyggelsesprocent
    - Zonevalidering
@@ -497,7 +497,7 @@
 1. Show "Integration" panel:
 
    **SBSYS Integration:**
-   - Status: Konfigureret ✓
+   - Status: Konfigureret 
    - Sagstype: Byggesag
    - Auto-oprettelse: Aktiveret
    - Datasynkronisering: Real-time
@@ -507,20 +507,20 @@
 
    **GDPR Compliance:**
 
-   ✓ **Databehandler-aftale**
+    **Databehandler-aftale**
    - Status: Aktiv
    - Gyldig til: 31-12-2025
 
-   ✓ **Adgangslog**
+    **Adgangslog**
    - Alle åbninger logges
    - Opbevaring: 5 år
    - Borger-adgang: Via Min Side
 
-   ✓ **Dataminimering**
+    **Dataminimering**
    - Kun nødvendige felter indsamles
    - Automatisk sletning efter 10 år
 
-   ✓ **Anonymisering**
+    **Anonymisering**
    - Statistikdata anonymiseres automatisk
    - CPR-nummer krypteret i database
 
@@ -543,9 +543,9 @@
 - Highlight SBSYS logo with connection icon
 - Show real-time sync indicator (green pulse)
 - Display GDPR compliance badges prominently:
-  - GDPR Compliant ✓
-  - Data Protection Impact Assessment (DPIA) ✓
-  - EU Standard Contractual Clauses ✓
+  - GDPR Compliant 
+  - Data Protection Impact Assessment (DPIA) 
+  - EU Standard Contractual Clauses 
 - Highlight access log with eye icon
 - Box data minimization principle
 - Show encryption badge on sensitive data
@@ -570,7 +570,7 @@
 
 #### SCREEN ACTIONS
 1. Show approval notification:
-   "✓ Din byggetilladelse er godkendt!"
+   " Din byggetilladelse er godkendt!"
 
 2. Display permit details:
    - Sagsnr: BYG-2024-001234
@@ -729,11 +729,11 @@
 
 | Feature | XFlow | ÅbenForms |
 |---------|-------|-----------|
-| GIS Zoning Validation | ✗ | ✓ Automatic |
-| Neighbor Notification | Manual | ✓ Automatic |
-| BPMN Workflow Engine | Limited | ✓ Full BPMN 2.0 |
-| SBSYS Integration | API only | ✓ Real-time sync |
-| GDPR Compliance Tools | Basic | ✓ Advanced |
+| GIS Zoning Validation | ✗ |  Automatic |
+| Neighbor Notification | Manual |  Automatic |
+| BPMN Workflow Engine | Limited |  Full BPMN 2.0 |
+| SBSYS Integration | API only |  Real-time sync |
+| GDPR Compliance Tools | Basic |  Advanced |
 | Processing Time | 4-8 weeks | 10-14 days |
 
 **Key advantages**: GIS integration, automation, speed, compliance

@@ -497,10 +497,10 @@ PERSON:
   CPR: XXXXXX-1234 (maskeret)
 
 BEKRÆFTELSE:
-  ✓ Anders Andersen er registreret som
+   Anders Andersen er registreret som
     direktør for Eksempel A/S per 2026-02-02.
 
-  ✓ Data verificeret via:
+   Data verificeret via:
     - CVR-registret (SF1530)
     - CPR-registret (SF1520)
     - MitID High autentifikation
@@ -688,7 +688,7 @@ Effective: Immediate
 ### Parallel Update Visualization
 
 ```
-DAWA Validation ✓
+DAWA Validation 
        │
        ▼
   ┌────────────┐

@@ -153,10 +153,10 @@ START: What type of approval do you need?
 ### For Our Example (Daycare Enrollment)
 
 We'll use the **Building Permit** template because:
-- ✓ Has dual approval (we need both parents)
-- ✓ Includes MitID authentication
-- ✓ Has case worker review step
-- ✓ Sends notifications
+-  Has dual approval (we need both parents)
+-  Includes MitID authentication
+-  Has case worker review step
+-  Sends notifications
 
 We'll modify it to:
 - Remove document validation (not needed)
@@ -386,13 +386,13 @@ Click **"Next"**.
 Review all settings:
 
 ```
-✓ Workflow ID: daycare_enrollment_aarhus
-✓ Webform: daycare_enrollment_form
-✓ Authentication: MitID High for both parents
-✓ Approval Flow: Parallel → Case Worker Review
-✓ Notifications: Email + Digital Post
-✓ Integrations: SBSYS, Waiting List, ESDH
-✓ GDPR: Fully compliant
+ Workflow ID: daycare_enrollment_aarhus
+ Webform: daycare_enrollment_form
+ Authentication: MitID High for both parents
+ Approval Flow: Parallel → Case Worker Review
+ Notifications: Email + Digital Post
+ Integrations: SBSYS, Waiting List, ESDH
+ GDPR: Fully compliant
 ```
 
 Click **"Create Workflow (as Draft)"**.

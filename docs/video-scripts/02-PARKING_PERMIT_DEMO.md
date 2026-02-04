@@ -90,9 +90,9 @@
 
 #### VISUAL CALLOUTS
 - Highlight checklist items:
-  - ✓ Køretøjsregistrering
-  - ✓ Folkeregisteradresse i parkeringszone
-  - ✓ Betalingskort
+  -  Køretøjsregistrering
+  -  Folkeregisteradresse i parkeringszone
+  -  Betalingskort
 - Box the price: **600 kr/år**
 - Show progress indicator: "Trin 0 af 4"
 - Arrow pointing to "Start ansøgning" button
@@ -206,7 +206,7 @@
    - By: Aarhus C
 3. Show automatic zone validation:
    - Loading check animation
-   - Green checkmark: "✓ Adresse bekræftet i Zone 2"
+   - Green checkmark: " Adresse bekræftet i Zone 2"
 4. Show additional info field (optional):
    - Label: "Yderligere oplysninger"
    - Placeholder: "F.eks. lejlighedsnummer"
@@ -217,7 +217,7 @@
 - Highlight MitID data icon showing data source
 - Show validation badge: "Automatisk verificeret"
 - Display zone match confirmation in green box:
-  - "✓ Din adresse er godkendt til Zone 2"
+  - " Din adresse er godkendt til Zone 2"
 - Show progress bar: 50% complete
 - Animate checkmark when validation succeeds
 
@@ -251,7 +251,7 @@
    - Navn: Jens Jensen
 5. Click "Betal 600 kr"
 6. Show processing animation (2 seconds)
-7. Show success message: "✓ Betaling gennemført"
+7. Show success message: " Betaling gennemført"
 8. Show receipt number: #PKG-2024-001234
 
 #### VISUAL CALLOUTS
@@ -285,7 +285,7 @@
 #### SCREEN ACTIONS
 1. Show success page: "Trin 4 af 4 - Bekræftelse"
 2. Display confirmation message:
-   - "✓ Din parkeringslicens er godkendt!"
+   - " Din parkeringslicens er godkendt!"
    - "Licensnummer: PL-2024-AH-001234"
    - "Gyldig fra: 02-02-2024"
    - "Gyldig til: 01-02-2025"
@@ -361,7 +361,7 @@
 #### SCREEN ACTIONS
 1. Return to ÅbenForms dashboard
 2. Show "Mine ansøgninger" page with completed application:
-   - Status: ✓ Godkendt
+   - Status:  Godkendt
    - Type: Parkeringslicens
    - Dato: 02-02-2024
    - Actions: Download, View, Archive
