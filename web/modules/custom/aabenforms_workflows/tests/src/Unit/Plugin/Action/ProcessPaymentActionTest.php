@@ -5,7 +5,6 @@ namespace Drupal\Tests\aabenforms_workflows\Unit\Plugin\Action;
 use Drupal\Tests\UnitTestCase;
 use Drupal\aabenforms_workflows\Plugin\Action\ProcessPaymentAction;
 use Drupal\aabenforms_workflows\Service\PaymentService;
-use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\eca\Token\TokenInterface;
 use Drupal\Core\Session\AccountInterface;

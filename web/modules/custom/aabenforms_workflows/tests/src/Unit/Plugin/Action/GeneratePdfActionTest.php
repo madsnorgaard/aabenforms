@@ -21,11 +21,37 @@ use Drupal\webform\WebformSubmissionInterface;
  */
 class GeneratePdfActionTest extends UnitTestCase {
 
+  /**
+   * The action plugin instance.
+   *
+   * @var \Drupal\aabenforms_workflows\Plugin\Action\GeneratePdfAction
+   */
   protected $action;
+
+  /**
+   * The PDF service.
+   *
+   * @var \Drupal\aabenforms_workflows\Service\PdfService|\PHPUnit\Framework\MockObject\MockObject
+   */
   protected $pdfService;
+
+  /**
+   * The logger.
+   *
+   * @var \Psr\Log\LoggerInterface|\PHPUnit\Framework\MockObject\MockObject
+   */
   protected $logger;
+
+  /**
+   * The webform submission.
+   *
+   * @var \Drupal\webform\WebformSubmissionInterface|\PHPUnit\Framework\MockObject\MockObject
+   */
   protected $submission;
 
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp(): void {
     parent::setUp();
 

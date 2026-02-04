@@ -25,9 +25,24 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 )]
 class NotifyNeighborsAction extends AabenFormsActionBase {
   use PluginFormTrait;
+
+  /**
+   * The GIS service.
+   *
+   * @var \Drupal\aabenforms_workflows\Service\GisService
+   */
   protected GisService $gisService;
+
+  /**
+   * The mail manager.
+   *
+   * @var \Drupal\Core\Mail\MailManagerInterface
+   */
   protected MailManagerInterface $mailManager;
 
+  /**
+   * {@inheritdoc}
+   */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     $instance = parent::create($container, $configuration, $plugin_id, $plugin_definition);
     $instance->gisService = $container->get('aabenforms_workflows.gis_service');
@@ -35,6 +50,9 @@ class NotifyNeighborsAction extends AabenFormsActionBase {
     return $instance;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function defaultConfiguration(): array {
     return [
       'address_field' => 'property_address',
@@ -43,6 +61,9 @@ class NotifyNeighborsAction extends AabenFormsActionBase {
     ] + parent::defaultConfiguration();
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
     $form['address_field'] = [
       '#type' => 'textfield',
@@ -60,13 +81,20 @@ class NotifyNeighborsAction extends AabenFormsActionBase {
     return parent::buildConfigurationForm($form, $form_state);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function execute($entity = NULL): void {
     $submission = $this->getSubmission($entity);
-    if (!$submission) return;
+    if (!$submission) {
+      return;
+    }
 
     $data = $submission->getData();
     $address = $data[$this->configuration['address_field']] ?? NULL;
-    if (!$address) return;
+    if (!$address) {
+      return;
+    }
 
     $radius = (int) $this->configuration['radius_meters'];
     $result = $this->gisService->findNeighborsInRadius($address, $radius);
@@ -88,4 +116,5 @@ class NotifyNeighborsAction extends AabenFormsActionBase {
       ]);
     }
   }
+
 }

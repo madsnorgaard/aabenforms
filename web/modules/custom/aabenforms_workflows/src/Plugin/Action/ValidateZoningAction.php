@@ -24,14 +24,26 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 )]
 class ValidateZoningAction extends AabenFormsActionBase {
   use PluginFormTrait;
+
+  /**
+   * The GIS service.
+   *
+   * @var \Drupal\aabenforms_workflows\Service\GisService
+   */
   protected GisService $gisService;
 
+  /**
+   * {@inheritdoc}
+   */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     $instance = parent::create($container, $configuration, $plugin_id, $plugin_definition);
     $instance->gisService = $container->get('aabenforms_workflows.gis_service');
     return $instance;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function defaultConfiguration(): array {
     return [
       'address_field' => 'property_address',
@@ -40,6 +52,9 @@ class ValidateZoningAction extends AabenFormsActionBase {
     ] + parent::defaultConfiguration();
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
     $form['address_field'] = [
       '#type' => 'textfield',
@@ -56,9 +71,14 @@ class ValidateZoningAction extends AabenFormsActionBase {
     return parent::buildConfigurationForm($form, $form_state);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function execute($entity = NULL): void {
     $submission = $this->getSubmission($entity);
-    if (!$submission) return;
+    if (!$submission) {
+      return;
+    }
 
     $data = $submission->getData();
     $address = $data[$this->configuration['address_field']] ?? NULL;
@@ -70,7 +90,7 @@ class ValidateZoningAction extends AabenFormsActionBase {
     }
 
     $result = $this->gisService->validateConstructionType($address, $construction_type);
-    
+
     $submission->setElementData('zoning_allowed', $result['allowed']);
     $submission->setElementData('zoning_zone_type', $result['zone_type']);
     $submission->setElementData('zoning_reason', $result['reason']);
@@ -82,4 +102,5 @@ class ValidateZoningAction extends AabenFormsActionBase {
       '@result' => $result['allowed'] ? 'ALLOWED' : 'NOT ALLOWED',
     ]);
   }
+
 }

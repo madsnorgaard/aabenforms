@@ -33,12 +33,38 @@ class DemoWorkflowsIntegrationTest extends KernelTestBase {
   ];
 
   /**
-   * Services.
+   * The payment service.
+   *
+   * @var \Drupal\aabenforms_workflows\Service\PaymentService
    */
   protected $paymentService;
+
+  /**
+   * The SMS service.
+   *
+   * @var \Drupal\aabenforms_workflows\Service\SmsService
+   */
   protected $smsService;
+
+  /**
+   * The PDF service.
+   *
+   * @var \Drupal\aabenforms_workflows\Service\PdfService
+   */
   protected $pdfService;
+
+  /**
+   * The calendar service.
+   *
+   * @var \Drupal\aabenforms_workflows\Service\CalendarService
+   */
   protected $calendarService;
+
+  /**
+   * The GIS service.
+   *
+   * @var \Drupal\aabenforms_workflows\Service\GisService
+   */
   protected $gisService;
 
   /**
@@ -75,7 +101,7 @@ class DemoWorkflowsIntegrationTest extends KernelTestBase {
    * 8. Send Email with PDF
    * 9. Update Case Management
    * 10. Audit Log
-   * 11. Workflow Complete
+   * 11. Workflow Complete.
    *
    * @covers \Drupal\aabenforms_workflows\Plugin\Action\ProcessPaymentAction
    * @covers \Drupal\aabenforms_workflows\Plugin\Action\GeneratePdfAction

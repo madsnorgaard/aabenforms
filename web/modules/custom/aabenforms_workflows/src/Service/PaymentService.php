@@ -42,7 +42,7 @@ class PaymentService {
    *   - currency: string - Currency code (default: 'DKK')
    *   - order_id: string - Unique order identifier
    *   - payment_method: string - Payment method (e.g., 'nets_easy', 'card')
-   *   - description: string - Optional payment description
+   *   - description: string - Optional payment description.
    *
    * @return array
    *   Payment result containing:

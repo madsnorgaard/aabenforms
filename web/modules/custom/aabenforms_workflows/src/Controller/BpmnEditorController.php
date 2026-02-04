@@ -2,6 +2,7 @@
 
 namespace Drupal\aabenforms_workflows\Controller;
 
+use Symfony\Component\HttpFoundation\Response;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\aabenforms_workflows\Service\BpmnTemplateManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -119,7 +120,7 @@ class BpmnEditorController extends ControllerBase {
       ], 400);
     }
 
-    $response = new \Symfony\Component\HttpFoundation\Response($bpmn_xml);
+    $response = new Response($bpmn_xml);
     $response->headers->set('Content-Type', 'application/xml');
     $response->headers->set('Content-Disposition', 'attachment; filename="' . $filename . '"');
 

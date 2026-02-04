@@ -23,13 +23,51 @@ use Drupal\Core\Queue\QueueFactory;
  */
 class SendReminderActionTest extends UnitTestCase {
 
+  /**
+   * The action plugin instance.
+   *
+   * @var \Drupal\aabenforms_workflows\Plugin\Action\SendReminderAction
+   */
   protected $action;
+
+  /**
+   * The SMS service.
+   *
+   * @var \Drupal\aabenforms_workflows\Service\SmsService|\PHPUnit\Framework\MockObject\MockObject
+   */
   protected $smsService;
+
+  /**
+   * The mail manager.
+   *
+   * @var \Drupal\Core\Mail\MailManagerInterface|\PHPUnit\Framework\MockObject\MockObject
+   */
   protected $mailManager;
+
+  /**
+   * The queue factory.
+   *
+   * @var \Drupal\Core\Queue\QueueFactory|\PHPUnit\Framework\MockObject\MockObject
+   */
   protected $queueFactory;
+
+  /**
+   * The logger.
+   *
+   * @var \Psr\Log\LoggerInterface|\PHPUnit\Framework\MockObject\MockObject
+   */
   protected $logger;
+
+  /**
+   * The webform submission.
+   *
+   * @var \Drupal\webform\WebformSubmissionInterface|\PHPUnit\Framework\MockObject\MockObject
+   */
   protected $submission;
 
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp(): void {
     parent::setUp();
 

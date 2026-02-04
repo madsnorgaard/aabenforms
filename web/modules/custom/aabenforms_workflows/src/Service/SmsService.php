@@ -43,7 +43,7 @@ class SmsService {
    *   Optional settings:
    *   - sender: string - Sender name/number
    *   - priority: string - 'normal' or 'high'
-   *   - delivery_report: bool - Request delivery report
+   *   - delivery_report: bool - Request delivery report.
    *
    * @return array
    *   Result containing:

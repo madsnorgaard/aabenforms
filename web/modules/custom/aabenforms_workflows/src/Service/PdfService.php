@@ -4,7 +4,6 @@ namespace Drupal\aabenforms_workflows\Service;
 
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
-use Drupal\file\Entity\File;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -40,7 +39,7 @@ class PdfService {
    */
   public function __construct(
     FileSystemInterface $file_system,
-    LoggerChannelFactoryInterface $logger_factory
+    LoggerChannelFactoryInterface $logger_factory,
   ) {
     $this->fileSystem = $file_system;
     $this->logger = $logger_factory->get('aabenforms_workflows');

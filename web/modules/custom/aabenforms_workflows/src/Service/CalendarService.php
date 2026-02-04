@@ -50,7 +50,7 @@ class CalendarService {
    * @param array $options
    *   Optional settings:
    *   - location: string - Location/venue
-   *   - ceremony_type: string - Type of ceremony
+   *   - ceremony_type: string - Type of ceremony.
    *
    * @return array
    *   Available slots with metadata.

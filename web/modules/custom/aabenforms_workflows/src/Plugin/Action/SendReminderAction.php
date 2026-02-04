@@ -194,10 +194,10 @@ class SendReminderAction extends AabenFormsActionBase {
       // In production: Queue the reminder.
       // $queue = $this->queueFactory->get('aabenforms_reminders');
       // $queue->createItem([
-      //   'submission_id' => $submission->id(),
-      //   'send_at' => $reminder_timestamp,
-      //   'type' => $this->configuration['reminder_type'],
-      // ]);
+      // 'submission_id' => $submission->id(),
+      // 'send_at' => $reminder_timestamp,
+      // 'type' => $this->configuration['reminder_type'],
+      // ]).
     }
     else {
       // Send immediately for demo.
