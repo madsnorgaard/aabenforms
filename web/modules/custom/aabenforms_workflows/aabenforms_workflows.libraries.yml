@@ -17,3 +17,28 @@ workflow_wizard:
   dependencies:
     - core/drupal
     - core/jquery
+
+bpmn_editor:
+  version: 1.0
+  css:
+    theme:
+      css/bpmn-editor.css: {}
+  js:
+    js/bpmn-extensions/danish-municipal-palette.js: {}
+    js/bpmn-editor.js: {}
+  dependencies:
+    - core/drupal
+    - core/jquery
+    - bpmn_io/ui
+
+bpmn_preview:
+  version: 1.0
+  css:
+    theme:
+      css/template-browser.css: {}
+  js:
+    js/bpmn-preview.js: {}
+  dependencies:
+    - core/drupal
+    - core/jquery
+    - bpmn_io/ui

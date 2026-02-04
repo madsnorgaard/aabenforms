@@ -14,6 +14,14 @@ aabenforms_workflows.template_wizard:
   requirements:
     _permission: 'administer workflows'
 
+aabenforms_workflows.template_preview:
+  path: '/admin/aabenforms/workflow-templates/preview/{template_id}'
+  defaults:
+    _controller: '\Drupal\aabenforms_workflows\Controller\TemplateBrowserController::templatePreview'
+    _title: 'Template Preview'
+  requirements:
+    _permission: 'administer workflows'
+
 aabenforms_workflows.template_select:
   path: '/admin/config/workflow/aabenforms/templates'
   defaults:
@@ -47,3 +55,37 @@ aabenforms_workflows.parent_approval_complete:
   requirements:
     _permission: 'access content'
     action: 'approve|reject'
+
+aabenforms_workflows.wizard_autosave:
+  path: '/admin/aabenforms/workflow-templates/wizard/autosave'
+  defaults:
+    _controller: '\Drupal\aabenforms_workflows\Controller\BpmnEditorController::autosave'
+  requirements:
+    _permission: 'administer workflows'
+  options:
+    _ajax_route: TRUE
+
+aabenforms_workflows.wizard_validate:
+  path: '/admin/aabenforms/workflow-templates/wizard/validate'
+  defaults:
+    _controller: '\Drupal\aabenforms_workflows\Controller\BpmnEditorController::validate'
+  requirements:
+    _permission: 'administer workflows'
+  options:
+    _ajax_route: TRUE
+
+aabenforms_workflows.wizard_export:
+  path: '/admin/aabenforms/workflow-templates/wizard/export'
+  defaults:
+    _controller: '\Drupal\aabenforms_workflows\Controller\BpmnEditorController::export'
+  requirements:
+    _permission: 'administer workflows'
+
+aabenforms_workflows.wizard_generate_svg:
+  path: '/admin/aabenforms/workflow-templates/wizard/generate-svg'
+  defaults:
+    _controller: '\Drupal\aabenforms_workflows\Controller\BpmnEditorController::generateSvg'
+  requirements:
+    _permission: 'administer workflows'
+  options:
+    _ajax_route: TRUE

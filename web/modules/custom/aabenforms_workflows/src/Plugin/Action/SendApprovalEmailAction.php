@@ -2,25 +2,29 @@
 
 namespace Drupal\aabenforms_workflows\Plugin\Action;
 
-use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Mail\MailManagerInterface;
-use Drupal\Core\Datetime\DateFormatterInterface;
-use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\aabenforms_workflows\Service\ApprovalTokenService;
+use Drupal\Core\Action\Attribute\Action;
+use Drupal\Core\Datetime\DateFormatterInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Language\LanguageManagerInterface;
+use Drupal\Core\Mail\MailManagerInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\eca\Attribute\EcaAction;
 use Drupal\eca\Plugin\ECA\PluginFormTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Sends parent approval email with secure approval link.
- *
- * @Action(
- *   id = "aabenforms_send_approval_email",
- *   label = @Translation("Send Parent Approval Email"),
- *   description = @Translation("Sends approval email to parent with secure MitID login link"),
- *   eca_version_introduced = "2.0.0",
- *   type = "entity"
- * )
  */
+#[Action(
+  id: 'aabenforms_send_approval_email',
+  label: new TranslatableMarkup('Send Parent Approval Email'),
+  type: 'entity',
+)]
+#[EcaAction(
+  description: new TranslatableMarkup('Sends approval email to parent with secure MitID login link'),
+  version_introduced: '2.0.0',
+)]
 class SendApprovalEmailAction extends AabenFormsActionBase {
 
   use PluginFormTrait;
@@ -37,7 +41,7 @@ class SendApprovalEmailAction extends AabenFormsActionBase {
    *
    * @var \Drupal\aabenforms_workflows\Service\ApprovalTokenService
    */
-  protected ApprovalTokenService $tokenService;
+  protected ApprovalTokenService $approvalTokenService;
 
   /**
    * The date formatter.
@@ -59,7 +63,7 @@ class SendApprovalEmailAction extends AabenFormsActionBase {
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     $instance = parent::create($container, $configuration, $plugin_id, $plugin_definition);
     $instance->mailManager = $container->get('plugin.manager.mail');
-    $instance->tokenService = $container->get('aabenforms_workflows.approval_token');
+    $instance->approvalTokenService = $container->get('aabenforms_workflows.approval_token');
     $instance->dateFormatter = $container->get('date.formatter');
     $instance->languageManager = $container->get('language_manager');
     return $instance;
@@ -151,7 +155,7 @@ class SendApprovalEmailAction extends AabenFormsActionBase {
       }
 
       // Generate secure token.
-      $token = $this->tokenService->generateToken($submission->id(), $parent_number);
+      $token = $this->approvalTokenService->generateToken($submission->id(), $parent_number);
 
       // Build approval URL.
       $approval_url = \Drupal::url(

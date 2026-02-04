@@ -1,0 +1,259 @@
+/**
+ * @file
+ * Styles for BPMN.io editor integration.
+ */
+
+.bpmn-editor-wrapper {
+  margin: 2rem 0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bpmn-canvas {
+  width: 100%;
+  height: 600px;
+  background-color: #f8f8f8;
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.bpmn-validation-status {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 4px;
+  background-color: #f0f0f0;
+}
+
+.bpmn-validation-status .validation-message {
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.bpmn-validation-status .validation-message.success {
+  color: #2e7d32;
+  background-color: #e8f5e9;
+  padding: 0.5rem;
+  border-left: 4px solid #4caf50;
+}
+
+.bpmn-validation-status .validation-message.error {
+  color: #c62828;
+  background-color: #ffebee;
+  padding: 0.5rem;
+  border-left: 4px solid #f44336;
+}
+
+.bpmn-validation-status .success-icon {
+  font-weight: bold;
+  color: #4caf50;
+  margin-right: 0.5rem;
+}
+
+.bpmn-validation-status .error-icon {
+  font-weight: bold;
+  color: #f44336;
+  margin-right: 0.5rem;
+}
+
+/* Danish municipal palette icons */
+.danish-icon-mitid,
+.danish-icon-cpr,
+.danish-icon-cvr,
+.danish-icon-dawa,
+.danish-icon-payment,
+.danish-icon-sms,
+.danish-icon-email,
+.danish-icon-approval,
+.danish-icon-pdf,
+.danish-icon-upload,
+.danish-icon-calendar,
+.danish-icon-booking,
+.danish-icon-reminder,
+.danish-icon-zoning,
+.danish-icon-neighbor,
+.danish-icon-audit {
+  position: relative;
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+}
+
+.danish-icon-mitid::before {
+  content: "🔐";
+}
+
+.danish-icon-cpr::before {
+  content: "👤";
+}
+
+.danish-icon-cvr::before {
+  content: "🏢";
+}
+
+.danish-icon-dawa::before {
+  content: "📍";
+}
+
+.danish-icon-payment::before {
+  content: "💳";
+}
+
+.danish-icon-sms::before {
+  content: "💬";
+}
+
+.danish-icon-email::before {
+  content: "📧";
+}
+
+.danish-icon-approval::before {
+  content: "✓";
+  font-weight: bold;
+  color: #4caf50;
+}
+
+.danish-icon-pdf::before {
+  content: "📄";
+}
+
+.danish-icon-upload::before {
+  content: "📎";
+}
+
+.danish-icon-calendar::before {
+  content: "📅";
+}
+
+.danish-icon-booking::before {
+  content: "🕒";
+}
+
+.danish-icon-reminder::before {
+  content: "🔔";
+}
+
+.danish-icon-zoning::before {
+  content: "🗺️";
+}
+
+.danish-icon-neighbor::before {
+  content: "🏘️";
+}
+
+.danish-icon-audit::before {
+  content: "📋";
+}
+
+/* BPMN.io specific overrides */
+.djs-palette {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.djs-palette-entries {
+  padding: 8px;
+}
+
+.djs-palette-entry {
+  margin-bottom: 8px;
+  padding: 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.djs-palette-entry:hover {
+  background-color: #e3f2fd;
+}
+
+.djs-palette-entry.selected {
+  background-color: #2196f3;
+  color: #fff;
+}
+
+/* Palette groups */
+.djs-palette .group[data-group="danish-auth"] {
+  border-top: 2px solid #ff9800;
+}
+
+.djs-palette .group[data-group="danish-lookup"] {
+  border-top: 2px solid #2196f3;
+}
+
+.djs-palette .group[data-group="danish-transaction"] {
+  border-top: 2px solid #4caf50;
+}
+
+.djs-palette .group[data-group="danish-notification"] {
+  border-top: 2px solid #9c27b0;
+}
+
+.djs-palette .group[data-group="danish-document"] {
+  border-top: 2px solid #f44336;
+}
+
+.djs-palette .group[data-group="danish-scheduling"] {
+  border-top: 2px solid #00bcd4;
+}
+
+.djs-palette .group[data-group="danish-municipal"] {
+  border-top: 2px solid #795548;
+}
+
+.djs-palette .group[data-group="danish-compliance"] {
+  border-top: 2px solid #607d8b;
+}
+
+/* Canvas enhancements */
+.djs-element [data-element-id] .djs-visual > :nth-child(1) {
+  stroke-width: 2px;
+}
+
+/* Task type indicators on canvas */
+[data-element-id*="mitid"] .djs-visual > rect {
+  fill: #fff3e0 !important;
+  stroke: #ff9800 !important;
+}
+
+[data-element-id*="cpr"] .djs-visual > rect,
+[data-element-id*="cvr"] .djs-visual > rect {
+  fill: #e3f2fd !important;
+  stroke: #2196f3 !important;
+}
+
+[data-element-id*="payment"] .djs-visual > rect {
+  fill: #e8f5e9 !important;
+  stroke: #4caf50 !important;
+}
+
+[data-element-id*="sms"] .djs-visual > rect,
+[data-element-id*="email"] .djs-visual > rect {
+  fill: #f3e5f5 !important;
+  stroke: #9c27b0 !important;
+}
+
+[data-element-id*="pdf"] .djs-visual > rect,
+[data-element-id*="upload"] .djs-visual > rect {
+  fill: #ffebee !important;
+  stroke: #f44336 !important;
+}
+
+[data-element-id*="calendar"] .djs-visual > rect,
+[data-element-id*="booking"] .djs-visual > rect {
+  fill: #e0f7fa !important;
+  stroke: #00bcd4 !important;
+}
+
+[data-element-id*="zoning"] .djs-visual > rect,
+[data-element-id*="neighbor"] .djs-visual > rect {
+  fill: #efebe9 !important;
+  stroke: #795548 !important;
+}
+
+[data-element-id*="audit"] .djs-visual > rect {
+  fill: #eceff1 !important;
+  stroke: #607d8b !important;
+}

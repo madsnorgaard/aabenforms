@@ -3,19 +3,24 @@
 namespace Drupal\aabenforms_workflows\Plugin\Action;
 
 use Drupal\aabenforms_core\Service\ServiceplatformenClient;
+use Drupal\Core\Action\Attribute\Action;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\eca\Attribute\EcaAction;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * ECA Action: CPR Person Lookup via Serviceplatformen SF1520.
- *
- * @Action(
- *   id = "aabenforms_cpr_lookup",
- *   label = @Translation("CPR Person Lookup"),
- *   description = @Translation("Looks up person data from Serviceplatformen SF1520 using CPR number."),
- *   type = "aabenforms"
- * )
  */
+#[Action(
+  id: 'aabenforms_cpr_lookup',
+  label: new TranslatableMarkup('CPR Person Lookup'),
+  type: 'aabenforms',
+)]
+#[EcaAction(
+  description: new TranslatableMarkup('Looks up person data from Serviceplatformen SF1520 using CPR number.'),
+  version_introduced: '2.0.0',
+)]
 class CprLookupAction extends AabenFormsActionBase {
 
   /**
