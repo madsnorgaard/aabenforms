@@ -39,6 +39,7 @@ services:
       - drupal_files:/opt/drupal/web/sites/default/files
       - ./backups:/opt/drupal/backups
       - ./settings.php:/opt/drupal/web/sites/default/settings.php
+      - ./services.prod.yml:/opt/drupal/web/sites/default/services.yml
       - ./config:/opt/drupal/config
     environment:
       COMPOSER_MEMORY_LIMIT: "2G"
