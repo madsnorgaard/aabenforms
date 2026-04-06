@@ -26,7 +26,7 @@ $settings['entity_update_batch_size'] = 100;
 $settings['entity_update_backup'] = true;
 $settings['config_sync_directory'] = '../config/sync';
 
-if (extension_loaded('redis')) {
+if (extension_loaded('redis') && file_exists('modules/contrib/redis/redis.services.yml')) {
     $settings['redis.connection']['interface'] = 'PhpRedis';
     $settings['redis.connection']['host'] = getenv('REDIS_HOST');
     $settings['redis.connection']['port'] = '6379';
