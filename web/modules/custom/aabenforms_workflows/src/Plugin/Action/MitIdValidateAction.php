@@ -95,7 +95,7 @@ class MitIdValidateAction extends AabenFormsActionBase {
    * {@inheritdoc}
    */
   public function execute(): void {
-    $workflowId = $this->getTokenValue($this->configuration['workflow_id_token']);
+    $workflowId = $this->getTokenValue($this->configuration['workflow_id_token'] ?? 'workflow_id', '');
 
     if (empty($workflowId)) {
       $this->log('MitID validation failed: No workflow ID provided', [], 'warning');

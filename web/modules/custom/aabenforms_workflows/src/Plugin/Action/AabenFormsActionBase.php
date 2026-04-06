@@ -93,4 +93,20 @@ abstract class AabenFormsActionBase extends ActionBase implements ContainerFacto
     $this->tokenService->addTokenData($token_name, $value);
   }
 
+  /**
+   * Gets a token value from the ECA token environment.
+   *
+   * @param string $token_name
+   *   The token name.
+   * @param string $default
+   *   Default value if token not found.
+   *
+   * @return mixed
+   *   The token value, or default.
+   */
+  protected function getTokenValue(string $fieldKey, string $default): string {
+    $value = $this->tokenService->getTokenData($fieldKey);
+    return is_string($value) ? $value : ($value !== NULL ? (string) $value : $default);
+  }
+
 }

@@ -112,33 +112,37 @@ class AuditLogAction extends AabenFormsActionBase {
    */
   public function execute(): void {
     try {
+      $eventType = $this->configuration['event_type'] ?? 'workflow_action';
+      if (empty($eventType)) {
+        $eventType = 'workflow_action';
+      }
+
       // Get CPR if specified.
       $cpr = NULL;
       if (!empty($this->configuration['cpr_token'])) {
-        $cpr = $this->getTokenValue($this->configuration['cpr_token']);
+        $cpr = $this->getTokenValue($this->configuration['cpr_token'], '');
         if ($cpr) {
-          // Clean CPR.
           $cpr = preg_replace('/[^0-9]/', '', $cpr);
         }
       }
 
       // Process message template with token replacement.
-      $message = $this->configuration['message_template'];
+      $message = $this->configuration['message_template'] ?? 'Workflow action executed';
       $message = $this->replaceTokensInString($message);
 
       // Get additional data.
       $additionalData = [];
       if (!empty($this->configuration['additional_data_token'])) {
-        $data = $this->getTokenValue($this->configuration['additional_data_token']);
+        $data = $this->getTokenValue($this->configuration['additional_data_token'], '');
         if (is_array($data)) {
           $additionalData = $data;
         }
       }
 
       // Create audit log entry.
-      if ($cpr && $this->configuration['event_type'] === 'cpr_access') {
-        // Special handling for CPR access logging.
-        $this->auditLogger->logCprLookup(
+      if ($cpr && $eventType === 'cpr_access') {
+        $this->auditLogger->log(
+          'cpr_access',
           $cpr,
           'workflow_action',
           'success',
@@ -146,19 +150,17 @@ class AuditLogAction extends AabenFormsActionBase {
         );
       }
       else {
-        // Generic audit log.
         $this->auditLogger->log(
-          $this->configuration['event_type'],
+          $eventType,
+          $cpr ?? 'system',
           $message,
-          $cpr,
-          array_merge([
-            'action_id' => $this->getPluginId(),
-          ], $additionalData)
+          'success',
+          array_merge(['action_id' => $this->getPluginId()], $additionalData)
         );
       }
 
       $this->log('Audit log entry created: {type}', [
-        'type' => $this->configuration['event_type'],
+        'type' => $eventType,
       ]);
 
     }
@@ -181,7 +183,7 @@ class AuditLogAction extends AabenFormsActionBase {
     preg_match_all('/\[([^\]]+)\]/', $string, $matches);
 
     foreach ($matches[1] as $tokenName) {
-      $value = $this->getTokenValue($tokenName, '[' . $tokenName . ']');
+      $value = $this->getTokenValue($tokenName, '[' . $tokenName . ']', '');
       if (!is_string($value) && !is_numeric($value)) {
         $value = is_array($value) ? json_encode($value) : (string) $value;
       }

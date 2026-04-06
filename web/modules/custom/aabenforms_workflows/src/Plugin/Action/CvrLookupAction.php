@@ -94,7 +94,7 @@ class CvrLookupAction extends AabenFormsActionBase {
    * {@inheritdoc}
    */
   public function execute(): void {
-    $cvr = $this->getTokenValue($this->configuration['cvr_token']);
+    $cvr = $this->getTokenValue($this->configuration['cvr_token'], '');
 
     if (empty($cvr)) {
       $this->log('CVR lookup failed: No CVR number provided', [], 'warning');
