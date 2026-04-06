@@ -20,6 +20,10 @@ RUN mkdir -p /opt/drupal/web/sites/default/files && \
 # Copy files to /opt/drupal
 COPY composer.json /opt/drupal/
 COPY composer.lock /opt/drupal/
+COPY config /opt/drupal/config/
+COPY settings.php /opt/drupal/web/sites/default/settings.php
+COPY web/modules/custom /opt/drupal/web/modules/custom/
+COPY web/profiles/custom /opt/drupal/web/profiles/custom/
 
 # Install PHP dependencies
 WORKDIR /opt/drupal

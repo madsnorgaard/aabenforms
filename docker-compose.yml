@@ -33,10 +33,11 @@ services:
     restart: always
     working_dir: /opt/drupal
     volumes:
-      - ./web:/opt/drupal/web
+      - ./web/modules/custom:/opt/drupal/web/modules/custom
+      - ./web/profiles/custom:/opt/drupal/web/profiles/custom
+      - ./web/themes/custom:/opt/drupal/web/themes/custom
+      - drupal_files:/opt/drupal/web/sites/default/files
       - ./backups:/opt/drupal/backups
-      - ./composer.json:/opt/drupal/composer.json
-      - ./composer.lock:/opt/drupal/composer.lock
       - ./settings.php:/opt/drupal/web/sites/default/settings.php
       - ./config:/opt/drupal/config
     environment:
@@ -79,3 +80,6 @@ services:
       driver: "json-file"
       options:
         max-size: "50m"
+
+volumes:
+  drupal_files:
