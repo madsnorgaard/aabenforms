@@ -1,0 +1,81 @@
+networks:
+  web:
+    external: true
+  internal:
+    external: false
+
+services:
+  aabenforms_db:
+    image: mariadb:11
+    container_name: aabenforms_db
+    env_file:
+    - .env
+    restart: always
+    environment:
+      MYSQL_DATABASE: "${DB_NAME}"
+      MYSQL_USER: "${DB_USER}"
+      MYSQL_PASSWORD: "${DB_PASS}"
+      MYSQL_RANDOM_ROOT_PASSWORD: "1"
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+    labels:
+      - "traefik.enable=false"
+    networks:
+      - internal
+
+  drupal:
+    container_name: aabenforms_drupal
+    env_file:
+    - .env
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    restart: always
+    working_dir: /opt/drupal
+    volumes:
+      - ./web:/opt/drupal/web
+      - ./backups:/opt/drupal/backups
+      - ./composer.json:/opt/drupal/composer.json
+      - ./composer.lock:/opt/drupal/composer.lock
+      - ./settings.php:/opt/drupal/web/sites/default/settings.php
+      - ./config:/opt/drupal/config
+    environment:
+      COMPOSER_MEMORY_LIMIT: "2G"
+      TRUSTED_HOST_PATTERNS: ${TRUSTED_HOST_PATTERNS}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      DB_NAME: ${DB_NAME}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: 3306
+      HASH_SALT: ${HASH_SALT}
+      REDIS_HOST: ${REDIS_HOST}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.aabenforms_drupal.rule=Host(`api.aabenforms.dk`)"
+      - "traefik.http.routers.aabenforms_drupal.tls.certresolver=lets-encrypt"
+      - "traefik.http.services.aabenforms_drupal.loadbalancer.server.port=80"
+    networks:
+      - internal
+      - web
+    depends_on:
+      - aabenforms_db
+      - aabenforms_redis
+
+  aabenforms_redis:
+    image: library/redis:latest
+    container_name: aabenforms_redis
+    volumes:
+      - ./data/redis:/data
+    command: ["redis-server"]
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 20s
+      retries: 10
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"

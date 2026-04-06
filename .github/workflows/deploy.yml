@@ -1,0 +1,35 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      force_recreate:
+        description: 'Force recreate containers'
+        type: boolean
+        default: false
+      run_updb:
+        description: 'Run drush updb'
+        type: boolean
+        default: true
+
+jobs:
+  trigger-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger deploy
+        uses: peter-evans/repository-dispatch@v4
+        with:
+          token: ${{ secrets.DEPLOY_TOKEN }}
+          repository: madsnorgaard/contabo-infrastructure
+          event-type: deploy
+          client-payload: |
+            {
+              "project_dir": "api.aabenforms.dk",
+              "project_type": "drupal",
+              "drupal_service": "drupal",
+              "repo_name": "aabenforms",
+              "force_recreate": "${{ inputs.force_recreate || false }}",
+              "run_updb": "${{ inputs.run_updb || true }}"
+            }
