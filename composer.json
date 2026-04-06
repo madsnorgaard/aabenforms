@@ -31,6 +31,7 @@
         "drupal/key": "^1.22",
         "drupal/openid_connect": "^3.0@alpha",
         "drupal/real_aes": "^2.6",
+        "drupal/redis": "^1.11",
         "drupal/webform": "^6.3@dev",
         "drush/drush": "^13.7"
     },
