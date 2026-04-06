@@ -135,7 +135,7 @@ class SendApprovalEmailAction extends AabenFormsActionBase {
       $submission_token = $this->configuration['submission_token'];
 
       // Get submission from token.
-      $submission = $this->getTokenValue($submission_token);
+      $submission = $this->getTokenValue($submission_token, '');
 
       if (!$submission || !method_exists($submission, 'getElementData')) {
         $this->log('Invalid submission object in token: {token}', [

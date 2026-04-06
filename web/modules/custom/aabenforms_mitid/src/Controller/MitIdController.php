@@ -61,14 +61,21 @@ class MitIdController extends ControllerBase {
     // Validate that it's an internal path to prevent open redirect attacks.
     $returnUrl = $request->query->get('return_url') ?? '/';
 
-    // Strip any external URLs - only allow internal paths.
+    // Strip any external URLs - only allow internal paths or trusted frontend origins.
     if (preg_match('#^https?://#i', $returnUrl)) {
-      // If it's a full URL, parse it and check if it's the current site.
       $currentHost = $request->getSchemeAndHttpHost();
       $returnHost = parse_url($returnUrl, PHP_URL_SCHEME) . '://' . parse_url($returnUrl, PHP_URL_HOST);
+      $returnHostWithPort = $returnHost;
+      $port = parse_url($returnUrl, PHP_URL_PORT);
+      if ($port) {
+        $returnHostWithPort = $returnHost . ':' . $port;
+      }
 
-      if ($returnHost !== $currentHost) {
-        // External URL detected - reject it and use homepage.
+      // Allow the current site and configured CORS origins (frontend).
+      $corsOrigin = getenv('CORS_ALLOW_ORIGIN') ?: '';
+      $allowedOrigins = array_filter([$currentHost, $corsOrigin]);
+
+      if (!in_array($returnHost, $allowedOrigins, TRUE) && !in_array($returnHostWithPort, $allowedOrigins, TRUE)) {
         $this->getLogger('aabenforms_mitid')->warning('Rejected external return_url: @url', ['@url' => $returnUrl]);
         $returnUrl = '/';
       }
@@ -158,12 +165,15 @@ class MitIdController extends ControllerBase {
       // Store session ID in user's session for frontend access.
       $request->getSession()->set('mitid_workflow_id', $workflowId);
       $request->getSession()->set('mitid_authenticated', TRUE);
-      $request->getSession()->set('mitid_cpr', $sessionData['person']['cpr'] ?? NULL);
+      $request->getSession()->set('mitid_cpr', $sessionData['cpr'] ?? NULL);
 
       $this->messenger()->addStatus($this->t('Successfully authenticated with MitID'));
 
-      // Redirect back to the return URL.
-      return new RedirectResponse($returnUrl);
+      // Append session ID to return URL so frontend can retrieve session data.
+      $separator = str_contains($returnUrl, '?') ? '&' : '?';
+      $redirectUrl = $returnUrl . $separator . 'session=' . urlencode($workflowId);
+
+      return new RedirectResponse($redirectUrl);
 
     }
     catch (\Exception $e) {
@@ -196,6 +206,40 @@ class MitIdController extends ControllerBase {
     $this->messenger()->addStatus($this->t('You have been logged out.'));
 
     return new RedirectResponse('/');
+  }
+
+  /**
+   * Returns session data as JSON for frontend consumption.
+   *
+   * Route: /mitid/session/{session_id}.
+   *
+   * @param string $session_id
+   *   The workflow/session ID.
+   *
+   * @return \Symfony\Component\HttpFoundation\JsonResponse
+   *   Session data or error.
+   */
+  public function getSession(string $session_id): JsonResponse {
+    $sessionManager = \Drupal::service('aabenforms_mitid.session_manager');
+    $session = $sessionManager->getSession($session_id);
+
+    if (!$session) {
+      return new JsonResponse(['error' => 'Session not found or expired'], 404);
+    }
+
+    // Return session data in JSON:API-like format for frontend compatibility.
+    return new JsonResponse([
+      'data' => [
+        'type' => 'mitid-session',
+        'id' => $session_id,
+        'attributes' => [
+          'name' => $session['name'] ?? $session['given_name'] ?? '',
+          'cpr' => $session['cpr'] ?? '',
+          'email' => $session['email'] ?? '',
+          'expiry' => $session['expires_at'] ?? '',
+        ],
+      ],
+    ]);
   }
 
 }

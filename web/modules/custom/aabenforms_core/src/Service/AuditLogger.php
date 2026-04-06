@@ -151,7 +151,7 @@ class AuditLogger {
    * @param array<string, mixed> $context
    *   Additional context data.
    */
-  protected function log(string $action, string $identifier, string $purpose, string $status, array $context): void {
+  public function log(string $action, string $identifier, string $purpose, string $status, array $context = []): void {
     $request = $this->requestStack->getCurrentRequest();
     $ip_address = $request ? $request->getClientIp() : 'CLI';
 

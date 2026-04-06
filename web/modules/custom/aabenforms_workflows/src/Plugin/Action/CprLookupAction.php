@@ -94,7 +94,7 @@ class CprLookupAction extends AabenFormsActionBase {
    * {@inheritdoc}
    */
   public function execute(): void {
-    $cpr = $this->getTokenValue($this->configuration['cpr_token']);
+    $cpr = $this->getTokenValue($this->configuration['cpr_token'], '');
 
     if (empty($cpr)) {
       $this->log('CPR lookup failed: No CPR number provided', [], 'warning');
