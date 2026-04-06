@@ -1,0 +1,16 @@
+parameters:
+  session.storage.options:
+    gc_probability: 1
+    gc_divisor: 100
+    gc_maxlifetime: 200000
+    cookie_lifetime: 2000000
+    cookie_samesite: Lax
+  cors.config:
+    enabled: true
+    allowedHeaders: ['Content-Type', 'Accept', 'Authorization']
+    allowedMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
+    allowedOrigins: ['https://aabenforms.dk']
+    allowedOriginsPatterns: []
+    exposedHeaders: false
+    maxAge: 600
+    supportsCredentials: false
