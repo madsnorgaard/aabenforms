@@ -26,13 +26,14 @@ $settings['entity_update_batch_size'] = 100;
 $settings['entity_update_backup'] = true;
 $settings['config_sync_directory'] = '../config/sync';
 
-if (extension_loaded('redis') && class_exists('Drupal\redis\Cache\CacheBackendFactory')) {
-    $settings['redis.connection']['interface'] = 'PhpRedis';
-    $settings['redis.connection']['host'] = getenv('REDIS_HOST');
-    $settings['redis.connection']['port'] = '6379';
-    $settings['cache']['default'] = 'cache.backend.redis';
-    $settings['cache_prefix'] = 'aabenforms_redis_';
-}
+// Redis cache - enable after `drush en redis`
+// if (extension_loaded('redis')) {
+//     $settings['redis.connection']['interface'] = 'PhpRedis';
+//     $settings['redis.connection']['host'] = getenv('REDIS_HOST');
+//     $settings['redis.connection']['port'] = '6379';
+//     $settings['cache']['default'] = 'cache.backend.redis';
+//     $settings['cache_prefix'] = 'aabenforms_redis_';
+// }
 
 if (file_exists($app_root . '/' . $site_path . '/settings.local.php')) {
     include $app_root . '/' . $site_path . '/settings.local.php';
