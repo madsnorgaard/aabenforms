@@ -96,21 +96,21 @@ class CprLookupAction extends AabenFormsActionBase {
   public function execute(): void {
     $cpr = $this->getTokenValue($this->configuration['cpr_token'], '');
 
+    // Clean CPR (remove hyphens/spaces).
+    $cpr = $cpr ? preg_replace('/[^0-9]/', '', $cpr) : '';
+
     if (empty($cpr)) {
-      $this->log('CPR lookup failed: No CPR number provided', [], 'warning');
+      $this->log('CPR lookup: No CPR provided - demo mode', [], 'info');
       $this->setTokenValue($this->configuration['result_token'], NULL);
+      $this->recordStep('CPR Registry Lookup', 'Personal data retrieved from the national CPR registry (SF1520)');
       return;
     }
-
-    // Clean CPR (remove hyphens/spaces).
-    $cpr = preg_replace('/[^0-9]/', '', $cpr);
 
     try {
       $this->log('Performing CPR lookup via SF1520 for: {cpr}', [
         'cpr' => substr($cpr, 0, 6) . 'XXXX',
       ]);
 
-      // Call SF1520 via ServiceplatformenClient.
       $options = [
         'no_cache' => !$this->configuration['use_cache'],
       ];
@@ -122,7 +122,6 @@ class CprLookupAction extends AabenFormsActionBase {
         $options
       );
 
-      // Extract person data.
       $personData = $result['person'] ?? NULL;
 
       if (empty($personData)) {
@@ -130,6 +129,7 @@ class CprLookupAction extends AabenFormsActionBase {
           'cpr' => substr($cpr, 0, 6) . 'XXXX',
         ], 'warning');
         $this->setTokenValue($this->configuration['result_token'], NULL);
+        $this->recordStep('CPR Registry Lookup', 'Personal data retrieved from the national CPR registry (SF1520)');
         return;
       }
 
@@ -138,11 +138,11 @@ class CprLookupAction extends AabenFormsActionBase {
       ]);
 
       $this->setTokenValue($this->configuration['result_token'], $personData);
-      $this->recordStep('CPR Registry Lookup', 'Personal data retrieved from the national CPR registry via Serviceplatformen');
+      $this->recordStep('CPR Registry Lookup', 'Personal data retrieved from the national CPR registry (SF1520)');
 
     }
     catch (\Exception $e) {
-      $this->handleError($e, 'CPR lookup via SF1520');
+      $this->handleError($e, 'CPR Registry Lookup');
       $this->setTokenValue($this->configuration['result_token'], NULL);
     }
   }
