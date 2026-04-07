@@ -23,6 +23,9 @@ services:
       - '@datetime.time'
       - '@logger.factory'
 
+  aabenforms_core.workflow_execution_collector:
+    class: Drupal\aabenforms_core\Service\WorkflowExecutionCollector
+
   aabenforms_core.tenant_resolver:
     class: Drupal\aabenforms_core\Service\TenantResolver
     arguments:

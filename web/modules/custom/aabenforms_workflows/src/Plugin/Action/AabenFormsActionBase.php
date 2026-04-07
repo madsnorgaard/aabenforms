@@ -6,6 +6,7 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\aabenforms_core\Service\WorkflowExecutionCollector;
 use Drupal\eca\Plugin\Action\ActionBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -19,6 +20,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * - Audit logging integration.
  */
 abstract class AabenFormsActionBase extends ActionBase implements ContainerFactoryPluginInterface {
+
+  /**
+   * Collects workflow execution steps for the API response.
+   */
+  protected WorkflowExecutionCollector $executionCollector;
 
   /**
    * {@inheritdoc}
@@ -35,6 +41,7 @@ abstract class AabenFormsActionBase extends ActionBase implements ContainerFacto
       $container->get('eca.state'),
       $container->get('logger.factory')->get('aabenforms_workflows')
     );
+    $instance->executionCollector = $container->get('aabenforms_core.workflow_execution_collector');
     return $instance;
   }
 
@@ -79,6 +86,27 @@ abstract class AabenFormsActionBase extends ActionBase implements ContainerFacto
       ],
       'error'
     );
+    $this->executionCollector->addStep(
+      $this->getPluginId(),
+      $context_message ?: 'Action failed',
+      $e->getMessage(),
+      'failed',
+      $e->getMessage()
+    );
+  }
+
+  /**
+   * Records a completed workflow step for the API response.
+   *
+   * @param string $label
+   *   Human-readable step name shown to the user.
+   * @param string $description
+   *   What this step accomplished.
+   * @param string $status
+   *   Step status: 'completed' or 'failed'.
+   */
+  protected function recordStep(string $label, string $description, string $status = 'completed'): void {
+    $this->executionCollector->addStep($this->getPluginId(), $label, $description, $status);
   }
 
   /**

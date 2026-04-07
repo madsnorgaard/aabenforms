@@ -2,16 +2,32 @@
 
 namespace Drupal\aabenforms_core\Controller;
 
+use Drupal\aabenforms_core\Service\WorkflowExecutionCollector;
 use Drupal\Component\Utility\Crypt;
-use Symfony\Component\HttpFoundation\Request;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\webform\Entity\Webform;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Simple REST controller for webform access (bypasses JSON:API permissions).
  */
 class WebformApiController extends ControllerBase {
+
+  /**
+   * The workflow execution collector.
+   */
+  protected WorkflowExecutionCollector $executionCollector;
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container): static {
+    $instance = parent::create($container);
+    $instance->executionCollector = $container->get('aabenforms_core.workflow_execution_collector');
+    return $instance;
+  }
 
   /**
    * Get webform by ID.
@@ -31,12 +47,10 @@ class WebformApiController extends ControllerBase {
       return new JsonResponse(['error' => 'Webform not found'], 404);
     }
 
-    // Check if user can access this webform.
     if (!$webform->access('view')) {
       return new JsonResponse(['error' => 'Access denied'], 403);
     }
 
-    // Build simplified response matching frontend expectations.
     $data = [
       'data' => [
         'id' => $webform->id(),
@@ -65,7 +79,7 @@ class WebformApiController extends ControllerBase {
    *   The request.
    *
    * @return \Symfony\Component\HttpFoundation\JsonResponse
-   *   JSON response with submission result.
+   *   JSON response with submission result and workflow execution data.
    */
   public function submitWebform(string $id, Request $request): JsonResponse {
     $webform = Webform::load($id);
@@ -74,12 +88,10 @@ class WebformApiController extends ControllerBase {
       return new JsonResponse(['error' => 'Webform not found'], 404);
     }
 
-    // Check if user can submit to this webform.
     if (!$webform->access('submission_create')) {
       return new JsonResponse(['error' => 'Access denied'], 403);
     }
 
-    // Get submission data from request.
     $content = $request->getContent();
     $data = json_decode($content, TRUE);
 
@@ -87,7 +99,6 @@ class WebformApiController extends ControllerBase {
       return new JsonResponse(['error' => 'Invalid submission data'], 400);
     }
 
-    // Extract form values and prepare submission.
     $submission_data = $data['data']['attributes']['data'] ?? $data['data'];
 
     $values = [
@@ -95,8 +106,8 @@ class WebformApiController extends ControllerBase {
       'entity_type' => NULL,
       'entity_id' => NULL,
       'in_draft' => FALSE,
-      'uid' => \Drupal::currentUser()->id(),
-      'langcode' => \Drupal::languageManager()->getCurrentLanguage()->getId(),
+      'uid' => $this->currentUser()->id(),
+      'langcode' => $this->languageManager()->getCurrentLanguage()->getId(),
       'token' => Crypt::randomBytesBase64(),
       'uri' => $request->getRequestUri(),
       'remote_addr' => $request->getClientIp(),
@@ -104,21 +115,20 @@ class WebformApiController extends ControllerBase {
     ];
 
     try {
-      // Create submission.
-      $submission = \Drupal::entityTypeManager()
+      $submission = $this->entityTypeManager()
         ->getStorage('webform_submission')
         ->create($values);
 
-      // Save the submission.
+      // ECA workflows fire synchronously during save().
+      // The WorkflowExecutionCollector captures each step.
       $submission->save();
 
-      // Log the submission.
-      \Drupal::logger('aabenforms_core')->notice('Webform submission created: @sid for webform @webform', [
+      $this->getLogger('aabenforms_core')->notice('Webform submission created: @sid for webform @webform', [
         '@sid' => $submission->id(),
         '@webform' => $id,
       ]);
 
-      return new JsonResponse([
+      $response_data = [
         'data' => [
           'id' => $submission->id(),
           'type' => 'webform_submission',
@@ -128,16 +138,21 @@ class WebformApiController extends ControllerBase {
             'completed' => $submission->getCompletedTime(),
           ],
         ],
-      ], 201);
+      ];
+
+      // Append workflow execution data if any steps were collected.
+      if ($this->executionCollector->hasSteps()) {
+        $response_data['workflow'] = $this->executionCollector->toArray();
+      }
+
+      return new JsonResponse($response_data, 201);
     }
     catch (\Exception $e) {
-      // Log detailed error server-side.
-      \Drupal::logger('aabenforms_core')->error('Webform submission failed: @error', [
+      $this->getLogger('aabenforms_core')->error('Webform submission failed: @error', [
         '@error' => $e->getMessage(),
         '@trace' => $e->getTraceAsString(),
       ]);
 
-      // Return generic error to client (don't expose internal details).
       return new JsonResponse([
         'error' => 'Submission failed',
         'message' => 'An error occurred while processing your submission. Please try again.',
