@@ -43,10 +43,22 @@ class WorkflowExecutionCollector {
   }
 
   /**
-   * Returns all collected steps.
+   * Returns all collected steps, deduplicated by name.
+   *
+   * ECA workflows with parallel branches (e.g. dual parent approval)
+   * fire the same action multiple times. We keep only the first
+   * occurrence of each step name to avoid cluttering the UI.
    */
   public function getSteps(): array {
-    return $this->steps;
+    $seen = [];
+    $unique = [];
+    foreach ($this->steps as $step) {
+      if (!isset($seen[$step['name']])) {
+        $seen[$step['name']] = TRUE;
+        $unique[] = $step;
+      }
+    }
+    return $unique;
   }
 
   /**
@@ -60,10 +72,11 @@ class WorkflowExecutionCollector {
    * Returns the workflow result as an array for JSON serialization.
    */
   public function toArray(): array {
+    $steps = $this->getSteps();
     return [
       'status' => $this->hasFailedSteps() ? 'failed' : 'completed',
-      'step_count' => count($this->steps),
-      'steps' => $this->steps,
+      'step_count' => count($steps),
+      'steps' => $steps,
     ];
   }
 
