@@ -3,6 +3,9 @@ networks:
     external: true
   internal:
     external: false
+  mail:
+    external: true
+    name: mail_internal
 
 services:
   aabenforms_db:
@@ -51,6 +54,12 @@ services:
       DB_PORT: 3306
       HASH_SALT: ${HASH_SALT}
       REDIS_HOST: ${REDIS_HOST}
+      SMTP_HOST: ${SMTP_HOST:-mail.madsnorgaard.net}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_PROTOCOL: ${SMTP_PROTOCOL:-tls}
+      SMTP_USER: ${SMTP_USER:-mads@madsnorgaard.net}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      SMTP_FROM: ${SMTP_FROM:-mads@madsnorgaard.net}
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.aabenforms_drupal.rule=Host(`api.aabenforms.dk`)"
@@ -59,6 +68,7 @@ services:
     networks:
       - internal
       - web
+      - mail
     depends_on:
       - aabenforms_db
       - aabenforms_redis

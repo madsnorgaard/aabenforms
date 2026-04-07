@@ -42,3 +42,17 @@ if (file_exists($app_root . '/' . $site_path . '/settings.local.php')) {
 # Force SSL via reverse proxy (Traefik)
 $settings['reverse_proxy'] = true;
 $settings['reverse_proxy_addresses'] = array(@$_SERVER['REMOTE_ADDR']);
+
+# SMTP configuration from environment
+if (getenv('SMTP_PASSWORD')) {
+  $config['smtp.settings']['smtp_on'] = TRUE;
+  $config['smtp.settings']['smtp_host'] = getenv('SMTP_HOST') ?: 'mail.madsnorgaard.net';
+  $config['smtp.settings']['smtp_port'] = getenv('SMTP_PORT') ?: '587';
+  $config['smtp.settings']['smtp_protocol'] = getenv('SMTP_PROTOCOL') ?: 'tls';
+  $config['smtp.settings']['smtp_username'] = getenv('SMTP_USER') ?: 'mads@madsnorgaard.net';
+  $config['smtp.settings']['smtp_password'] = getenv('SMTP_PASSWORD');
+  $config['smtp.settings']['smtp_from'] = getenv('SMTP_FROM') ?: 'mads@madsnorgaard.net';
+  $config['smtp.settings']['smtp_fromname'] = 'ÅbenForms';
+  $config['smtp.settings']['smtp_allowhtml'] = TRUE;
+  $config['system.mail']['interface']['default'] = 'SMTPMailSystem';
+}
