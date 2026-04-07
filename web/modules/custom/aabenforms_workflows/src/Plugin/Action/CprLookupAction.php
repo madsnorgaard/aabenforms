@@ -138,6 +138,7 @@ class CprLookupAction extends AabenFormsActionBase {
       ]);
 
       $this->setTokenValue($this->configuration['result_token'], $personData);
+      $this->recordStep('CPR Registry Lookup', 'Personal data retrieved from the national CPR registry via Serviceplatformen');
 
     }
     catch (\Exception $e) {

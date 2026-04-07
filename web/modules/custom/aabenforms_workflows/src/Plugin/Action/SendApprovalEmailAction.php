@@ -199,6 +199,7 @@ class SendApprovalEmailAction extends AabenFormsActionBase {
           '@email' => $parent_email,
           '@sid' => $submission->id(),
         ], 'info');
+        $this->recordStep('Approval Email Sent', 'Secure approval link sent to parent via email');
       }
       else {
         $this->log('Failed to send approval email to @email', [

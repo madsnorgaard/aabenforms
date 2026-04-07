@@ -162,6 +162,7 @@ class AuditLogAction extends AabenFormsActionBase {
       $this->log('Audit log entry created: {type}', [
         'type' => $eventType,
       ]);
+      $this->recordStep('GDPR Audit Trail', 'Audit log entry created for regulatory compliance');
 
     }
     catch (\Exception $e) {

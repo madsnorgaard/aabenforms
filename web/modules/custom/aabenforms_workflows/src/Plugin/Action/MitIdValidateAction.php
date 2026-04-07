@@ -132,6 +132,7 @@ class MitIdValidateAction extends AabenFormsActionBase {
 
       $this->setTokenValue($this->configuration['result_token'], TRUE);
       $this->setTokenValue($this->configuration['session_data_token'], $sessionData);
+      $this->recordStep('MitID Identity Validation', 'Citizen identity validated via secure MitID authentication');
 
     }
     catch (\Exception $e) {
