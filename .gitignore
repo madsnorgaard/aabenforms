@@ -11,6 +11,10 @@
 /web/sites/*/settings.*.php
 /web/sites/*/services*.yml
 
+# Ignore encryption keys and profiles - secrets, never to git
+/config/sync/key.key.*.yml
+/config/sync/encrypt.profile.*.yml
+
 # Ignore Drupal's file directory
 /web/sites/*/files/
 
