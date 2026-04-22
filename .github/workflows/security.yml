@@ -23,8 +23,8 @@ jobs:
       - name: Run Composer Audit
         run: composer audit
 
-  drupal-check-security:
-    name: Drupal Security Updates
+  drupal-outdated:
+    name: Drupal Outdated Modules
     runs-on: ubuntu-latest
 
     steps:
@@ -35,11 +35,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: 8.3
-          tools: composer:v2, drush
+          tools: composer:v2
 
-      - name: Install Dependencies
-        run: composer install --no-interaction
-
-      - name: Check for Drupal Security Updates
-        run: |
-          vendor/bin/drush pm:security
+      - name: Check for outdated Drupal packages
+        run: composer outdated 'drupal/*' --direct
