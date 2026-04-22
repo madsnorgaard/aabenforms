@@ -1,0 +1,20 @@
+uuid: b2c3d4e5-f6a7-8901-bcde-f12345678901
+langcode: en
+status: true
+dependencies:
+  module:
+    - aabenforms_core
+    - aabenforms_workflows
+    - system
+    - webform
+id: case_worker
+label: 'Case Worker'
+weight: 3
+is_admin: false
+permissions:
+  - 'access content'
+  - 'access webform api'
+  - 'administer workflows'
+  - 'use text format webform_default'
+  - 'view any webform submission'
+  - 'edit any webform submission'
