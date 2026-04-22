@@ -407,13 +407,100 @@
 
   "clientScopeMappings": {},
 
+  "clientScopes": [
+    {
+      "name": "ssn",
+      "description": "Danish Social Security Number (CPR) - MitID ssn scope",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "false"
+      },
+      "protocolMappers": [
+        {
+          "name": "ssn-cpr",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "cpr",
+            "claim.name": "ssn",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "name": "profile",
+      "description": "OpenID Connect built-in profile scope",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true",
+        "consent.screen.text": "${profileScopeConsentText}"
+      }
+    },
+    {
+      "name": "email",
+      "description": "OpenID Connect built-in email scope",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true",
+        "consent.screen.text": "${emailScopeConsentText}"
+      }
+    },
+    {
+      "name": "roles",
+      "description": "OpenID Connect realm roles scope",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "false",
+        "display.on.consent.screen": "true",
+        "consent.screen.text": "${rolesScopeConsentText}"
+      }
+    },
+    {
+      "name": "web-origins",
+      "description": "OpenID Connect built-in web-origins scope",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "false",
+        "display.on.consent.screen": "false",
+        "consent.screen.text": ""
+      }
+    },
+    {
+      "name": "acr",
+      "description": "OpenID Connect authentication context reference scope",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "false",
+        "display.on.consent.screen": "false"
+      }
+    },
+    {
+      "name": "role_list",
+      "description": "SAML role list",
+      "protocol": "saml",
+      "attributes": {
+        "consent.screen.text": "${samlRoleListScopeConsentText}",
+        "display.on.consent.screen": "true"
+      }
+    }
+  ],
+
   "defaultDefaultClientScopes": [
     "role_list",
     "profile",
     "email",
     "roles",
     "web-origins",
-    "acr"
+    "acr",
+    "ssn"
   ],
 
   "browserFlow": "browser",
