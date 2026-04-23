@@ -12,7 +12,7 @@ events:
   parent2_starts_approval:
     plugin: 'content_entity:update'
     configuration:
-      type: webform_submission
+      type: 'webform_submission parent_request_form'
     successors:
       - id: check_parent2_pending
         condition: ''

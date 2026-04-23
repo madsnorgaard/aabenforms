@@ -215,4 +215,40 @@ class AuditLogger {
     return $query->execute()->fetchAll(\PDO::FETCH_ASSOC);
   }
 
+  /**
+   * Delete audit log entries older than the retention window.
+   *
+   * Called by hook_cron. Deletes in batches so a very large table doesn't
+   * stall the cron run. Returns the number of rows actually deleted.
+   *
+   * @param int $retention_days
+   *   Rows with timestamp older than (now - retention_days) are deleted.
+   * @param int $batch_size
+   *   Maximum rows deleted per cron call. Protects cron latency.
+   *
+   * @return int
+   *   Number of rows deleted.
+   */
+  public function purge(int $retention_days, int $batch_size = 10000): int {
+    if ($retention_days < 1) {
+      // Safety guard - refuse to purge everything.
+      return 0;
+    }
+    $cutoff = \Drupal::time()->getRequestTime() - ($retention_days * 86400);
+    // Select IDs first so we can cap the batch and report an accurate count.
+    $ids = $this->database->select('aabenforms_audit_log', 'al')
+      ->fields('al', ['id'])
+      ->condition('timestamp', $cutoff, '<')
+      ->range(0, $batch_size)
+      ->execute()
+      ->fetchCol();
+    if (!$ids) {
+      return 0;
+    }
+    $deleted = $this->database->delete('aabenforms_audit_log')
+      ->condition('id', $ids, 'IN')
+      ->execute();
+    return (int) $deleted;
+  }
+
 }

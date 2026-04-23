@@ -12,7 +12,7 @@ events:
   both_parents_complete:
     plugin: 'content_entity:update'
     configuration:
-      type: webform_submission
+      type: 'webform_submission parent_request_form'
     successors:
       - id: check_both_complete
         condition: ''

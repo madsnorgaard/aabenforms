@@ -12,7 +12,7 @@ events:
   municipality_request:
     plugin: 'content_entity:insert'
     configuration:
-      type: webform_submission
+      type: 'webform_submission parent_request_form'
     successors:
       - id: parent1_mitid
         condition: ''
