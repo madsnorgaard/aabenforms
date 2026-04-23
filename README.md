@@ -38,12 +38,12 @@ This repository contains the **Drupal 11 backend** that provides:
         ┌──────────────────┼──────────────────┐
         │                  │                  │
 ┌───────▼────────┐  ┌──────▼──────┐  ┌───────▼────────┐
-│  Nuxt 3 UI     │  │  Drupal 11  │  │  Platform.sh   │
+│  Nuxt 3 UI     │  │  Drupal 11  │  │   VPS2 prod    │
 │  (Frontend)    │◄─┤  (Backend)  │  │  (Deployment)  │
 │                │  │             │  │                │
-│  - Multi-tenant│  │  - JSON:API │  │  - MariaDB     │
-│  - Form render │  │  - ECA      │  │  - Redis       │
-│  - Workflows   │  │  - Webform  │  │  - Solr        │
+│  - Multi-tenant│  │  - JSON:API │  │  - Docker      │
+│  - Form render │  │  - ECA      │  │  - Traefik TLS │
+│  - Workflows   │  │  - Webform  │  │  - MariaDB 11  │
 └────────────────┘  └─────────────┘  └────────────────┘
                            │
                            │ Serviceplatformen
@@ -86,6 +86,52 @@ ddev launch
 - **Frontend**: https://aabenforms.ddev.site
 - **JSON:API**: https://aabenforms.ddev.site/jsonapi
 - **Mailpit**: https://aabenforms.ddev.site:8026
+
+### Local authentication (Keycloak mock realm)
+
+`ddev start` also boots a Keycloak container that imports a mock realm from
+`.ddev/mocks/keycloak/realms/danish-gov-test.json`. This stands in for MitID
+during local development.
+
+- Realm: `danish-gov-test` at http://localhost:8080
+- OIDC client: `aabenforms-backend` (redirect URIs cover localhost:3000 and
+  the DDEV hostnames)
+- 10 test users (password `test1234`): freja.nielsen, mikkel.jensen,
+  sofie.hansen, lars.andersen, emma.pedersen, karen.christensen,
+  protected.person, morten.rasmussen, ida.mortensen, peter.larsen
+- Client scopes: `ssn` (with a CPR user-attribute mapper emitting the `ssn`
+  claim, matching the real MitID contract) plus the re-declared built-ins
+  `profile`, `email`, `roles`, `web-origins`, `acr`, `role_list`.
+
+**Gotcha worth knowing about.** When a realm JSON declares top-level
+`clientScopes`, Keycloak's import replaces the auto-created built-in scope
+set. If the JSON only declares `ssn`, `profile`/`email`/`roles`/etc. vanish
+from the realm and OIDC discovery shrinks to three scopes. Every built-in
+that clients depend on must be redeclared alongside the custom scope. This
+cost a day of debugging on Apr 23, 2026.
+
+`MitIdOidcClient::getAuthorizationUrl()` defaults scope to `'openid ssn'`
+(`web/modules/custom/aabenforms_mitid/src/Service/MitIdOidcClient.php:114`).
+Before the realm was updated, every login attempt in local dev got
+`invalid_scope` back from Keycloak.
+
+**Re-importing the realm after edits.** Keycloak runs with
+`start-dev --import-realm`, which imports a realm once per H2 data store.
+A plain `ddev restart` keeps the existing realm in place and silently
+ignores your changes. To force re-import, remove the container and let
+DDEV recreate it:
+
+```bash
+docker rm -f ddev-aabenforms-keycloak
+ddev start
+```
+
+Then verify the scopes are live:
+
+```bash
+curl -s http://localhost:8080/realms/danish-gov-test/.well-known/openid-configuration \
+  | python3 -c "import sys,json; print(json.load(sys.stdin)['scopes_supported'])"
+```
 
 ## Custom Modules
 
@@ -150,7 +196,7 @@ ddev launch
 ÅbenForms provides a powerful visual workflow automation system for Danish municipal processes:
 
 ### Key Features
-- **Pre-built Templates**: 5 BPMN templates for common use cases (building permits, address changes, FOI requests, etc.)
+- **Pre-built Templates**: 7 BPMN templates for common use cases (building permits, parking permits, marriage booking, address changes, FOI requests, company verification, contact form)
 - **Visual Editor**: Create and modify workflows without programming
 - **Danish Integrations**: MitID authentication, CPR/CVR lookup, Digital Post notifications
 - **GDPR Compliant**: Automatic audit logging, encrypted CPR numbers, data retention policies
@@ -216,15 +262,18 @@ ddev drush config:export -y
 
 ## BPMN Workflow Templates
 
-ÅbenForms includes 5 production-ready BPMN 2.0 workflow templates:
+ÅbenForms ships 7 BPMN 2.0 workflow templates under
+`web/modules/custom/aabenforms_workflows/workflows/`:
 
 | Template | Use Case | ECA Actions |
 |----------|----------|-------------|
 | `building_permit` | Building permit applications | MitID validation, CPR lookup, audit logging |
-| `contact_form` | Generic citizen contact | Email notifications, case creation |
-| `company_verification` | Business registration verification | CVR lookup, MitID Erhverv validation |
+| `parking_permit` | Parking permit applications | MitID validation, CPR lookup, zoning checks |
+| `marriage_booking` | Marriage ceremony booking | Appointment booking, calendar integration |
 | `address_change` | Address change notifications | DAWA validation, Digital Post |
+| `company_verification` | Business registration verification | CVR lookup, MitID Erhverv validation |
 | `foi_request` | Freedom of Information requests | Document archiving, deadline tracking |
+| `contact_form` | Generic citizen contact | Email notifications, case creation |
 
 ### Template Browser
 
@@ -239,10 +288,13 @@ For detailed workflow development guide, see [docs/WORKFLOW_GUIDE.md](docs/WORKF
 ## Documentation
 
 For detailed information, see:
-- **[CLAUDE.md](CLAUDE.md)** - Complete development guide (commands, architecture, Danish integrations)
 - **[docs/WORKFLOW_GUIDE.md](docs/WORKFLOW_GUIDE.md)** - BPMN workflow development guide
-- **[docs/TESTING_GUIDE.md](docs/TESTING_GUIDE.md)** - Testing guide (156 tests, 45% coverage)
-- **[Platform Repository](https://github.com/madsnorgaard/aabenforms-platform)** - Deployment documentation
+- **[docs/TESTING_GUIDE.md](docs/TESTING_GUIDE.md)** - Testing guide
+- **Deployment**: orchestrated by
+  [contabo-infrastructure](https://github.com/madsnorgaard/contabo-infrastructure)
+  `.github/workflows/deploy.yml`. Push to `main` triggers a rebuild of the
+  Docker image on VPS2. See that repo's `docs/STATUS-REPORT.md` for the
+  current prod state.
 
 ## Technology Stack
 
@@ -268,8 +320,8 @@ For detailed information, see:
 
 ## Related Projects
 
-- **Frontend**: [aabenforms-frontend](https://github.com/madsnorgaard/aabenforms-frontend)
-- **Platform**: [aabenforms-platform](https://github.com/madsnorgaard/aabenforms-platform)
+- **Frontend**: [aabenforms-frontend](https://github.com/madsnorgaard/aabenforms-frontend) - Nuxt 3 SSR at https://aabenforms.dk
+- **Deployment orchestrator**: [contabo-infrastructure](https://github.com/madsnorgaard/contabo-infrastructure) - shared deploy workflow for this project and others on VPS2
 
 ## License
 
@@ -280,6 +332,3 @@ GPL-2.0 - See [LICENSE](LICENSE)
 Issues and pull requests welcome at:
 https://github.com/madsnorgaard/aabenforms/issues
 
----
-
-**Developed with care for Danish municipalities**
