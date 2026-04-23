@@ -46,9 +46,9 @@ actions:
     label: 'Log: association request received'
     plugin: aabenforms_audit_log
     configuration:
-      event_type_token: association_booking_submitted
-      user_data_token: '[webform_submission:values:association_name:raw]'
-      metadata_token: 'Association request received and CVR resolved'
+      event_type: association_booking_submitted
+      additional_data_token: '[webform_submission:values:association_name:raw]'
+      message_template: 'Association request received and CVR resolved'
     successors:
       -
         id: log_reviewer_assigned
@@ -57,9 +57,9 @@ actions:
     label: 'Log: reviewer assigned (stub for email)'
     plugin: aabenforms_audit_log
     configuration:
-      event_type_token: association_booking_reviewer_assigned
-      user_data_token: '[webform_submission:values:reviewer_email:raw]'
-      metadata_token: 'Stub. Production would email the assigned reviewer.'
+      event_type: association_booking_reviewer_assigned
+      additional_data_token: '[webform_submission:values:reviewer_email:raw]'
+      message_template: 'Stub. Production would email the assigned reviewer.'
     successors:
       -
         id: log_payment_placeholder
@@ -68,9 +68,9 @@ actions:
     label: 'Log: payment step (stub for aabenforms_process_payment)'
     plugin: aabenforms_audit_log
     configuration:
-      event_type_token: association_booking_payment_placeholder
-      user_data_token: '[webform_submission:values:amount:raw]'
-      metadata_token: 'Stub. Production would call aabenforms_process_payment once ProcessPaymentAction::getSubmission is fixed - see followup #11.'
+      event_type: association_booking_payment_placeholder
+      additional_data_token: '[webform_submission:values:amount:raw]'
+      message_template: 'Stub. Production would call aabenforms_process_payment once ProcessPaymentAction::getSubmission is fixed - see followup #11.'
     successors:
       -
         id: log_complete
@@ -79,7 +79,7 @@ actions:
     label: 'Log: request processed'
     plugin: aabenforms_audit_log
     configuration:
-      event_type_token: association_booking_complete
-      user_data_token: '[webform_submission:values:association_name:raw]'
-      metadata_token: 'Association request decisioned (stub)'
+      event_type: association_booking_complete
+      additional_data_token: '[webform_submission:values:association_name:raw]'
+      message_template: 'Association request decisioned (stub)'
     successors: {  }

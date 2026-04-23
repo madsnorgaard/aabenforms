@@ -48,9 +48,9 @@ actions:
     label: 'Parent 1: Audit Log'
     plugin: aabenforms_audit_log
     configuration:
-      event_type_token: parent1_approval
-      user_data_token: '[parent1_data:name]'
-      metadata_token: 'Parent 1 authenticated'
+      event_type: parent1_approval
+      additional_data_token: '[parent1_data:name]'
+      message_template: 'Parent 1 authenticated'
     successors:
       - id: mark_parent1_complete
         condition: ''
@@ -92,9 +92,9 @@ actions:
     label: 'Parent 2: Audit Log'
     plugin: aabenforms_audit_log
     configuration:
-      event_type_token: parent2_approval
-      user_data_token: '[parent2_data:name]'
-      metadata_token: 'Parent 2 authenticated'
+      event_type: parent2_approval
+      additional_data_token: '[parent2_data:name]'
+      message_template: 'Parent 2 authenticated'
     successors:
       - id: mark_parent2_complete
         condition: ''
@@ -114,7 +114,7 @@ actions:
     label: 'Case Worker: Audit Assignment'
     plugin: aabenforms_audit_log
     configuration:
-      event_type_token: caseworker_review
-      user_data_token: 'Both parents approved'
-      metadata_token: 'Assigned to case worker for review'
+      event_type: caseworker_review
+      additional_data_token: 'Both parents approved'
+      message_template: 'Assigned to case worker for review'
     successors: {  }

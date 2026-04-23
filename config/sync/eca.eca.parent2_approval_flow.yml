@@ -54,9 +54,9 @@ actions:
     label: 'Parent 2: Audit Log'
     plugin: aabenforms_audit_log
     configuration:
-      event_type_token: parent2_approval
-      user_data_token: '[parent2_data:name]'
-      metadata_token: 'Parent 2 authenticated and approved'
+      event_type: parent2_approval
+      additional_data_token: '[parent2_data:name]'
+      message_template: 'Parent 2 authenticated and approved'
     successors:
       - id: mark_parent2_complete
         condition: ''

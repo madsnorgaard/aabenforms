@@ -46,9 +46,9 @@ actions:
     label: 'Log: application received'
     plugin: aabenforms_audit_log
     configuration:
-      event_type_token: citizen_service_submitted
-      user_data_token: '[citizen_data:name]'
-      metadata_token: 'Citizen service application received and CPR resolved'
+      event_type: citizen_service_submitted
+      additional_data_token: '[citizen_data:name]'
+      message_template: 'Citizen service application received and CPR resolved'
     successors:
       -
         id: log_caseworker_assigned
@@ -57,9 +57,9 @@ actions:
     label: 'Log: case worker assigned (stub for email)'
     plugin: aabenforms_audit_log
     configuration:
-      event_type_token: citizen_service_caseworker_assigned
-      user_data_token: '[webform_submission:values:caseworker_email:raw]'
-      metadata_token: 'Stub. Production would email the assigned case worker.'
+      event_type: citizen_service_caseworker_assigned
+      additional_data_token: '[webform_submission:values:caseworker_email:raw]'
+      message_template: 'Stub. Production would email the assigned case worker.'
     successors:
       -
         id: log_decision_delivered
@@ -68,7 +68,7 @@ actions:
     label: 'Log: decision delivered via Digital Post (stub)'
     plugin: aabenforms_audit_log
     configuration:
-      event_type_token: citizen_service_decision_delivered
-      user_data_token: '[citizen_data:name]'
-      metadata_token: 'Stub. Production would call SF1601 Digital Post on case-worker decision.'
+      event_type: citizen_service_decision_delivered
+      additional_data_token: '[citizen_data:name]'
+      message_template: 'Stub. Production would call SF1601 Digital Post on case-worker decision.'
     successors: {  }

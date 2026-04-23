@@ -24,9 +24,9 @@ actions:
     label: 'Log: phone declaration submitted'
     plugin: aabenforms_audit_log
     configuration:
-      event_type_token: phone_declaration_submitted
-      user_data_token: '[webform_submission:values:employee_name:raw]'
-      metadata_token: 'Private phone use declaration submitted'
+      event_type: phone_declaration_submitted
+      additional_data_token: '[webform_submission:values:employee_name:raw]'
+      message_template: 'Private phone use declaration submitted'
     successors:
       -
         id: log_manager_notified
@@ -35,9 +35,9 @@ actions:
     label: 'Log: manager notified for approval (stub)'
     plugin: aabenforms_audit_log
     configuration:
-      event_type_token: phone_declaration_manager_notified
-      user_data_token: '[webform_submission:values:manager_email:raw]'
-      metadata_token: 'Stub. Production would send approval email.'
+      event_type: phone_declaration_manager_notified
+      additional_data_token: '[webform_submission:values:manager_email:raw]'
+      message_template: 'Stub. Production would send approval email.'
     successors:
       -
         id: log_archived
@@ -46,7 +46,7 @@ actions:
     label: 'Log: declaration archived'
     plugin: aabenforms_audit_log
     configuration:
-      event_type_token: phone_declaration_archived
-      user_data_token: '[webform_submission:values:tax_year:raw]'
-      metadata_token: 'Declaration archived for audit'
+      event_type: phone_declaration_archived
+      additional_data_token: '[webform_submission:values:tax_year:raw]'
+      message_template: 'Declaration archived for audit'
     successors: {  }
