@@ -134,7 +134,33 @@ abstract class AabenFormsActionBase extends ActionBase implements ContainerFacto
    */
   protected function getTokenValue(string $fieldKey, string $default): string {
     $value = $this->tokenService->getTokenData($fieldKey);
-    return is_string($value) ? $value : ($value !== NULL ? (string) $value : $default);
+    if (is_string($value)) {
+      return $value;
+    }
+    if ($value === NULL) {
+      return $default;
+    }
+    // Guard against objects that don't implement __toString (e.g. FieldItemList
+    // when a token resolves to an entity reference). A blind (string) cast on
+    // those throws a fatal Error. Prefer the object's own scalar representation
+    // when available, otherwise fall back to the default.
+    if (is_object($value)) {
+      if (method_exists($value, '__toString')) {
+        return (string) $value;
+      }
+      if (method_exists($value, 'getString')) {
+        return (string) $value->getString();
+      }
+      if (method_exists($value, 'value')) {
+        $inner = $value->value();
+        return is_scalar($inner) ? (string) $inner : $default;
+      }
+      return $default;
+    }
+    if (is_scalar($value)) {
+      return (string) $value;
+    }
+    return $default;
   }
 
 }
