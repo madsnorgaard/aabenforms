@@ -39,3 +39,28 @@ function aabenforms_core_help($route_name, RouteMatchInterface $route_match) {
       return $output;
   }
 }
+
+/**
+ * Implements hook_cron().
+ *
+ * Purges audit log entries older than the configured retention window.
+ * Default is 1825 days (5 years) to align with GDPR audit-retention
+ * expectations. Set aabenforms_core.settings audit.retention_days to 0 to
+ * disable purging, or raise the batch size if cron falls behind.
+ */
+function aabenforms_core_cron(): void {
+  $config = \Drupal::config('aabenforms_core.settings');
+  $retention = (int) $config->get('audit.retention_days');
+  if ($retention < 1) {
+    return;
+  }
+  /** @var \Drupal\aabenforms_core\Service\AuditLogger $logger */
+  $logger = \Drupal::service('aabenforms_core.audit_logger');
+  $deleted = $logger->purge($retention);
+  if ($deleted > 0) {
+    \Drupal::logger('aabenforms_core')->info(
+      'Audit log purge removed @count entries older than @days days.',
+      ['@count' => $deleted, '@days' => $retention]
+    );
+  }
+}

@@ -12,7 +12,7 @@ events:
   webform_insert:
     plugin: 'content_entity:insert'
     configuration:
-      type: webform_submission
+      type: 'webform_submission parent_request_form'
     successors:
       -
         id: validate_mitid
