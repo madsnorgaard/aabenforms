@@ -12,7 +12,7 @@ events:
   on_submission:
     plugin: 'content_entity:insert'
     configuration:
-      type: webform_submission
+      type: 'webform_submission med_election_nomination'
     successors:
       -
         id: mitid_validate
