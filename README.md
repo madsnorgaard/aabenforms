@@ -13,9 +13,13 @@
 
 ## Overview
 
-ÅbenForms is a modern, modular platform for Danish municipalities to automate citizen-facing workflows and integrate with government services (MitID, Serviceplatformen, case management systems).
+ÅbenForms is a modular platform for Danish municipalities to automate citizen-facing workflows and integrate with government services (MitID, Serviceplatformen, case management systems).
 
-**Status: Phase 5 Complete - Production Ready**
+**Status: POC / demo**. Live at https://api.aabenforms.dk with a Nuxt
+frontend at https://aabenforms.dk. Real MitID test-gateway
+registration with Digitaliseringsstyrelsen is a future phase; today
+the backend uses a Keycloak mock for local development and the
+frontend's MitID button is hidden in prod.
 
 This repository contains the **Drupal 11 backend** that provides:
 - ECA workflow engine (event-driven automation)
@@ -157,8 +161,8 @@ curl -s http://localhost:8080/realms/danish-gov-test/.well-known/openid-configur
 | | | • Approval system with secure token-based access |
 | | | • 3 separate workflows for parallel parent approvals |
 | | | • Email notifications (SendApprovalEmailAction) |
-| | | • 4 custom ECA actions (MitID validate, CPR lookup, CVR lookup, audit log) |
-| | | • Complete documentation (4,166+ lines for municipalities) |
+| | | • 14 custom ECA action plugins (MitID validate, CPR/CVR lookup, audit log, payment, SMS, PDF, calendar, GIS, zoning, reminders) |
+| | | • Municipal admin documentation under `docs/` |
 
 ### Phase 4: Danish Service Integrations (Current)
 | Module | Status | Description |
@@ -174,14 +178,15 @@ curl -s http://localhost:8080/realms/danish-gov-test/.well-known/openid-configur
 
 ### Development Progress
 
-**Phase 3 Completed** (Current Release):
--  Complete dual parent approval system with parallel workflows
+**Shipped:**
+-  Dual parent approval system with parallel workflows
 -  Secure token-based approval pages (HMAC-SHA256, 7-day expiry)
 -  Visual workflow template wizard (no YAML required)
--  5 production-ready BPMN templates
--  GDPR-compliant data masking for separated parents
--  156 passing tests (45% coverage)
--  Comprehensive municipal documentation (4,166+ lines)
+-  7 BPMN templates (building_permit, parking_permit, marriage_booking, address_change, company_verification, foi_request, contact_form)
+-  14 ECA action plugins
+-  Keycloak mock realm with `ssn` client scope for local MitID development
+-  GDPR-oriented data masking for separated parents
+-  Automated test coverage via CI (see badges above for current numbers)
 
 **Phase 4 Next** (In Progress):
 - 🔄 BpmnTemplateManagerTest.php (5 tests)
