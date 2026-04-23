@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  id="Definitions_mileage_expense"
+                  targetNamespace="http://aabenforms.dk/bpmn"
+                  exporter="AabenForms"
+                  exporterVersion="1.0">
+
+  <bpmn:process id="mileage_expense_process" name="Mileage and Expense Reimbursement" isExecutable="true">
+    <bpmn:documentation>[category: hr_internal]
+Employee submits mileage or expense reimbursement, line manager
+approves, and the approved claim is forwarded to payroll. Pattern A
+(single-approval).
+
+Stub: payroll step audits only. Production: call payroll HTTP API via
+a new action plugin.
+
+<parameters>
+  <parameter id="manager_email" label="Manager Email" type="email" required="true">
+    <description>Line manager who approves the claim</description>
+  </parameter>
+  <parameter id="currency" label="Currency" type="string" required="false" default="DKK">
+    <description>Reimbursement currency</description>
+  </parameter>
+</parameters></bpmn:documentation>
+
+    <bpmn:startEvent id="StartEvent_EmployeeSubmit" name="Employee Submits Claim">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="Task_RecordClaim" name="Record Claim">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:userTask id="Task_ManagerApprove" name="Manager Approves Claim">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:exclusiveGateway id="Gateway_Approved" name="Approved?">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_Approved</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Rejected</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:serviceTask id="Task_ForwardPayroll" name="Forward to Payroll (stub)">
+      <bpmn:incoming>Flow_Approved</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="EndEvent_Paid" name="Claim Forwarded to Payroll">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:endEvent id="EndEvent_Rejected" name="Claim Rejected">
+      <bpmn:incoming>Flow_Rejected</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_EmployeeSubmit" targetRef="Task_RecordClaim"/>
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_RecordClaim" targetRef="Task_ManagerApprove"/>
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_ManagerApprove" targetRef="Gateway_Approved"/>
+    <bpmn:sequenceFlow id="Flow_Approved" name="Yes" sourceRef="Gateway_Approved" targetRef="Task_ForwardPayroll"/>
+    <bpmn:sequenceFlow id="Flow_Rejected" name="No" sourceRef="Gateway_Approved" targetRef="EndEvent_Rejected"/>
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Task_ForwardPayroll" targetRef="EndEvent_Paid"/>
+  </bpmn:process>
+
+</bpmn:definitions>

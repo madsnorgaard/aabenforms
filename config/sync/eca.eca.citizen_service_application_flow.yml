@@ -1,0 +1,74 @@
+uuid: e5f6a7b8-c9d0-1234-ef01-456789012344
+langcode: en
+status: true
+dependencies:
+  module:
+    - aabenforms_workflows
+    - eca_content
+id: citizen_service_application_flow
+weight: null
+template: null
+events:
+  on_submission:
+    plugin: 'content_entity:insert'
+    configuration:
+      type: webform_submission
+    successors:
+      -
+        id: mitid_validate
+        condition: ''
+conditions: {  }
+gateways: {  }
+actions:
+  mitid_validate:
+    label: 'Validate MitID session'
+    plugin: aabenforms_mitid_validate
+    configuration:
+      workflow_id_token: workflow_id_citizen_service
+      result_token: citizen_mitid_valid
+      session_data_token: citizen_session
+    successors:
+      -
+        id: cpr_lookup
+        condition: ''
+  cpr_lookup:
+    label: 'CPR registry lookup'
+    plugin: aabenforms_cpr_lookup
+    configuration:
+      cpr_token: '[citizen_session:cpr]'
+      result_token: citizen_data
+      use_cache: true
+    successors:
+      -
+        id: log_received
+        condition: ''
+  log_received:
+    label: 'Log: application received'
+    plugin: aabenforms_audit_log
+    configuration:
+      event_type_token: citizen_service_submitted
+      user_data_token: '[citizen_data:name]'
+      metadata_token: 'Citizen service application received and CPR resolved'
+    successors:
+      -
+        id: log_caseworker_assigned
+        condition: ''
+  log_caseworker_assigned:
+    label: 'Log: case worker assigned (stub for email)'
+    plugin: aabenforms_audit_log
+    configuration:
+      event_type_token: citizen_service_caseworker_assigned
+      user_data_token: '[webform_submission:values:caseworker_email:raw]'
+      metadata_token: 'Stub. Production would email the assigned case worker.'
+    successors:
+      -
+        id: log_decision_delivered
+        condition: ''
+  log_decision_delivered:
+    label: 'Log: decision delivered via Digital Post (stub)'
+    plugin: aabenforms_audit_log
+    configuration:
+      event_type_token: citizen_service_decision_delivered
+      user_data_token: '[citizen_data:name]'
+      metadata_token: 'Stub. Production would call SF1601 Digital Post on case-worker decision.'
+    successors: {  }

@@ -1,0 +1,85 @@
+uuid: f6a7b8c9-d0e1-2345-f012-567890123455
+langcode: en
+status: true
+dependencies:
+  module:
+    - aabenforms_workflows
+    - eca_content
+id: association_booking_flow
+weight: null
+template: null
+events:
+  on_submission:
+    plugin: 'content_entity:insert'
+    configuration:
+      type: webform_submission
+    successors:
+      -
+        id: mitid_validate
+        condition: ''
+conditions: {  }
+gateways: {  }
+actions:
+  mitid_validate:
+    label: 'Validate MitID Erhverv session'
+    plugin: aabenforms_mitid_validate
+    configuration:
+      workflow_id_token: workflow_id_association
+      result_token: association_mitid_valid
+      session_data_token: association_session
+    successors:
+      -
+        id: cvr_lookup
+        condition: ''
+  cvr_lookup:
+    label: 'CVR registry lookup'
+    plugin: aabenforms_cvr_lookup
+    configuration:
+      cvr_token: '[webform_submission:values:cvr:raw]'
+      result_token: association_data
+      use_cache: true
+    successors:
+      -
+        id: log_received
+        condition: ''
+  log_received:
+    label: 'Log: association request received'
+    plugin: aabenforms_audit_log
+    configuration:
+      event_type_token: association_booking_submitted
+      user_data_token: '[webform_submission:values:association_name:raw]'
+      metadata_token: 'Association request received and CVR resolved'
+    successors:
+      -
+        id: log_reviewer_assigned
+        condition: ''
+  log_reviewer_assigned:
+    label: 'Log: reviewer assigned (stub for email)'
+    plugin: aabenforms_audit_log
+    configuration:
+      event_type_token: association_booking_reviewer_assigned
+      user_data_token: '[webform_submission:values:reviewer_email:raw]'
+      metadata_token: 'Stub. Production would email the assigned reviewer.'
+    successors:
+      -
+        id: log_payment_placeholder
+        condition: ''
+  log_payment_placeholder:
+    label: 'Log: payment step (stub for aabenforms_process_payment)'
+    plugin: aabenforms_audit_log
+    configuration:
+      event_type_token: association_booking_payment_placeholder
+      user_data_token: '[webform_submission:values:amount:raw]'
+      metadata_token: 'Stub. Production would call aabenforms_process_payment once ProcessPaymentAction::getSubmission is fixed - see followup #11.'
+    successors:
+      -
+        id: log_complete
+        condition: ''
+  log_complete:
+    label: 'Log: request processed'
+    plugin: aabenforms_audit_log
+    configuration:
+      event_type_token: association_booking_complete
+      user_data_token: '[webform_submission:values:association_name:raw]'
+      metadata_token: 'Association request decisioned (stub)'
+    successors: {  }

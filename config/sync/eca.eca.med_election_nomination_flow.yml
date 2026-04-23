@@ -1,0 +1,52 @@
+uuid: a7b8c9d0-e1f2-3456-0123-678901234566
+langcode: en
+status: true
+dependencies:
+  module:
+    - aabenforms_workflows
+    - eca_content
+id: med_election_nomination_flow
+weight: null
+template: null
+events:
+  on_submission:
+    plugin: 'content_entity:insert'
+    configuration:
+      type: webform_submission
+    successors:
+      -
+        id: mitid_validate
+        condition: ''
+conditions: {  }
+gateways: {  }
+actions:
+  mitid_validate:
+    label: 'Validate nominator MitID'
+    plugin: aabenforms_mitid_validate
+    configuration:
+      workflow_id_token: workflow_id_med_nomination
+      result_token: nominator_mitid_valid
+      session_data_token: nominator_session
+    successors:
+      -
+        id: cpr_lookup
+        condition: ''
+  cpr_lookup:
+    label: 'Resolve nominator via CPR'
+    plugin: aabenforms_cpr_lookup
+    configuration:
+      cpr_token: '[nominator_session:cpr]'
+      result_token: nominator_data
+      use_cache: true
+    successors:
+      -
+        id: log_nomination
+        condition: ''
+  log_nomination:
+    label: 'Record nomination in audit log'
+    plugin: aabenforms_audit_log
+    configuration:
+      event_type_token: med_nomination_recorded
+      user_data_token: '[webform_submission:values:nominee_name:raw]'
+      metadata_token: 'MED election nomination recorded'
+    successors: {  }

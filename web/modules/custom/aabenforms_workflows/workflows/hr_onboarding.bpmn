@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  id="Definitions_hr_onboarding"
+                  targetNamespace="http://aabenforms.dk/bpmn"
+                  exporter="AabenForms"
+                  exporterVersion="1.0">
+
+  <bpmn:process id="hr_onboarding_process" name="HR Onboarding Workflow" isExecutable="true">
+    <bpmn:documentation>[category: hr_internal]
+HR-initiated onboarding of a new employee. HR submits hire details, the
+line manager specifies IT and equipment needs, and IT is automatically
+notified to provision accounts. Pattern B (three-party cascade).
+
+Stub: manager and IT resolution come from fields on the webform.
+Production: resolve via Active Directory or HR system.
+
+<parameters>
+  <parameter id="hire_start_date" label="Start Date" type="date" required="true">
+    <description>Expected first day of the new employee</description>
+  </parameter>
+  <parameter id="manager_email" label="Manager Email" type="email" required="true">
+    <description>Line manager who approves IT and equipment needs</description>
+  </parameter>
+  <parameter id="it_distribution_email" label="IT Team Distribution" type="email" required="true">
+    <description>IT inbox that receives account-creation requests</description>
+  </parameter>
+</parameters></bpmn:documentation>
+
+    <bpmn:startEvent id="StartEvent_HrSubmit" name="HR Submits Hire Details">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="Task_RecordHire" name="Record Hire Request">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:userTask id="Task_ManagerReview" name="Manager Specifies IT and Equipment Needs">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:exclusiveGateway id="Gateway_Approved" name="Approved?">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_Approved</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Rejected</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:serviceTask id="Task_NotifyIt" name="Notify IT to Provision Accounts">
+      <bpmn:incoming>Flow_Approved</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_AuditLogComplete" name="Audit Log Completion">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="EndEvent_Complete" name="Onboarding Assigned">
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:endEvent id="EndEvent_Rejected" name="Onboarding Rejected">
+      <bpmn:incoming>Flow_Rejected</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_HrSubmit" targetRef="Task_RecordHire"/>
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_RecordHire" targetRef="Task_ManagerReview"/>
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_ManagerReview" targetRef="Gateway_Approved"/>
+    <bpmn:sequenceFlow id="Flow_Approved" name="Yes" sourceRef="Gateway_Approved" targetRef="Task_NotifyIt"/>
+    <bpmn:sequenceFlow id="Flow_Rejected" name="No" sourceRef="Gateway_Approved" targetRef="EndEvent_Rejected"/>
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Task_NotifyIt" targetRef="Task_AuditLogComplete"/>
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="Task_AuditLogComplete" targetRef="EndEvent_Complete"/>
+  </bpmn:process>
+
+</bpmn:definitions>

@@ -1,0 +1,52 @@
+uuid: d4e5f6a7-b8c9-0123-def0-345678901233
+langcode: en
+status: true
+dependencies:
+  module:
+    - aabenforms_workflows
+    - eca_content
+id: phone_declaration_flow
+weight: null
+template: null
+events:
+  on_submission:
+    plugin: 'content_entity:insert'
+    configuration:
+      type: webform_submission
+    successors:
+      -
+        id: log_received
+        condition: ''
+conditions: {  }
+gateways: {  }
+actions:
+  log_received:
+    label: 'Log: phone declaration submitted'
+    plugin: aabenforms_audit_log
+    configuration:
+      event_type_token: phone_declaration_submitted
+      user_data_token: '[webform_submission:values:employee_name:raw]'
+      metadata_token: 'Private phone use declaration submitted'
+    successors:
+      -
+        id: log_manager_notified
+        condition: ''
+  log_manager_notified:
+    label: 'Log: manager notified for approval (stub)'
+    plugin: aabenforms_audit_log
+    configuration:
+      event_type_token: phone_declaration_manager_notified
+      user_data_token: '[webform_submission:values:manager_email:raw]'
+      metadata_token: 'Stub. Production would send approval email.'
+    successors:
+      -
+        id: log_archived
+        condition: ''
+  log_archived:
+    label: 'Log: declaration archived'
+    plugin: aabenforms_audit_log
+    configuration:
+      event_type_token: phone_declaration_archived
+      user_data_token: '[webform_submission:values:tax_year:raw]'
+      metadata_token: 'Declaration archived for audit'
+    successors: {  }

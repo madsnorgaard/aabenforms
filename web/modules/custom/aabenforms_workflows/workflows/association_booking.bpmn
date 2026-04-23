@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  id="Definitions_association_booking"
+                  targetNamespace="http://aabenforms.dk/bpmn"
+                  exporter="AabenForms"
+                  exporterVersion="1.0">
+
+  <bpmn:process id="association_booking_process" name="Association Booking or Grant Request" isExecutable="true">
+    <bpmn:documentation>[category: citizen_service]
+Registered association applies for municipal facility booking or a
+small grant. Authenticates via MitID Erhverv, company details pulled
+from CVR, municipality reviewer decides, and optional booking fee is
+collected. Pattern C (lookup + approval) plus payment step.
+
+Stub: payment calls aabenforms_process_payment whose service is a
+mock logger today. Real Nets Easy integration is a separate workstream.
+
+<parameters>
+  <parameter id="reviewer_email" label="Reviewer Email" type="email" required="true">
+    <description>Municipality reviewer who decides on the request</description>
+  </parameter>
+  <parameter id="request_type" label="Request Type" type="string" required="true">
+    <description>booking or grant</description>
+  </parameter>
+</parameters></bpmn:documentation>
+
+    <bpmn:startEvent id="StartEvent_AssociationSubmit" name="Association Submits Request">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="Task_MitIdValidate" name="Validate MitID Erhverv Session">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_CvrLookup" name="CVR Registry Lookup">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:userTask id="Task_ReviewerDecide" name="Municipality Reviewer Decides">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:exclusiveGateway id="Gateway_PaymentNeeded" name="Payment Required?">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_Payment</bpmn:outgoing>
+      <bpmn:outgoing>Flow_NoPayment</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:serviceTask id="Task_ProcessPayment" name="Process Booking Fee (mock)">
+      <bpmn:incoming>Flow_Payment</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_AuditLogComplete" name="Record Decision">
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:incoming>Flow_NoPayment</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="EndEvent_Complete" name="Request Processed">
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_AssociationSubmit" targetRef="Task_MitIdValidate"/>
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_MitIdValidate" targetRef="Task_CvrLookup"/>
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_CvrLookup" targetRef="Task_ReviewerDecide"/>
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Task_ReviewerDecide" targetRef="Gateway_PaymentNeeded"/>
+    <bpmn:sequenceFlow id="Flow_Payment" name="Yes (booking)" sourceRef="Gateway_PaymentNeeded" targetRef="Task_ProcessPayment"/>
+    <bpmn:sequenceFlow id="Flow_NoPayment" name="No (grant)" sourceRef="Gateway_PaymentNeeded" targetRef="Task_AuditLogComplete"/>
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="Task_ProcessPayment" targetRef="Task_AuditLogComplete"/>
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="Task_AuditLogComplete" targetRef="EndEvent_Complete"/>
+  </bpmn:process>
+
+</bpmn:definitions>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  id="Definitions_citizen_service_application"
+                  targetNamespace="http://aabenforms.dk/bpmn"
+                  exporter="AabenForms"
+                  exporterVersion="1.0">
+
+  <bpmn:process id="citizen_service_application_process" name="Citizen Service Application" isExecutable="true">
+    <bpmn:documentation>[category: citizen_service]
+Citizen applies for a municipal service benefit. System verifies the
+citizen's identity via MitID, retrieves master data from the CPR
+registry, routes the case to a case worker, and delivers the decision
+via Digital Post. Pattern C (lookup + approval).
+
+Stub: Digital Post delivery is represented by the audit log. Production
+would call SF1601 via the planned aabenforms_digital_post module.
+
+<parameters>
+  <parameter id="service_type" label="Service Type" type="string" required="true">
+    <description>The specific benefit or service being applied for</description>
+  </parameter>
+  <parameter id="caseworker_email" label="Case Worker Email" type="email" required="true">
+    <description>Assigned case worker who reviews the application</description>
+  </parameter>
+</parameters></bpmn:documentation>
+
+    <bpmn:startEvent id="StartEvent_CitizenApply" name="Citizen Submits Application">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="Task_MitIdValidate" name="Validate MitID Session">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_CprLookup" name="CPR Registry Lookup">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:userTask id="Task_CaseworkerReview" name="Case Worker Reviews Application">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:exclusiveGateway id="Gateway_Decision" name="Decision">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_Approved</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Rejected</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:serviceTask id="Task_DigitalPostApprove" name="Deliver Decision via Digital Post">
+      <bpmn:incoming>Flow_Approved</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_DigitalPostReject" name="Deliver Rejection via Digital Post">
+      <bpmn:incoming>Flow_Rejected</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="EndEvent_Approved" name="Application Approved">
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:endEvent id="EndEvent_Rejected" name="Application Rejected">
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_CitizenApply" targetRef="Task_MitIdValidate"/>
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_MitIdValidate" targetRef="Task_CprLookup"/>
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_CprLookup" targetRef="Task_CaseworkerReview"/>
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Task_CaseworkerReview" targetRef="Gateway_Decision"/>
+    <bpmn:sequenceFlow id="Flow_Approved" name="Approved" sourceRef="Gateway_Decision" targetRef="Task_DigitalPostApprove"/>
+    <bpmn:sequenceFlow id="Flow_Rejected" name="Rejected" sourceRef="Gateway_Decision" targetRef="Task_DigitalPostReject"/>
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="Task_DigitalPostApprove" targetRef="EndEvent_Approved"/>
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="Task_DigitalPostReject" targetRef="EndEvent_Rejected"/>
+  </bpmn:process>
+
+</bpmn:definitions>

@@ -1,0 +1,52 @@
+uuid: b2c3d4e5-f6a7-8901-bcde-f12345678911
+langcode: en
+status: true
+dependencies:
+  module:
+    - aabenforms_workflows
+    - eca_content
+id: hr_onboarding_flow
+weight: null
+template: null
+events:
+  on_submission:
+    plugin: 'content_entity:insert'
+    configuration:
+      type: webform_submission
+    successors:
+      -
+        id: log_received
+        condition: ''
+conditions: {  }
+gateways: {  }
+actions:
+  log_received:
+    label: 'Log: HR onboarding request received'
+    plugin: aabenforms_audit_log
+    configuration:
+      event_type_token: hr_onboarding_submitted
+      user_data_token: '[webform_submission:values:new_hire_name:raw]'
+      metadata_token: 'New hire request submitted by HR'
+    successors:
+      -
+        id: log_manager_notified
+        condition: ''
+  log_manager_notified:
+    label: 'Log: manager notified (stub for approval email)'
+    plugin: aabenforms_audit_log
+    configuration:
+      event_type_token: hr_onboarding_manager_notified
+      user_data_token: '[webform_submission:values:manager_email:raw]'
+      metadata_token: 'Stub. Production would send approval email to manager via a generalized SendApprovalEmailAction.'
+    successors:
+      -
+        id: log_it_notified
+        condition: ''
+  log_it_notified:
+    label: 'Log: IT notified to provision accounts'
+    plugin: aabenforms_audit_log
+    configuration:
+      event_type_token: hr_onboarding_it_notified
+      user_data_token: '[webform_submission:values:it_distribution_email:raw]'
+      metadata_token: 'Stub. Production would email IT distribution on manager approval.'
+    successors: {  }
