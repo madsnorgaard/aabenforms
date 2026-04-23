@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  id="Definitions_med_election_nomination"
+                  targetNamespace="http://aabenforms.dk/bpmn"
+                  exporter="AabenForms"
+                  exporterVersion="1.0">
+
+  <bpmn:process id="med_election_nomination_process" name="MED Election Nomination" isExecutable="true">
+    <bpmn:documentation>[category: organisational]
+Nomination phase of a Danish MED or workplace health-and-safety
+committee election. An eligible employee submits a nomination (self or
+someone else), the system verifies identity via MitID and resolves the
+nominee, and the nomination is recorded in the audit log for later
+tallying.
+
+Stub: ONLY the nomination phase is wired. Voting and tabulation
+require window-based temporal ECA logic (open/close windows, ballot
+aggregation) that is not modeled in the current action set and is
+deferred. The voting phase is shown as a disconnected downstream
+process below.
+
+<parameters>
+  <parameter id="election_id" label="Election ID" type="string" required="true">
+    <description>Identifier of the election this nomination belongs to</description>
+  </parameter>
+  <parameter id="nomination_deadline" label="Nomination Deadline" type="datetime" required="true">
+    <description>Deadline after which the nomination form is closed</description>
+  </parameter>
+</parameters></bpmn:documentation>
+
+    <bpmn:startEvent id="StartEvent_NominationSubmit" name="Employee Submits Nomination">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="Task_MitIdValidate" name="Validate Nominator MitID">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_CprLookup" name="Resolve Nominator via CPR">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_RecordNomination" name="Record Nomination in Audit Log">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="EndEvent_Nominated" name="Nomination Recorded">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_NominationSubmit" targetRef="Task_MitIdValidate"/>
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_MitIdValidate" targetRef="Task_CprLookup"/>
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_CprLookup" targetRef="Task_RecordNomination"/>
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Task_RecordNomination" targetRef="EndEvent_Nominated"/>
+  </bpmn:process>
+
+  <bpmn:process id="med_election_voting_process" name="MED Election Voting (deferred)" isExecutable="false">
+    <bpmn:documentation>Voting and tabulation phase. NOT implemented in the current stub.
+Requires window-based temporal ECA logic to open and close voting,
+aggregate ballots, and announce results. Captured here only so the
+template library communicates that the election is a multi-phase
+lifecycle.</bpmn:documentation>
+
+    <bpmn:startEvent id="Voting_Start" name="Voting Window Opens">
+      <bpmn:outgoing>VotingFlow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="Voting_Task_CastBallot" name="Employee Casts Ballot (deferred)">
+      <bpmn:incoming>VotingFlow_1</bpmn:incoming>
+      <bpmn:outgoing>VotingFlow_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Voting_Task_Tabulate" name="Tabulate Results (deferred)">
+      <bpmn:incoming>VotingFlow_2</bpmn:incoming>
+      <bpmn:outgoing>VotingFlow_3</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="Voting_End" name="Results Announced">
+      <bpmn:incoming>VotingFlow_3</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="VotingFlow_1" sourceRef="Voting_Start" targetRef="Voting_Task_CastBallot"/>
+    <bpmn:sequenceFlow id="VotingFlow_2" sourceRef="Voting_Task_CastBallot" targetRef="Voting_Task_Tabulate"/>
+    <bpmn:sequenceFlow id="VotingFlow_3" sourceRef="Voting_Task_Tabulate" targetRef="Voting_End"/>
+  </bpmn:process>
+
+</bpmn:definitions>

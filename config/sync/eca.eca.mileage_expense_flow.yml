@@ -1,0 +1,52 @@
+uuid: c3d4e5f6-a7b8-9012-cdef-234567890122
+langcode: en
+status: true
+dependencies:
+  module:
+    - aabenforms_workflows
+    - eca_content
+id: mileage_expense_flow
+weight: null
+template: null
+events:
+  on_submission:
+    plugin: 'content_entity:insert'
+    configuration:
+      type: webform_submission
+    successors:
+      -
+        id: log_received
+        condition: ''
+conditions: {  }
+gateways: {  }
+actions:
+  log_received:
+    label: 'Log: expense claim received'
+    plugin: aabenforms_audit_log
+    configuration:
+      event_type_token: mileage_expense_submitted
+      user_data_token: '[webform_submission:values:employee_name:raw]'
+      metadata_token: 'Expense claim submitted'
+    successors:
+      -
+        id: log_manager_notified
+        condition: ''
+  log_manager_notified:
+    label: 'Log: manager notified for approval (stub)'
+    plugin: aabenforms_audit_log
+    configuration:
+      event_type_token: mileage_expense_manager_notified
+      user_data_token: '[webform_submission:values:manager_email:raw]'
+      metadata_token: 'Stub. Production would send approval email.'
+    successors:
+      -
+        id: log_payroll_forwarded
+        condition: ''
+  log_payroll_forwarded:
+    label: 'Log: forwarded to payroll (stub)'
+    plugin: aabenforms_audit_log
+    configuration:
+      event_type_token: mileage_expense_payroll_forwarded
+      user_data_token: '[webform_submission:values:employee_id:raw]'
+      metadata_token: 'Stub. Production would POST to payroll API on manager approval.'
+    successors: {  }
