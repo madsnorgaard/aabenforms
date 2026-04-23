@@ -289,11 +289,19 @@ class WorkflowTemplateInstantiator {
    *   ECA events configuration.
    */
   protected function buildEcaEvents(\SimpleXMLElement $xml, array $configuration): array {
+    // Filter by webform bundle so wizard-generated flows fire only on their
+    // own webform, not every webform_submission entity in the system.
+    // ECA content_entity:insert accepts 'entity_type bundle' (space-separated)
+    // in the type config - see ContentEntityEvent.php line 367.
+    $webform_id = $configuration['webform_id'] ?? '';
+    $type = $webform_id !== ''
+      ? 'webform_submission ' . $webform_id
+      : 'webform_submission';
     return [
       'webform_submit' => [
         'plugin' => 'content_entity:insert',
         'configuration' => [
-          'type' => 'webform_submission',
+          'type' => $type,
         ],
         'successors' => [
           ['id' => 'start_workflow', 'condition' => ''],

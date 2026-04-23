@@ -46,7 +46,7 @@ actions:
     label: 'Record nomination in audit log'
     plugin: aabenforms_audit_log
     configuration:
-      event_type_token: med_nomination_recorded
-      user_data_token: '[webform_submission:values:nominee_name:raw]'
-      metadata_token: 'MED election nomination recorded'
+      event_type: med_nomination_recorded
+      additional_data_token: '[webform_submission:values:nominee_name:raw]'
+      message_template: 'MED election nomination recorded'
     successors: {  }

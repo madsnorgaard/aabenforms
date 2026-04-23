@@ -41,9 +41,9 @@ actions:
     label: 'Case Worker: Audit Assignment'
     plugin: aabenforms_audit_log
     configuration:
-      event_type_token: caseworker_review
-      user_data_token: 'Both parents approved'
-      metadata_token: 'Assigned to case worker for review'
+      event_type: caseworker_review
+      additional_data_token: 'Both parents approved'
+      message_template: 'Assigned to case worker for review'
     successors:
       - id: mark_caseworker_assigned
         condition: ''

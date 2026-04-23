@@ -46,7 +46,7 @@ actions:
     label: 'Create Audit Log'
     plugin: aabenforms_audit_log
     configuration:
-      event_type_token: parent_submission
-      user_data_token: '[cpr_person_data:name]'
-      metadata_token: '[webform_submission:sid]'
+      event_type: parent_submission
+      additional_data_token: '[cpr_person_data:name]'
+      message_template: '[webform_submission:sid]'
     successors: {  }
