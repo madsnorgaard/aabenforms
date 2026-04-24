@@ -110,11 +110,23 @@ class WorkflowTemplateWizardForm extends FormBase {
     // is the only source of the template_id. Bootstrap it so later steps
     // (buildStepConfigureWebform, buildStepConfigureActions) find it via
     // getValue() instead of crashing with null in getTemplateParameters().
+    // Also mirror into form_state storage so submitForm() can recover it
+    // after step 6 is submitted - by then the template_id radio is long gone
+    // from the form tree and getValue() would otherwise return NULL.
     if ($form_state->getValue('template_id') === NULL) {
-      $query_template = \Drupal::request()->query->get('template_id');
-      if (is_string($query_template) && $query_template !== '') {
-        $form_state->setValue('template_id', $query_template);
+      $stored = $form_state->get('template_id');
+      if (is_string($stored) && $stored !== '') {
+        $form_state->setValue('template_id', $stored);
       }
+      else {
+        $query_template = \Drupal::request()->query->get('template_id');
+        if (is_string($query_template) && $query_template !== '') {
+          $form_state->setValue('template_id', $query_template);
+        }
+      }
+    }
+    if (is_string($form_state->getValue('template_id')) && $form_state->getValue('template_id') !== '') {
+      $form_state->set('template_id', $form_state->getValue('template_id'));
     }
 
     // Add wizard navigation.
@@ -759,8 +771,18 @@ class WorkflowTemplateWizardForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state): void {
-    // Gather all configuration.
-    $template_id = $form_state->getValue('template_id');
+    // Gather all configuration. The template_id radio only lives on step 1's
+    // form tree, so by the time we submit step 6 getValue() can be NULL even
+    // though buildForm() bootstrapped it on every earlier render. Fall back
+    // to form_state storage, then to the original query string.
+    $template_id = $form_state->getValue('template_id')
+      ?? $form_state->get('template_id')
+      ?? \Drupal::request()->query->get('template_id');
+    if (!is_string($template_id) || $template_id === '') {
+      $this->messenger()->addError($this->t('Could not determine which template to instantiate. Please start the wizard again from the template browser.'));
+      $form_state->setRedirect('aabenforms_workflows.template_browser');
+      return;
+    }
 
     // Build parameters array.
     $parameters = [];
