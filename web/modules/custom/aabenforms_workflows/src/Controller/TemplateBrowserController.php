@@ -74,15 +74,35 @@ class TemplateBrowserController extends ControllerBase {
       '</div>',
     ];
 
+    $templates = $this->templateManager->getAvailableTemplates();
+    $instances = $this->instantiator->getInstances();
+    $has_instances = !empty($instances);
+
+    // Active workflows section. Shown first when non-empty so admins
+    // returning to manage existing flows hit them immediately; collapsed
+    // by default below the templates when there's nothing to manage.
+    $build['instances_section'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Active Workflows'),
+      '#open' => $has_instances,
+      '#weight' => $has_instances ? -10 : 10,
+    ];
+    if ($has_instances) {
+      $build['instances_section']['table'] = $this->buildInstancesTable($instances);
+    }
+    else {
+      $build['instances_section']['empty'] = [
+        '#markup' => '<p>' . $this->t('No workflows created yet. Use the templates below to create your first workflow.') . '</p>',
+      ];
+    }
+
     // Available templates section.
     $build['templates_section'] = [
       '#type' => 'details',
       '#title' => $this->t('Available Templates'),
-      '#open' => TRUE,
+      '#open' => !$has_instances,
+      '#weight' => $has_instances ? 0 : -10,
     ];
-
-    $templates = $this->templateManager->getAvailableTemplates();
-
     if (empty($templates)) {
       $build['templates_section']['empty'] = [
         '#markup' => '<p>' . $this->t('No workflow templates available.') . '</p>',
@@ -94,24 +114,6 @@ class TemplateBrowserController extends ControllerBase {
         '#items' => $this->buildTemplateList($templates),
         '#attributes' => ['class' => ['template-grid']],
       ];
-    }
-
-    // Active workflows section.
-    $build['instances_section'] = [
-      '#type' => 'details',
-      '#title' => $this->t('Active Workflows'),
-      '#open' => TRUE,
-    ];
-
-    $instances = $this->instantiator->getInstances();
-
-    if (empty($instances)) {
-      $build['instances_section']['empty'] = [
-        '#markup' => '<p>' . $this->t('No workflows created yet. Use the templates above to create your first workflow.') . '</p>',
-      ];
-    }
-    else {
-      $build['instances_section']['table'] = $this->buildInstancesTable($instances);
     }
 
     // Attach CSS and JS.
@@ -286,8 +288,12 @@ class TemplateBrowserController extends ControllerBase {
       ],
     ];
 
+    // The data-xml attribute is what bpmn-preview.js's thumbnail loader
+    // extracts when this page is fetched via AJAX. Without it, every
+    // thumbnail falls back to the empty parent-page drupalSettings and
+    // shows "Preview unavailable".
     $build['canvas'] = [
-      '#markup' => '<div id="bpmn-preview-canvas" class="bpmn-preview-canvas"></div>',
+      '#markup' => '<div id="bpmn-preview-canvas" class="bpmn-preview-canvas" data-xml="' . htmlspecialchars($bpmn_xml, ENT_QUOTES | ENT_HTML5) . '"></div>',
     ];
 
     $build['#attached']['library'][] = 'bpmn_io/ui';
