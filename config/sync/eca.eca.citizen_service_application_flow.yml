@@ -62,13 +62,17 @@ actions:
       message_template: 'Stub. Production would email the assigned case worker.'
     successors:
       -
-        id: log_decision_delivered
+        id: send_decision
         condition: ''
-  log_decision_delivered:
-    label: 'Log: decision delivered via Digital Post (stub)'
-    plugin: aabenforms_audit_log
+  send_decision:
+    label: 'Send decision via Digital Post'
+    plugin: aabenforms_digital_post_send
     configuration:
-      event_type: citizen_service_decision_delivered
-      additional_data_token: '[citizen_data:name]'
-      message_template: 'Stub. Production would call SF1601 Digital Post on case-worker decision.'
+      recipient_token: '[webform_submission:values:applicant_cpr:raw]'
+      recipient_type: cpr
+      sender_cvr_token: ''
+      subject_template: 'Afgørelse på din ansøgning'
+      body_template: '<p>Der er truffet afgørelse på din ansøgning. Se bilag i Digital Post.</p>'
+      type: 'Digital Post'
+      result_token: digital_post_result
     successors: {  }
