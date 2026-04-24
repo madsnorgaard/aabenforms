@@ -104,29 +104,28 @@ class WorkflowTemplateWizardForm extends FormBase {
     $step = $form_state->get('step') ?? 1;
     $form_state->set('step', $step);
 
+    // Restore values captured on prior steps so per-step #default_value
+    // lookups and submitForm() find them via getValue(). Drupal does not
+    // repopulate values for form elements that are no longer in the current
+    // step's tree, so without this restore webform_id, parameters, action
+    // config, and visibility_mode would all be NULL by the time the user
+    // reaches step 6. See ::captureWizardData() and ::nextStep().
+    $wizard_data = $form_state->get('wizard_data') ?? [];
+    foreach ($wizard_data as $key => $value) {
+      if ($form_state->getValue($key) === NULL) {
+        $form_state->setValue($key, $value);
+      }
+    }
+
     // The template browser links into the wizard as
     // /admin/aabenforms/workflow-templates/wizard?template_id=<id>. On that
     // first GET, form_state has no submitted values yet - the query string
-    // is the only source of the template_id. Bootstrap it so later steps
-    // (buildStepConfigureWebform, buildStepConfigureActions) find it via
-    // getValue() instead of crashing with null in getTemplateParameters().
-    // Also mirror into form_state storage so submitForm() can recover it
-    // after step 6 is submitted - by then the template_id radio is long gone
-    // from the form tree and getValue() would otherwise return NULL.
+    // is the only source of the template_id.
     if ($form_state->getValue('template_id') === NULL) {
-      $stored = $form_state->get('template_id');
-      if (is_string($stored) && $stored !== '') {
-        $form_state->setValue('template_id', $stored);
+      $query_template = \Drupal::request()->query->get('template_id');
+      if (is_string($query_template) && $query_template !== '') {
+        $form_state->setValue('template_id', $query_template);
       }
-      else {
-        $query_template = \Drupal::request()->query->get('template_id');
-        if (is_string($query_template) && $query_template !== '') {
-          $form_state->setValue('template_id', $query_template);
-        }
-      }
-    }
-    if (is_string($form_state->getValue('template_id')) && $form_state->getValue('template_id') !== '') {
-      $form_state->set('template_id', $form_state->getValue('template_id'));
     }
 
     // Add wizard navigation.
@@ -415,7 +414,10 @@ class WorkflowTemplateWizardForm extends FormBase {
     $actions = $this->templateMetadata->getConfigurableActions($template_id);
 
     if (!empty($actions)) {
-      $form['actions'] = [
+      // Keyed as 'action_config' rather than 'actions' because
+      // addNavigationButtons() owns $form['actions'] for the Back/Next/Cancel
+      // buttons and would otherwise overwrite this whole config tree.
+      $form['action_config'] = [
         '#type' => 'details',
         '#title' => $this->t('Action Configuration'),
         '#open' => TRUE,
@@ -423,22 +425,22 @@ class WorkflowTemplateWizardForm extends FormBase {
       ];
 
       foreach ($actions as $action_id => $action) {
-        $form['actions'][$action_id] = [
+        $form['action_config'][$action_id] = [
           '#type' => 'details',
           '#title' => $action['name'],
           '#open' => FALSE,
         ];
 
         foreach ($action['configurable_fields'] as $field_id => $field) {
-          $form['actions'][$action_id][$field_id] = [
+          $form['action_config'][$action_id][$field_id] = [
             '#type' => $field['type'] === 'textarea' ? 'textarea' : 'textfield',
             '#title' => $field['label'],
             '#required' => $field['required'],
-            '#default_value' => $form_state->getValue(['actions', $action_id, $field_id]),
+            '#default_value' => $form_state->getValue(['action_config', $action_id, $field_id]),
           ];
 
           if ($field['type'] === 'textarea') {
-            $form['actions'][$action_id][$field_id]['#rows'] = 5;
+            $form['action_config'][$action_id][$field_id]['#rows'] = 5;
           }
         }
       }
@@ -748,14 +750,39 @@ class WorkflowTemplateWizardForm extends FormBase {
   public function nextStep(array &$form, FormStateInterface $form_state): void {
     $step = $form_state->get('step');
 
-    // Save BPMN XML when leaving step 2.
+    // Snapshot this step's submitted values so they survive future rebuilds
+    // when the elements are no longer in the form tree.
+    $this->captureWizardData($form_state);
+
+    // Mirror BPMN XML into dedicated storage for the AJAX autosave path.
     if ($step === 2) {
-      $bpmn_xml = $form_state->getValue('bpmn_xml');
-      $form_state->set('bpmn_xml', $bpmn_xml);
+      $form_state->set('bpmn_xml', $form_state->getValue('bpmn_xml'));
     }
 
     $form_state->set('step', $step + 1);
     $form_state->setRebuild(TRUE);
+  }
+
+  /**
+   * Captures submitted wizard values into form_state storage.
+   *
+   * Drupal multi-step forms re-populate $form_state->getValue() only for
+   * elements in the current step's form tree. Everything the user entered
+   * on earlier steps would otherwise be lost by the time submitForm() runs.
+   * This helper snapshots the current values under a single 'wizard_data'
+   * storage key, which buildForm() merges back into form_state on each
+   * subsequent render.
+   */
+  protected function captureWizardData(FormStateInterface $form_state): void {
+    $skip = ['op', 'form_id', 'form_build_id', 'form_token', 'submit', 'next', 'back', 'cancel'];
+    $data = $form_state->get('wizard_data') ?? [];
+    foreach ($form_state->getValues() as $key => $value) {
+      if (in_array($key, $skip, TRUE)) {
+        continue;
+      }
+      $data[$key] = $value;
+    }
+    $form_state->set('wizard_data', $data);
   }
 
   /**
@@ -771,12 +798,11 @@ class WorkflowTemplateWizardForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state): void {
-    // Gather all configuration. The template_id radio only lives on step 1's
-    // form tree, so by the time we submit step 6 getValue() can be NULL even
-    // though buildForm() bootstrapped it on every earlier render. Fall back
-    // to form_state storage, then to the original query string.
+    // Snapshot step 6's values too so the final payload benefits from the
+    // same wizard_data merge that earlier steps relied on.
+    $this->captureWizardData($form_state);
+
     $template_id = $form_state->getValue('template_id')
-      ?? $form_state->get('template_id')
       ?? \Drupal::request()->query->get('template_id');
     if (!is_string($template_id) || $template_id === '') {
       $this->messenger()->addError($this->t('Could not determine which template to instantiate. Please start the wizard again from the template browser.'));
@@ -795,12 +821,14 @@ class WorkflowTemplateWizardForm extends FormBase {
       }
     }
 
-    // Build configuration array.
+    // Build configuration array. action_config holds the per-action tree
+    // captured on step 4 (keyed that way to avoid colliding with the nav
+    // button group); the instantiator still expects the key 'actions'.
     $configuration = [
       'label' => $form_state->getValue('workflow_label'),
       'webform_id' => $form_state->getValue('webform_id'),
       'parameters' => $parameters,
-      'actions' => $form_state->getValue('actions') ?? [],
+      'actions' => $form_state->getValue('action_config') ?? [],
       'visibility_mode' => $form_state->getValue('visibility_mode'),
       'status' => $form_state->getValue('status') ?? TRUE,
     ];
@@ -828,6 +856,11 @@ class WorkflowTemplateWizardForm extends FormBase {
       foreach ($result['errors'] as $error) {
         $this->messenger()->addError($error);
       }
+
+      // Keep the user on step 6 with their entered data so they can fix the
+      // reported issues instead of being booted back to step 1 empty-handed.
+      $form_state->set('step', 6);
+      $form_state->setRebuild(TRUE);
     }
   }
 
