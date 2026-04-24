@@ -1,0 +1,10 @@
+name: 'AabenForms Digital Post'
+type: module
+description: 'Send SF1601 Digital Post from any Drupal 11 site. Plug-and-play, minimal dependencies, test modes from local fake-send through WireMock stubs to real Serviceplatformen endpoints.'
+package: 'AabenForms'
+core_version_requirement: ^11
+dependencies:
+  - drupal:key
+  - aabenforms_core
+
+configure: aabenforms_digital_post.settings

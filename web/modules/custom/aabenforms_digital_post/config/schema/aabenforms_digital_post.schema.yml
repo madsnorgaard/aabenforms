@@ -1,0 +1,37 @@
+aabenforms_digital_post.settings:
+  type: config_object
+  label: 'AabenForms Digital Post settings'
+  mapping:
+    test_mode:
+      type: string
+      label: 'Test mode'
+      constraints:
+        Choice:
+          choices: [fake_db, wiremock, live_test, live]
+    sender_cvr:
+      type: string
+      label: 'Sender CVR'
+    sender_name:
+      type: string
+      label: 'Sender display name'
+    cert_source:
+      type: string
+      label: 'Certificate source'
+      constraints:
+        Choice:
+          choices: [file, key]
+    cert_path:
+      type: string
+      label: 'Certificate file path (cert_source=file)'
+    cert_passphrase_state:
+      type: string
+      label: 'Passphrase source identifier (env var name or key entity id)'
+    wiremock_url:
+      type: string
+      label: 'WireMock base URL'
+    live_test_endpoint:
+      type: string
+      label: 'Serviceplatformen test endpoint'
+    live_endpoint:
+      type: string
+      label: 'Serviceplatformen production endpoint'

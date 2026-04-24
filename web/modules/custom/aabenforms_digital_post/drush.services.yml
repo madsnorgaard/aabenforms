@@ -1,0 +1,9 @@
+services:
+  aabenforms_digital_post.drush_commands:
+    class: Drupal\aabenforms_digital_post\Drush\DigitalPostCommands
+    arguments:
+      - '@aabenforms_digital_post.sender'
+      - '@config.factory'
+      - '@database'
+    tags:
+      - { name: drush.command }
