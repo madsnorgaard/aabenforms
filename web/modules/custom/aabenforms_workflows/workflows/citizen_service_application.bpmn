@@ -77,11 +77,14 @@ would call SF1601 via the planned aabenforms_digital_post module.
     </bpmn:exclusiveGateway>
 
     <bpmn:serviceTask id="Task_DigitalPostApprove" name="Deliver Decision via Digital Post">
-      
       <bpmn:extensionElements>
-        <aabenforms:ecaAction plugin="aabenforms_audit_log">
-          <aabenforms:config key="event_type">citizen_service_decision_approved</aabenforms:config>
-          <aabenforms:config key="message_template">Decision delivered via Digital Post (stub)</aabenforms:config>
+        <aabenforms:ecaAction plugin="aabenforms_digital_post_send">
+          <aabenforms:config key="recipient_token">[webform_submission:values:applicant_cpr:raw]</aabenforms:config>
+          <aabenforms:config key="recipient_type">cpr</aabenforms:config>
+          <aabenforms:config key="subject_template">Afgørelse på din ansøgning</aabenforms:config>
+          <aabenforms:config key="body_template">&lt;p&gt;Der er truffet afgørelse på din ansøgning. Se bilag i Digital Post.&lt;/p&gt;</aabenforms:config>
+          <aabenforms:config key="type">Digital Post</aabenforms:config>
+          <aabenforms:config key="result_token">digital_post_result</aabenforms:config>
         </aabenforms:ecaAction>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_Approved</bpmn:incoming>
@@ -89,11 +92,14 @@ would call SF1601 via the planned aabenforms_digital_post module.
     </bpmn:serviceTask>
 
     <bpmn:serviceTask id="Task_DigitalPostReject" name="Deliver Rejection via Digital Post">
-      
       <bpmn:extensionElements>
-        <aabenforms:ecaAction plugin="aabenforms_audit_log">
-          <aabenforms:config key="event_type">citizen_service_decision_rejected</aabenforms:config>
-          <aabenforms:config key="message_template">Rejection delivered via Digital Post (stub)</aabenforms:config>
+        <aabenforms:ecaAction plugin="aabenforms_digital_post_send">
+          <aabenforms:config key="recipient_token">[webform_submission:values:applicant_cpr:raw]</aabenforms:config>
+          <aabenforms:config key="recipient_type">cpr</aabenforms:config>
+          <aabenforms:config key="subject_template">Afslag på din ansøgning</aabenforms:config>
+          <aabenforms:config key="body_template">&lt;p&gt;Din ansøgning er afvist. Se begrundelse i Digital Post.&lt;/p&gt;</aabenforms:config>
+          <aabenforms:config key="type">Digital Post</aabenforms:config>
+          <aabenforms:config key="result_token">digital_post_rejection_result</aabenforms:config>
         </aabenforms:ecaAction>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_Rejected</bpmn:incoming>

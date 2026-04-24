@@ -1,0 +1,10 @@
+name: 'AabenForms Digital Post - ECA'
+type: module
+description: 'ECA action plugin that lets BPMN workflows send Digital Post via the aabenforms_digital_post.sender service. Ship as a thin bridge between the two concerns.'
+package: 'AabenForms'
+core_version_requirement: ^11
+dependencies:
+  - aabenforms_digital_post
+  - aabenforms_workflows
+  - eca:eca
+  - eca:eca_content
