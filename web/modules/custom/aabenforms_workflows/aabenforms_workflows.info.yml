@@ -6,6 +6,7 @@ package: ÅbenForms
 
 dependencies:
   - aabenforms_core:aabenforms_core
+  - drupal:file
   - eca:eca
   - webform:webform
   - modeler_api:modeler_api

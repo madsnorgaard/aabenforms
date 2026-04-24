@@ -139,9 +139,13 @@ class TemplateSelectForm extends FormBase {
     ];
 
     $form['import']['file'] = [
-      '#type' => 'file',
+      '#type' => 'managed_file',
       '#title' => $this->t('BPMN File'),
       '#description' => $this->t('Upload a BPMN 2.0 XML file (.bpmn extension).'),
+      '#upload_location' => 'temporary://',
+      '#upload_validators' => [
+        'FileExtension' => ['extensions' => 'bpmn xml'],
+      ],
     ];
 
     $form['import']['template_id'] = [
@@ -325,28 +329,25 @@ class TemplateSelectForm extends FormBase {
    *   The form state.
    */
   public function submitImport(array &$form, FormStateInterface $form_state) {
-    // Validate file upload.
-    $validators = [
-      'FileExtension' => [
-        'extensions' => 'bpmn xml',
-      ],
-    ];
-
-    $files = $this->getRequest()->files->get('files', []);
-    if (!isset($files['file'])) {
+    $fids = $form_state->getValue('file');
+    if (empty($fids)) {
       $form_state->setErrorByName('file', $this->t('No file was uploaded.'));
       return;
     }
 
-    $file = $files['file'];
-    $template_id = $form_state->getValue('template_id');
+    $fid = reset($fids);
+    $file = \Drupal\file\Entity\File::load($fid);
+    if (!$file) {
+      $form_state->setErrorByName('file', $this->t('Uploaded file could not be loaded.'));
+      return;
+    }
 
+    $template_id = $form_state->getValue('template_id');
     if (empty($template_id)) {
       $form_state->setErrorByName('template_id', $this->t('Template ID is required.'));
       return;
     }
 
-    // Validate template ID format.
     if (!preg_match('/^[a-z0-9_]+$/', $template_id)) {
       $form_state->setErrorByName('template_id',
         $this->t('Template ID can only contain lowercase letters, numbers, and underscores.')
@@ -354,24 +355,19 @@ class TemplateSelectForm extends FormBase {
       return;
     }
 
-    // Move uploaded file to temporary location.
-    $destination = 'temporary://' . $file->getClientOriginalName();
+    $temp_path = \Drupal::service('file_system')->realpath($file->getFileUri());
     try {
-      $file->move(dirname($destination), basename($destination));
-      $temp_path = \Drupal::service('file_system')->realpath($destination);
-
       if ($this->templateManager->importTemplate($temp_path, $template_id)) {
         $this->messenger()->addStatus(
           $this->t('Template @id has been imported successfully.', ['@id' => $template_id])
         );
-        // Clean up temporary file.
-        @unlink($temp_path);
       }
       else {
         $this->messenger()->addError(
           $this->t('Failed to import template. Please ensure the file is a valid BPMN 2.0 XML file.')
         );
       }
+      $file->delete();
     }
     catch (\Exception $e) {
       $form_state->setErrorByName('file',
