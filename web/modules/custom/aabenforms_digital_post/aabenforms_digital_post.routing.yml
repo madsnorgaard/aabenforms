@@ -1,0 +1,7 @@
+aabenforms_digital_post.settings:
+  path: '/admin/config/aabenforms/digital-post'
+  defaults:
+    _form: '\Drupal\aabenforms_digital_post\Form\SettingsForm'
+    _title: 'AabenForms Digital Post'
+  requirements:
+    _permission: 'administer aabenforms digital post'

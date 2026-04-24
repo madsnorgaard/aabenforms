@@ -1,0 +1,9 @@
+test_mode: fake_db
+sender_cvr: ''
+sender_name: ''
+cert_source: file
+cert_path: ''
+cert_passphrase_state: ''
+wiremock_url: 'http://wiremock:8080'
+live_test_endpoint: 'https://exttest.serviceplatformen.dk/service/KombiPostAfsend_1/kombi'
+live_endpoint: 'https://prod.serviceplatformen.dk/service/KombiPostAfsend_1/kombi'

@@ -34,7 +34,8 @@
         "drupal/redis": "^1.11",
         "drupal/smtp": "^1.4",
         "drupal/webform": "^6.3@dev",
-        "drush/drush": "^13.7"
+        "drush/drush": "^13.7",
+        "itk-dev/serviceplatformen": "^1.8"
     },
     "conflict": {
         "drupal/drupal": "*"

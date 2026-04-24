@@ -1,0 +1,5 @@
+aabenforms_digital_post.settings:
+  title: 'AabenForms Digital Post'
+  description: 'Configure the Digital Post sender, test mode, and certificate source.'
+  parent: system.admin_config_system
+  route_name: aabenforms_digital_post.settings

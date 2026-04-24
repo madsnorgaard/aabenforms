@@ -1,0 +1,101 @@
+<?php
+
+/**
+ * @file
+ * Install, update, and uninstall functions for aabenforms_digital_post.
+ *
+ * Creates the {aabenforms_digital_post_log} table which is the storage
+ * backing for the fake_db test mode and the audit trail of every send
+ * attempt regardless of mode.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function aabenforms_digital_post_schema(): array {
+  $schema['aabenforms_digital_post_log'] = [
+    'description' => 'Audit log of all Digital Post send attempts. In fake_db test mode this is also the pretend delivery target.',
+    'fields' => [
+      'id' => [
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'transaction_id' => [
+        'description' => 'UUID v4 generated for the send attempt. Unique per attempt.',
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+      ],
+      'mode' => [
+        'description' => 'Test mode in effect when the send was attempted: fake_db, wiremock, live_test, live.',
+        'type' => 'varchar',
+        'length' => 16,
+        'not null' => TRUE,
+      ],
+      'recipient_type' => [
+        'description' => 'cpr or cvr.',
+        'type' => 'varchar',
+        'length' => 8,
+        'not null' => TRUE,
+      ],
+      'recipient_identifier_hash' => [
+        'description' => 'SHA-256 of the recipient CPR or CVR. Never store the raw identifier here.',
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+      ],
+      'sender_cvr' => [
+        'description' => 'Sender CVR (public, safe to store plaintext).',
+        'type' => 'varchar',
+        'length' => 16,
+        'not null' => TRUE,
+      ],
+      'subject' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ],
+      'status' => [
+        'description' => 'success, failure, pending.',
+        'type' => 'varchar',
+        'length' => 16,
+        'not null' => TRUE,
+      ],
+      'reason_code' => [
+        'description' => 'Typed failure reason when status=failure; see Result class constants.',
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => FALSE,
+      ],
+      'payload' => [
+        'description' => 'JSON serialization of the DigitalPost DTO sent. Attachments are referenced by path + size, not inlined.',
+        'type' => 'text',
+        'size' => 'medium',
+        'not null' => TRUE,
+      ],
+      'response' => [
+        'description' => 'Transport response body (may be empty for fake_db).',
+        'type' => 'text',
+        'size' => 'medium',
+        'not null' => FALSE,
+      ],
+      'created' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+    ],
+    'primary key' => ['id'],
+    'unique keys' => [
+      'transaction_id' => ['transaction_id'],
+    ],
+    'indexes' => [
+      'status' => ['status'],
+      'mode' => ['mode'],
+      'created' => ['created'],
+      'recipient' => ['recipient_type', 'recipient_identifier_hash'],
+    ],
+  ];
+  return $schema;
+}

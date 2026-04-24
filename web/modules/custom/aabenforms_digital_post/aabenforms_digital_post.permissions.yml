@@ -1,0 +1,9 @@
+administer aabenforms digital post:
+  title: 'Administer AabenForms Digital Post'
+  description: 'Access the Digital Post admin settings form and browse the send log.'
+  restrict access: true
+
+send aabenforms digital post:
+  title: 'Send AabenForms Digital Post'
+  description: 'Trigger Digital Post sends via service calls or drush commands.'
+  restrict access: true

@@ -1,0 +1,19 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPath": "/service/KombiPostAfsend_1/kombi"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "status": "accepted",
+      "received_at": "{{now offset='0 seconds'}}",
+      "transaction_id": "{{request.headers.X-Transaction-Id}}",
+      "note": "WireMock stub for SF1601.kombiPostAfsend. Session 1 uses JSON bodies; session 2 will ship a real SOAP envelope matcher."
+    },
+    "transformers": ["response-template"]
+  }
+}
