@@ -3,6 +3,7 @@
                   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
                   xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xmlns:aabenforms="http://aabenforms.dk/bpmn/eca"
                   id="Definitions_med_election_nomination"
                   targetNamespace="http://aabenforms.dk/bpmn"
                   exporter="AabenForms"
@@ -36,16 +37,39 @@ process below.
     </bpmn:startEvent>
 
     <bpmn:serviceTask id="Task_MitIdValidate" name="Validate Nominator MitID">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_mitid_validate">
+          <aabenforms:config key="workflow_id_token">workflow_id_med_nomination</aabenforms:config>
+          <aabenforms:config key="result_token">nominator_mitid_valid</aabenforms:config>
+          <aabenforms:config key="session_data_token">nominator_session</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_1</bpmn:incoming>
       <bpmn:outgoing>Flow_2</bpmn:outgoing>
     </bpmn:serviceTask>
 
     <bpmn:serviceTask id="Task_CprLookup" name="Resolve Nominator via CPR">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_cpr_lookup">
+          <aabenforms:config key="cpr_token">[nominator_session:cpr]</aabenforms:config>
+          <aabenforms:config key="result_token">nominator_data</aabenforms:config>
+          <aabenforms:config key="use_cache">true</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_2</bpmn:incoming>
       <bpmn:outgoing>Flow_3</bpmn:outgoing>
     </bpmn:serviceTask>
 
     <bpmn:serviceTask id="Task_RecordNomination" name="Record Nomination in Audit Log">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">med_nomination_recorded</aabenforms:config>
+          <aabenforms:config key="message_template">MED election nomination recorded</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_3</bpmn:incoming>
       <bpmn:outgoing>Flow_4</bpmn:outgoing>
     </bpmn:serviceTask>

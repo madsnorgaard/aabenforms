@@ -3,6 +3,7 @@
                    xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
                    xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xmlns:aabenforms="http://aabenforms.dk/bpmn/eca"
                    id="Definitions_contact_form"
                    targetNamespace="http://aabenforms.dk/bpmn"
                    exporter="ÅbenForms"
@@ -33,21 +34,49 @@ No authentication required. Auto-response sent to citizen.
     </bpmn:startEvent>
 
     <bpmn:serviceTask id="Task_ValidateInput" name="Validate Input">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">contact_form_validated</aabenforms:config>
+          <aabenforms:config key="message_template">Contact form input validated</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_1</bpmn:incoming>
       <bpmn:outgoing>Flow_2</bpmn:outgoing>
     </bpmn:serviceTask>
 
     <bpmn:serviceTask id="Task_RouteToDepart" name="Route to Department">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">contact_form_routed</aabenforms:config>
+          <aabenforms:config key="message_template">Inquiry routed to department (stub)</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_2</bpmn:incoming>
       <bpmn:outgoing>Flow_3</bpmn:outgoing>
     </bpmn:serviceTask>
 
     <bpmn:serviceTask id="Task_SendConfirmation" name="Send Confirmation Email">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">contact_form_confirmation_sent</aabenforms:config>
+          <aabenforms:config key="message_template">Confirmation email sent (stub)</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_3</bpmn:incoming>
       <bpmn:outgoing>Flow_4</bpmn:outgoing>
     </bpmn:serviceTask>
 
     <bpmn:serviceTask id="Task_AuditLog" name="Log Submission">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">contact_form_complete</aabenforms:config>
+          <aabenforms:config key="message_template">Contact submission logged</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_4</bpmn:incoming>
       <bpmn:outgoing>Flow_5</bpmn:outgoing>
     </bpmn:serviceTask>

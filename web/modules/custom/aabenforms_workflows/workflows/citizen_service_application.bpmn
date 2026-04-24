@@ -3,6 +3,7 @@
                   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
                   xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xmlns:aabenforms="http://aabenforms.dk/bpmn/eca"
                   id="Definitions_citizen_service_application"
                   targetNamespace="http://aabenforms.dk/bpmn"
                   exporter="AabenForms"
@@ -32,16 +33,39 @@ would call SF1601 via the planned aabenforms_digital_post module.
     </bpmn:startEvent>
 
     <bpmn:serviceTask id="Task_MitIdValidate" name="Validate MitID Session">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_mitid_validate">
+          <aabenforms:config key="workflow_id_token">workflow_id_citizen_service</aabenforms:config>
+          <aabenforms:config key="result_token">citizen_mitid_valid</aabenforms:config>
+          <aabenforms:config key="session_data_token">citizen_session</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_1</bpmn:incoming>
       <bpmn:outgoing>Flow_2</bpmn:outgoing>
     </bpmn:serviceTask>
 
     <bpmn:serviceTask id="Task_CprLookup" name="CPR Registry Lookup">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_cpr_lookup">
+          <aabenforms:config key="cpr_token">[citizen_session:cpr]</aabenforms:config>
+          <aabenforms:config key="result_token">citizen_data</aabenforms:config>
+          <aabenforms:config key="use_cache">true</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_2</bpmn:incoming>
       <bpmn:outgoing>Flow_3</bpmn:outgoing>
     </bpmn:serviceTask>
 
     <bpmn:userTask id="Task_CaseworkerReview" name="Case Worker Reviews Application">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">citizen_service_caseworker_assigned</aabenforms:config>
+          <aabenforms:config key="message_template">Case worker assigned (stub)</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_3</bpmn:incoming>
       <bpmn:outgoing>Flow_4</bpmn:outgoing>
     </bpmn:userTask>
@@ -53,11 +77,25 @@ would call SF1601 via the planned aabenforms_digital_post module.
     </bpmn:exclusiveGateway>
 
     <bpmn:serviceTask id="Task_DigitalPostApprove" name="Deliver Decision via Digital Post">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">citizen_service_decision_approved</aabenforms:config>
+          <aabenforms:config key="message_template">Decision delivered via Digital Post (stub)</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_Approved</bpmn:incoming>
       <bpmn:outgoing>Flow_5</bpmn:outgoing>
     </bpmn:serviceTask>
 
     <bpmn:serviceTask id="Task_DigitalPostReject" name="Deliver Rejection via Digital Post">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">citizen_service_decision_rejected</aabenforms:config>
+          <aabenforms:config key="message_template">Rejection delivered via Digital Post (stub)</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_Rejected</bpmn:incoming>
       <bpmn:outgoing>Flow_6</bpmn:outgoing>
     </bpmn:serviceTask>

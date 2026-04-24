@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:aabenforms="http://aabenforms.dk/bpmn/eca"
                    xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
                    xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
                    id="Definitions_marriage_booking"
@@ -46,6 +47,14 @@ Demonstrates complex multi-party workflows with appointment booking for Danish m
 
     <!-- Partner 1 MitID Authentication -->
     <bpmn:serviceTask id="Task_Partner1_MitID" name="Partner 1 MitID Authentication">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_mitid_validate">
+          <aabenforms:config key="workflow_id_token">workflow_id_marriage_p1</aabenforms:config>
+          <aabenforms:config key="result_token">partner1_mitid_valid</aabenforms:config>
+          <aabenforms:config key="session_data_token">partner1_session</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:extensionElements>
         <eca:action xmlns:eca="http://aabenforms.dk/eca">aabenforms_mitid_validate</eca:action>
         <eca:config xmlns:eca="http://aabenforms.dk/eca">
@@ -58,6 +67,14 @@ Demonstrates complex multi-party workflows with appointment booking for Danish m
 
     <!-- Partner 1 CPR Lookup -->
     <bpmn:serviceTask id="Task_Partner1_CPR" name="Partner 1 CPR Lookup (SF1520)">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_cpr_lookup">
+          <aabenforms:config key="cpr_token">[partner1_session:cpr]</aabenforms:config>
+          <aabenforms:config key="result_token">partner1_data</aabenforms:config>
+          <aabenforms:config key="use_cache">true</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:extensionElements>
         <eca:action xmlns:eca="http://aabenforms.dk/eca">aabenforms_cpr_lookup</eca:action>
         <eca:config xmlns:eca="http://aabenforms.dk/eca">
@@ -71,6 +88,14 @@ Demonstrates complex multi-party workflows with appointment booking for Danish m
 
     <!-- Partner 2 MitID Authentication -->
     <bpmn:serviceTask id="Task_Partner2_MitID" name="Partner 2 MitID Authentication">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_mitid_validate">
+          <aabenforms:config key="workflow_id_token">workflow_id_marriage_p2</aabenforms:config>
+          <aabenforms:config key="result_token">partner2_mitid_valid</aabenforms:config>
+          <aabenforms:config key="session_data_token">partner2_session</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:extensionElements>
         <eca:action xmlns:eca="http://aabenforms.dk/eca">aabenforms_mitid_validate</eca:action>
         <eca:config xmlns:eca="http://aabenforms.dk/eca">
@@ -83,6 +108,14 @@ Demonstrates complex multi-party workflows with appointment booking for Danish m
 
     <!-- Partner 2 CPR Lookup -->
     <bpmn:serviceTask id="Task_Partner2_CPR" name="Partner 2 CPR Lookup (SF1520)">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_cpr_lookup">
+          <aabenforms:config key="cpr_token">[partner2_session:cpr]</aabenforms:config>
+          <aabenforms:config key="result_token">partner2_data</aabenforms:config>
+          <aabenforms:config key="use_cache">true</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:extensionElements>
         <eca:action xmlns:eca="http://aabenforms.dk/eca">aabenforms_cpr_lookup</eca:action>
         <eca:config xmlns:eca="http://aabenforms.dk/eca">
@@ -96,6 +129,12 @@ Demonstrates complex multi-party workflows with appointment booking for Danish m
 
     <!-- Fetch Available Ceremony Slots -->
     <bpmn:serviceTask id="Task_FetchSlots" name="Fetch Available Ceremony Slots">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_fetch_available_slots">
+          <aabenforms:config key="result_token">available_slots</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:extensionElements>
         <eca:action xmlns:eca="http://aabenforms.dk/eca">aabenforms_fetch_available_slots</eca:action>
         <eca:config xmlns:eca="http://aabenforms.dk/eca">
@@ -111,6 +150,13 @@ Demonstrates complex multi-party workflows with appointment booking for Danish m
 
     <!-- User Task: Calendar Selection (Frontend) -->
     <bpmn:userTask id="Task_SelectCeremonySlot" name="Select Ceremony Date/Time">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">marriage_slot_selected</aabenforms:config>
+          <aabenforms:config key="message_template">Ceremony slot selected (stub)</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:documentation>Display calendar picker with available slots. User selects preferred ceremony date/time.</bpmn:documentation>
       <bpmn:incoming>Flow_6</bpmn:incoming>
       <bpmn:outgoing>Flow_7</bpmn:outgoing>
@@ -118,6 +164,13 @@ Demonstrates complex multi-party workflows with appointment booking for Danish m
 
     <!-- User Task: Ceremony Preferences -->
     <bpmn:userTask id="Task_CeremonyPreferences" name="Enter Ceremony Preferences">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">marriage_preferences_captured</aabenforms:config>
+          <aabenforms:config key="message_template">Ceremony preferences captured (stub)</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:documentation>Collect ceremony preferences: type (church/civil), number of witnesses, special requests.</bpmn:documentation>
       <bpmn:incoming>Flow_7</bpmn:incoming>
       <bpmn:outgoing>Flow_8</bpmn:outgoing>
@@ -125,6 +178,13 @@ Demonstrates complex multi-party workflows with appointment booking for Danish m
 
     <!-- Calculate Booking Fee -->
     <bpmn:serviceTask id="Task_CalculateFee" name="Calculate Booking Fee">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">marriage_fee_calculated</aabenforms:config>
+          <aabenforms:config key="message_template">Booking fee calculated (stub)</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:extensionElements>
         <eca:action xmlns:eca="http://aabenforms.dk/eca">custom_calculate_fee</eca:action>
         <eca:config xmlns:eca="http://aabenforms.dk/eca">
@@ -139,6 +199,13 @@ Demonstrates complex multi-party workflows with appointment booking for Danish m
 
     <!-- Process Payment -->
     <bpmn:serviceTask id="Task_ProcessPayment" name="Process Booking Payment">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">marriage_payment_placeholder</aabenforms:config>
+          <aabenforms:config key="message_template">Payment step stub (ProcessPaymentAction has a known bug)</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:extensionElements>
         <eca:action xmlns:eca="http://aabenforms.dk/eca">aabenforms_process_payment</eca:action>
         <eca:config xmlns:eca="http://aabenforms.dk/eca">
@@ -154,6 +221,13 @@ Demonstrates complex multi-party workflows with appointment booking for Danish m
 
     <!-- Book Appointment -->
     <bpmn:serviceTask id="Task_BookAppointment" name="Book Ceremony Slot">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_book_appointment">
+          <aabenforms:config key="slot_token">[webform_submission:values:slot:raw]</aabenforms:config>
+          <aabenforms:config key="result_token">booking_result</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:extensionElements>
         <eca:action xmlns:eca="http://aabenforms.dk/eca">aabenforms_book_appointment</eca:action>
         <eca:config xmlns:eca="http://aabenforms.dk/eca">
@@ -169,6 +243,13 @@ Demonstrates complex multi-party workflows with appointment booking for Danish m
 
     <!-- Generate Marriage Certificate PDF -->
     <bpmn:serviceTask id="Task_GenerateCertificate" name="Generate Marriage Certificate">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_generate_pdf">
+          <aabenforms:config key="template_token">marriage_certificate</aabenforms:config>
+          <aabenforms:config key="result_token">certificate_path</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:extensionElements>
         <eca:action xmlns:eca="http://aabenforms.dk/eca">aabenforms_generate_pdf</eca:action>
         <eca:config xmlns:eca="http://aabenforms.dk/eca">
@@ -182,6 +263,13 @@ Demonstrates complex multi-party workflows with appointment booking for Danish m
 
     <!-- Send Confirmation Email to Partner 1 -->
     <bpmn:serviceTask id="Task_EmailPartner1" name="Email Confirmation to Partner 1">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">marriage_partner1_emailed</aabenforms:config>
+          <aabenforms:config key="message_template">Confirmation email to partner 1 (stub)</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:extensionElements>
         <eca:action xmlns:eca="http://aabenforms.dk/eca">email_send</eca:action>
         <eca:config xmlns:eca="http://aabenforms.dk/eca">
@@ -196,6 +284,13 @@ Demonstrates complex multi-party workflows with appointment booking for Danish m
 
     <!-- Send Confirmation Email to Partner 2 -->
     <bpmn:serviceTask id="Task_EmailPartner2" name="Email Confirmation to Partner 2">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">marriage_partner2_emailed</aabenforms:config>
+          <aabenforms:config key="message_template">Confirmation email to partner 2 (stub)</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:extensionElements>
         <eca:action xmlns:eca="http://aabenforms.dk/eca">email_send</eca:action>
         <eca:config xmlns:eca="http://aabenforms.dk/eca">
@@ -210,6 +305,13 @@ Demonstrates complex multi-party workflows with appointment booking for Danish m
 
     <!-- Send SMS to Partner 1 -->
     <bpmn:serviceTask id="Task_SmsPartner1" name="SMS Confirmation to Partner 1">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_send_sms">
+          <aabenforms:config key="recipient_token">[partner1_data:phone]</aabenforms:config>
+          <aabenforms:config key="message_token">Marriage booking confirmed</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:extensionElements>
         <eca:action xmlns:eca="http://aabenforms.dk/eca">aabenforms_send_sms</eca:action>
         <eca:config xmlns:eca="http://aabenforms.dk/eca">
@@ -223,6 +325,13 @@ Demonstrates complex multi-party workflows with appointment booking for Danish m
 
     <!-- Send SMS to Partner 2 -->
     <bpmn:serviceTask id="Task_SmsPartner2" name="SMS Confirmation to Partner 2">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_send_sms">
+          <aabenforms:config key="recipient_token">[partner2_data:phone]</aabenforms:config>
+          <aabenforms:config key="message_token">Marriage booking confirmed</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:extensionElements>
         <eca:action xmlns:eca="http://aabenforms.dk/eca">aabenforms_send_sms</eca:action>
         <eca:config xmlns:eca="http://aabenforms.dk/eca">
@@ -236,6 +345,13 @@ Demonstrates complex multi-party workflows with appointment booking for Danish m
 
     <!-- Schedule 7-Day Reminder -->
     <bpmn:serviceTask id="Task_Reminder7Days" name="Schedule 7-Day Reminder">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_send_reminder">
+          <aabenforms:config key="delay_days">7</aabenforms:config>
+          <aabenforms:config key="message_token">Reminder: ceremony in 7 days</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:extensionElements>
         <eca:action xmlns:eca="http://aabenforms.dk/eca">aabenforms_send_reminder</eca:action>
         <eca:config xmlns:eca="http://aabenforms.dk/eca">
@@ -253,6 +369,13 @@ Demonstrates complex multi-party workflows with appointment booking for Danish m
 
     <!-- Schedule 1-Day Reminder -->
     <bpmn:serviceTask id="Task_Reminder1Day" name="Schedule 1-Day Reminder">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_send_reminder">
+          <aabenforms:config key="delay_days">1</aabenforms:config>
+          <aabenforms:config key="message_token">Reminder: ceremony tomorrow</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:extensionElements>
         <eca:action xmlns:eca="http://aabenforms.dk/eca">aabenforms_send_reminder</eca:action>
         <eca:config xmlns:eca="http://aabenforms.dk/eca">
@@ -270,6 +393,13 @@ Demonstrates complex multi-party workflows with appointment booking for Danish m
 
     <!-- Audit Log -->
     <bpmn:serviceTask id="Task_AuditLog" name="Log Marriage Booking">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">marriage_booking_complete</aabenforms:config>
+          <aabenforms:config key="message_template">Marriage booking logged</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:extensionElements>
         <eca:action xmlns:eca="http://aabenforms.dk/eca">aabenforms_audit_log</eca:action>
         <eca:config xmlns:eca="http://aabenforms.dk/eca">

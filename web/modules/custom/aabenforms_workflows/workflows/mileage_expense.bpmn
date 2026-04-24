@@ -3,6 +3,7 @@
                   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
                   xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xmlns:aabenforms="http://aabenforms.dk/bpmn/eca"
                   id="Definitions_mileage_expense"
                   targetNamespace="http://aabenforms.dk/bpmn"
                   exporter="AabenForms"
@@ -31,11 +32,25 @@ a new action plugin.
     </bpmn:startEvent>
 
     <bpmn:serviceTask id="Task_RecordClaim" name="Record Claim">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">mileage_expense_submitted</aabenforms:config>
+          <aabenforms:config key="message_template">Expense claim submitted</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_1</bpmn:incoming>
       <bpmn:outgoing>Flow_2</bpmn:outgoing>
     </bpmn:serviceTask>
 
     <bpmn:userTask id="Task_ManagerApprove" name="Manager Approves Claim">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">mileage_expense_manager_notified</aabenforms:config>
+          <aabenforms:config key="message_template">Manager notified for approval (stub)</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_2</bpmn:incoming>
       <bpmn:outgoing>Flow_3</bpmn:outgoing>
     </bpmn:userTask>
@@ -47,6 +62,13 @@ a new action plugin.
     </bpmn:exclusiveGateway>
 
     <bpmn:serviceTask id="Task_ForwardPayroll" name="Forward to Payroll (stub)">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">mileage_expense_payroll_forwarded</aabenforms:config>
+          <aabenforms:config key="message_template">Forwarded to payroll (stub)</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_Approved</bpmn:incoming>
       <bpmn:outgoing>Flow_4</bpmn:outgoing>
     </bpmn:serviceTask>

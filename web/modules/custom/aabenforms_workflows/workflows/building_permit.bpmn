@@ -3,6 +3,7 @@
                    xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
                    xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xmlns:aabenforms="http://aabenforms.dk/bpmn/eca"
                    id="Definitions_building_permit"
                    targetNamespace="http://aabenforms.dk/bpmn"
                    exporter="ÅbenForms"
@@ -39,21 +40,51 @@ Demonstrates full Danish municipal workflow pattern with GDPR compliance.
     </bpmn:startEvent>
 
     <bpmn:serviceTask id="Task_MitIDAuth" name="Authenticate with MitID">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_mitid_validate">
+          <aabenforms:config key="workflow_id_token">workflow_id_permit</aabenforms:config>
+          <aabenforms:config key="result_token">permit_mitid_valid</aabenforms:config>
+          <aabenforms:config key="session_data_token">permit_session</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_1</bpmn:incoming>
       <bpmn:outgoing>Flow_2</bpmn:outgoing>
     </bpmn:serviceTask>
 
     <bpmn:serviceTask id="Task_CPRLookup" name="Verify Identity (SF1520)">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_cpr_lookup">
+          <aabenforms:config key="cpr_token">[permit_session:cpr]</aabenforms:config>
+          <aabenforms:config key="result_token">applicant_data</aabenforms:config>
+          <aabenforms:config key="use_cache">true</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_2</bpmn:incoming>
       <bpmn:outgoing>Flow_3</bpmn:outgoing>
     </bpmn:serviceTask>
 
     <bpmn:serviceTask id="Task_ValidateAddress" name="Validate Address (DAWA)">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_validate_zoning">
+          <aabenforms:config key="address_token">[webform_submission:values:address:raw]</aabenforms:config>
+          <aabenforms:config key="result_token">zoning_result</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_3</bpmn:incoming>
       <bpmn:outgoing>Flow_4</bpmn:outgoing>
     </bpmn:serviceTask>
 
     <bpmn:serviceTask id="Task_ValidateDocuments" name="Validate Documents">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">building_permit_docs_validated</aabenforms:config>
+          <aabenforms:config key="message_template">Documents validated (stub)</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_4</bpmn:incoming>
       <bpmn:outgoing>Flow_5</bpmn:outgoing>
     </bpmn:serviceTask>
@@ -65,6 +96,13 @@ Demonstrates full Danish municipal workflow pattern with GDPR compliance.
     </bpmn:exclusiveGateway>
 
     <bpmn:serviceTask id="Task_RequestChanges" name="Request Document Changes">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">building_permit_changes_requested</aabenforms:config>
+          <aabenforms:config key="message_template">Document changes requested (stub)</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_Invalid</bpmn:incoming>
       <bpmn:outgoing>Flow_6</bpmn:outgoing>
     </bpmn:serviceTask>
@@ -74,6 +112,13 @@ Demonstrates full Danish municipal workflow pattern with GDPR compliance.
     </bpmn:endEvent>
 
     <bpmn:userTask id="Task_CaseWorkerReview" name="Case Worker Review">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">building_permit_caseworker_review</aabenforms:config>
+          <aabenforms:config key="message_template">Case worker review (stub)</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_Valid</bpmn:incoming>
       <bpmn:outgoing>Flow_7</bpmn:outgoing>
     </bpmn:userTask>
@@ -86,21 +131,49 @@ Demonstrates full Danish municipal workflow pattern with GDPR compliance.
     </bpmn:exclusiveGateway>
 
     <bpmn:serviceTask id="Task_CreateSBSYSCase" name="Create SBSYS Case">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">building_permit_sbsys_case_created</aabenforms:config>
+          <aabenforms:config key="message_template">SBSYS case created (stub)</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_Approve</bpmn:incoming>
       <bpmn:outgoing>Flow_8</bpmn:outgoing>
     </bpmn:serviceTask>
 
     <bpmn:serviceTask id="Task_SendApproval" name="Send Approval (SF1601)">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">building_permit_approved</aabenforms:config>
+          <aabenforms:config key="message_template">Permit approval sent (stub)</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_8</bpmn:incoming>
       <bpmn:outgoing>Flow_9</bpmn:outgoing>
     </bpmn:serviceTask>
 
     <bpmn:serviceTask id="Task_SendRejection" name="Send Rejection Notice">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">building_permit_rejected</aabenforms:config>
+          <aabenforms:config key="message_template">Permit rejection sent (stub)</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_Reject</bpmn:incoming>
       <bpmn:outgoing>Flow_10</bpmn:outgoing>
     </bpmn:serviceTask>
 
     <bpmn:serviceTask id="Task_RequestInfo" name="Request Additional Info">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">building_permit_info_requested</aabenforms:config>
+          <aabenforms:config key="message_template">Additional info requested (stub)</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_RequestMore</bpmn:incoming>
       <bpmn:outgoing>Flow_11</bpmn:outgoing>
     </bpmn:serviceTask>
@@ -126,11 +199,25 @@ Demonstrates full Danish municipal workflow pattern with GDPR compliance.
     </bpmn:intermediateCatchEvent>
 
     <bpmn:serviceTask id="Task_AutoReject" name="Auto-Reject (Timeout)">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">building_permit_auto_rejected</aabenforms:config>
+          <aabenforms:config key="message_template">Auto-rejected on timeout (stub)</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_13</bpmn:incoming>
       <bpmn:outgoing>Flow_14</bpmn:outgoing>
     </bpmn:serviceTask>
 
     <bpmn:serviceTask id="Task_AuditLog" name="Log Application">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">building_permit_complete</aabenforms:config>
+          <aabenforms:config key="message_template">Building permit application logged</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_9</bpmn:incoming>
       <bpmn:incoming>Flow_10</bpmn:incoming>
       <bpmn:incoming>Flow_14</bpmn:incoming>
