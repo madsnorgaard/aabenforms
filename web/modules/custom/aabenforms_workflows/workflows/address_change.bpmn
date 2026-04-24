@@ -3,6 +3,7 @@
                    xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
                    xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xmlns:aabenforms="http://aabenforms.dk/bpmn/eca"
                    id="Definitions_address_change"
                    targetNamespace="http://aabenforms.dk/bpmn"
                    exporter="ÅbenForms"
@@ -18,16 +19,39 @@ Validates address with DAWA, authenticates with MitID, updates multiple municipa
     </bpmn:startEvent>
 
     <bpmn:serviceTask id="Task_MitIDAuth" name="Authenticate with MitID">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_mitid_validate">
+          <aabenforms:config key="workflow_id_token">workflow_id_address</aabenforms:config>
+          <aabenforms:config key="result_token">address_mitid_valid</aabenforms:config>
+          <aabenforms:config key="session_data_token">address_session</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_1</bpmn:incoming>
       <bpmn:outgoing>Flow_2</bpmn:outgoing>
     </bpmn:serviceTask>
 
     <bpmn:serviceTask id="Task_CPRLookup" name="Verify Identity (CPR)">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_cpr_lookup">
+          <aabenforms:config key="cpr_token">[address_session:cpr]</aabenforms:config>
+          <aabenforms:config key="result_token">address_person_data</aabenforms:config>
+          <aabenforms:config key="use_cache">true</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_2</bpmn:incoming>
       <bpmn:outgoing>Flow_3</bpmn:outgoing>
     </bpmn:serviceTask>
 
     <bpmn:serviceTask id="Task_DAWAValidation" name="Validate Address (DAWA)">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">address_change_dawa_validated</aabenforms:config>
+          <aabenforms:config key="message_template">Address validated via DAWA (stub)</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_3</bpmn:incoming>
       <bpmn:outgoing>Flow_4</bpmn:outgoing>
     </bpmn:serviceTask>
@@ -40,16 +64,37 @@ Validates address with DAWA, authenticates with MitID, updates multiple municipa
     </bpmn:parallelGateway>
 
     <bpmn:serviceTask id="Task_UpdatePortal" name="Update Citizen Portal">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">address_change_portal_updated</aabenforms:config>
+          <aabenforms:config key="message_template">Citizen portal updated (stub)</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_Portal</bpmn:incoming>
       <bpmn:outgoing>Flow_5</bpmn:outgoing>
     </bpmn:serviceTask>
 
     <bpmn:serviceTask id="Task_UpdateTax" name="Update Property Tax">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">address_change_tax_updated</aabenforms:config>
+          <aabenforms:config key="message_template">Property tax record updated (stub)</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_Tax</bpmn:incoming>
       <bpmn:outgoing>Flow_6</bpmn:outgoing>
     </bpmn:serviceTask>
 
     <bpmn:serviceTask id="Task_UpdateWaste" name="Update Waste Collection">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">address_change_waste_updated</aabenforms:config>
+          <aabenforms:config key="message_template">Waste collection record updated (stub)</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_Waste</bpmn:incoming>
       <bpmn:outgoing>Flow_7</bpmn:outgoing>
     </bpmn:serviceTask>
@@ -62,11 +107,25 @@ Validates address with DAWA, authenticates with MitID, updates multiple municipa
     </bpmn:parallelGateway>
 
     <bpmn:serviceTask id="Task_SendConfirmation" name="Send Confirmation (SF1601)">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">address_change_confirmation_sent</aabenforms:config>
+          <aabenforms:config key="message_template">Digital Post confirmation sent (stub)</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_8</bpmn:incoming>
       <bpmn:outgoing>Flow_9</bpmn:outgoing>
     </bpmn:serviceTask>
 
     <bpmn:serviceTask id="Task_AuditLog" name="Log Address Change">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">address_change_complete</aabenforms:config>
+          <aabenforms:config key="message_template">Address change recorded</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_9</bpmn:incoming>
       <bpmn:outgoing>Flow_10</bpmn:outgoing>
     </bpmn:serviceTask>

@@ -3,6 +3,7 @@
                   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
                   xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xmlns:aabenforms="http://aabenforms.dk/bpmn/eca"
                   id="Definitions_phone_declaration"
                   targetNamespace="http://aabenforms.dk/bpmn"
                   exporter="AabenForms"
@@ -29,16 +30,34 @@ a paper flow and saved an estimated 185+ hours per year.
     </bpmn:startEvent>
 
     <bpmn:serviceTask id="Task_RecordDeclaration" name="Record Declaration">
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">phone_declaration_submitted</aabenforms:config>
+          <aabenforms:config key="message_template">Private phone use declaration submitted</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_1</bpmn:incoming>
       <bpmn:outgoing>Flow_2</bpmn:outgoing>
     </bpmn:serviceTask>
 
     <bpmn:userTask id="Task_ManagerApprove" name="Manager Approves Declaration">
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">phone_declaration_manager_notified</aabenforms:config>
+          <aabenforms:config key="message_template">Manager notified for approval (stub)</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_2</bpmn:incoming>
       <bpmn:outgoing>Flow_3</bpmn:outgoing>
     </bpmn:userTask>
 
     <bpmn:serviceTask id="Task_Archive" name="Archive Declaration">
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">phone_declaration_archived</aabenforms:config>
+          <aabenforms:config key="message_template">Declaration archived for audit</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_3</bpmn:incoming>
       <bpmn:outgoing>Flow_4</bpmn:outgoing>
     </bpmn:serviceTask>

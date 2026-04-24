@@ -3,6 +3,7 @@
                    xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
                    xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xmlns:aabenforms="http://aabenforms.dk/bpmn/eca"
                    id="Definitions_foi_request"
                    targetNamespace="http://aabenforms.dk/bpmn"
                    exporter="ÅbenForms"
@@ -18,16 +19,37 @@ Supports both authenticated and anonymous requests with 7-day response deadline.
     </bpmn:startEvent>
 
     <bpmn:serviceTask id="Task_ValidateRequest" name="Validate Request">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">foi_request_validated</aabenforms:config>
+          <aabenforms:config key="message_template">FOI request validated</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_1</bpmn:incoming>
       <bpmn:outgoing>Flow_2</bpmn:outgoing>
     </bpmn:serviceTask>
 
     <bpmn:serviceTask id="Task_RouteToDepartment" name="Route to Department">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">foi_request_routed</aabenforms:config>
+          <aabenforms:config key="message_template">Routed to department (stub)</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_2</bpmn:incoming>
       <bpmn:outgoing>Flow_3</bpmn:outgoing>
     </bpmn:serviceTask>
 
     <bpmn:userTask id="Task_ReviewDocuments" name="Review Documents">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">foi_request_documents_reviewed</aabenforms:config>
+          <aabenforms:config key="message_template">Documents reviewed (stub)</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_3</bpmn:incoming>
       <bpmn:incoming>Flow_Timeout</bpmn:incoming>
       <bpmn:outgoing>Flow_4</bpmn:outgoing>
@@ -41,6 +63,13 @@ Supports both authenticated and anonymous requests with 7-day response deadline.
     </bpmn:boundaryEvent>
 
     <bpmn:userTask id="Task_RedactSensitiveInfo" name="Redact Sensitive Information">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">foi_request_redacted</aabenforms:config>
+          <aabenforms:config key="message_template">Sensitive info redacted (stub)</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_4</bpmn:incoming>
       <bpmn:outgoing>Flow_5</bpmn:outgoing>
     </bpmn:userTask>
@@ -52,22 +81,50 @@ Supports both authenticated and anonymous requests with 7-day response deadline.
     </bpmn:exclusiveGateway>
 
     <bpmn:serviceTask id="Task_ReleaseDocuments" name="Release Documents">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">foi_request_documents_released</aabenforms:config>
+          <aabenforms:config key="message_template">Documents released (stub)</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_Approve</bpmn:incoming>
       <bpmn:outgoing>Flow_6</bpmn:outgoing>
     </bpmn:serviceTask>
 
     <bpmn:serviceTask id="Task_SendDenialNotice" name="Send Denial Notice">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">foi_request_denied</aabenforms:config>
+          <aabenforms:config key="message_template">Denial notice sent (stub)</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_Deny</bpmn:incoming>
       <bpmn:outgoing>Flow_7</bpmn:outgoing>
     </bpmn:serviceTask>
 
     <bpmn:serviceTask id="Task_NotifyCitizen" name="Notify Citizen">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">foi_request_citizen_notified</aabenforms:config>
+          <aabenforms:config key="message_template">Citizen notified (stub)</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_6</bpmn:incoming>
       <bpmn:incoming>Flow_7</bpmn:incoming>
       <bpmn:outgoing>Flow_8</bpmn:outgoing>
     </bpmn:serviceTask>
 
     <bpmn:serviceTask id="Task_AuditLog" name="Log FOI Request">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">foi_request_complete</aabenforms:config>
+          <aabenforms:config key="message_template">FOI request logged</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_8</bpmn:incoming>
       <bpmn:outgoing>Flow_9</bpmn:outgoing>
     </bpmn:serviceTask>

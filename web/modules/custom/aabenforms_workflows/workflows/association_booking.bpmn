@@ -3,6 +3,7 @@
                   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
                   xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xmlns:aabenforms="http://aabenforms.dk/bpmn/eca"
                   id="Definitions_association_booking"
                   targetNamespace="http://aabenforms.dk/bpmn"
                   exporter="AabenForms"
@@ -32,16 +33,39 @@ mock logger today. Real Nets Easy integration is a separate workstream.
     </bpmn:startEvent>
 
     <bpmn:serviceTask id="Task_MitIdValidate" name="Validate MitID Erhverv Session">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_mitid_validate">
+          <aabenforms:config key="workflow_id_token">workflow_id_association</aabenforms:config>
+          <aabenforms:config key="result_token">association_mitid_valid</aabenforms:config>
+          <aabenforms:config key="session_data_token">association_session</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_1</bpmn:incoming>
       <bpmn:outgoing>Flow_2</bpmn:outgoing>
     </bpmn:serviceTask>
 
     <bpmn:serviceTask id="Task_CvrLookup" name="CVR Registry Lookup">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_cvr_lookup">
+          <aabenforms:config key="cvr_token">[webform_submission:values:cvr:raw]</aabenforms:config>
+          <aabenforms:config key="result_token">association_data</aabenforms:config>
+          <aabenforms:config key="use_cache">true</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_2</bpmn:incoming>
       <bpmn:outgoing>Flow_3</bpmn:outgoing>
     </bpmn:serviceTask>
 
     <bpmn:userTask id="Task_ReviewerDecide" name="Municipality Reviewer Decides">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">association_booking_reviewer_assigned</aabenforms:config>
+          <aabenforms:config key="message_template">Reviewer assigned</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_3</bpmn:incoming>
       <bpmn:outgoing>Flow_4</bpmn:outgoing>
     </bpmn:userTask>
@@ -53,11 +77,25 @@ mock logger today. Real Nets Easy integration is a separate workstream.
     </bpmn:exclusiveGateway>
 
     <bpmn:serviceTask id="Task_ProcessPayment" name="Process Booking Fee (mock)">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">association_booking_payment_placeholder</aabenforms:config>
+          <aabenforms:config key="message_template">Payment step stub (ProcessPaymentAction has a known bug)</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_Payment</bpmn:incoming>
       <bpmn:outgoing>Flow_5</bpmn:outgoing>
     </bpmn:serviceTask>
 
     <bpmn:serviceTask id="Task_AuditLogComplete" name="Record Decision">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">association_booking_complete</aabenforms:config>
+          <aabenforms:config key="message_template">Association request processed</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_5</bpmn:incoming>
       <bpmn:incoming>Flow_NoPayment</bpmn:incoming>
       <bpmn:outgoing>Flow_6</bpmn:outgoing>

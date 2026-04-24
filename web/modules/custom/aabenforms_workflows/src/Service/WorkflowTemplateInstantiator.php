@@ -322,48 +322,50 @@ class WorkflowTemplateInstantiator {
    *   ECA actions configuration.
    */
   protected function buildEcaActions(\SimpleXMLElement $xml, array $configuration): array {
-    $actions = [];
     $namespaces = $xml->getNamespaces(TRUE);
-    $ns = $namespaces['bpmn'] ?? $namespaces['bpmn2'] ?? NULL;
-
-    if (!$ns) {
-      return $actions;
+    $bpmnNs = $namespaces['bpmn'] ?? $namespaces['bpmn2'] ?? NULL;
+    if (!$bpmnNs) {
+      return [];
     }
+    $xml->registerXPathNamespace('bpmn', $bpmnNs);
+    $aabenformsNs = $namespaces['aabenforms'] ?? 'http://aabenforms.dk/bpmn/eca';
 
-    $xml->registerXPathNamespace('bpmn', $ns);
-
-    // Get all tasks from template.
-    $service_tasks = $xml->xpath('//bpmn:serviceTask');
-    $user_tasks = $xml->xpath('//bpmn:userTask');
-    $all_tasks = array_merge($service_tasks ?: [], $user_tasks ?: []);
-
-    // Map template tasks to ECA actions.
-    $previous_action_id = 'start_workflow';
-
-    foreach ($all_tasks as $task) {
-      $task_id = (string) $task['id'];
-      $task_name = (string) $task['name'];
-
-      // Generate ECA action based on task type.
-      $action = $this->mapTaskToEcaAction($task_id, $task_name, $configuration);
-
-      if ($action) {
-        $action_id = 'action_' . $task_id;
-        $actions[$action_id] = $action;
-
-        // Link to previous action.
-        if (isset($actions[$previous_action_id])) {
-          $actions[$previous_action_id]['successors'][] = [
-            'id' => $action_id,
-            'condition' => '',
-          ];
+    // Only walk nodes inside executable processes. Templates may carry
+    // non-executable descriptive pools (e.g. the deferred voting phase in
+    // MED elections); those declare isExecutable="false" and should not
+    // produce ECA actions.
+    $nodeTypes = ['startEvent', 'endEvent', 'serviceTask', 'userTask', 'exclusiveGateway', 'parallelGateway'];
+    $nodes = [];
+    $edges = [];
+    $startIds = [];
+    foreach ($xml->xpath('//bpmn:process') ?: [] as $process) {
+      $executable = (string) $process['isExecutable'];
+      if ($executable !== '' && strtolower($executable) !== 'true') {
+        continue;
+      }
+      foreach ($nodeTypes as $type) {
+        foreach ($process->xpath('.//bpmn:' . $type) ?: [] as $el) {
+          $id = (string) $el['id'];
+          $nodes[$id] = ['type' => $type, 'el' => $el];
+          if ($type === 'startEvent') {
+            $startIds[] = $id;
+          }
         }
-
-        $previous_action_id = $action_id;
+      }
+      foreach ($process->xpath('.//bpmn:sequenceFlow') ?: [] as $flow) {
+        $src = (string) $flow['sourceRef'];
+        $tgt = (string) $flow['targetRef'];
+        $edges[$src][] = [
+          'target' => $tgt,
+          'label' => (string) $flow['name'],
+        ];
       }
     }
+    if (empty($startIds)) {
+      return [];
+    }
 
-    // Add initial action.
+    // Stub action that the event successors point at.
     $actions = [
       'start_workflow' => [
         'plugin' => 'eca_base_log',
@@ -373,9 +375,181 @@ class WorkflowTemplateInstantiator {
         ],
         'successors' => [],
       ],
-    ] + $actions;
+    ];
+
+    $visited = [];
+    foreach ($startIds as $startId) {
+      $this->walkBpmnNode($startId, 'start_workflow', '', $nodes, $edges, $actions, $visited, $aabenformsNs, $bpmnNs, $configuration);
+    }
 
     return $actions;
+  }
+
+  /**
+   * Recursive DAG walker for BPMN nodes.
+   *
+   * Follows sequenceFlow edges and emits ECA actions in BPMN order. Handles
+   * linear sequences, exclusive gateways (condition from edge name), parallel
+   * gateways (fan-out to all targets), and end events (terminates the chain).
+   *
+   * Shared join targets (same node reached from multiple branches) emit the
+   * action once and get wired up as a successor from every branch.
+   */
+  protected function walkBpmnNode(
+    string $nodeId,
+    string $prevActionId,
+    string $condition,
+    array $nodes,
+    array $edges,
+    array &$actions,
+    array &$visited,
+    string $aabenformsNs,
+    string $bpmnNs,
+    array $configuration,
+  ): void {
+    $info = $nodes[$nodeId] ?? NULL;
+    if (!$info) {
+      return;
+    }
+    $type = $info['type'];
+    $outEdges = $edges[$nodeId] ?? [];
+
+    // startEvent: pass through without emitting an action.
+    if ($type === 'startEvent') {
+      foreach ($outEdges as $edge) {
+        $this->walkBpmnNode($edge['target'], $prevActionId, $edge['label'], $nodes, $edges, $actions, $visited, $aabenformsNs, $bpmnNs, $configuration);
+      }
+      return;
+    }
+
+    // endEvent: terminate chain.
+    if ($type === 'endEvent') {
+      return;
+    }
+
+    // Gateways: fan out. Exclusive attaches edge label as condition; parallel
+    // treats all branches as unconditional. Real condition evaluation is a
+    // followup (edge label is plain text, not yet a Drupal condition).
+    if ($type === 'exclusiveGateway' || $type === 'parallelGateway') {
+      foreach ($outEdges as $edge) {
+        $edgeCondition = $type === 'exclusiveGateway' ? $edge['label'] : '';
+        $this->walkBpmnNode($edge['target'], $prevActionId, $edgeCondition, $nodes, $edges, $actions, $visited, $aabenformsNs, $bpmnNs, $configuration);
+      }
+      return;
+    }
+
+    // Tasks: emit an ECA action and recurse into outgoing edges.
+    $actionId = 'action_' . $nodeId;
+
+    if (isset($visited[$nodeId])) {
+      // Shared join target. Already emitted; just link prev to it.
+      if (isset($actions[$prevActionId]) && isset($actions[$actionId])) {
+        $actions[$prevActionId]['successors'][] = [
+          'id' => $actionId,
+          'condition' => $condition,
+        ];
+      }
+      return;
+    }
+    $visited[$nodeId] = TRUE;
+
+    $actions[$actionId] = $this->actionFromTask($info['el'], $aabenformsNs, $bpmnNs, $configuration);
+
+    if (isset($actions[$prevActionId])) {
+      $actions[$prevActionId]['successors'][] = [
+        'id' => $actionId,
+        'condition' => $condition,
+      ];
+    }
+
+    foreach ($outEdges as $edge) {
+      $this->walkBpmnNode($edge['target'], $actionId, $edge['label'], $nodes, $edges, $actions, $visited, $aabenformsNs, $bpmnNs, $configuration);
+    }
+  }
+
+  /**
+   * Builds an ECA action config from a BPMN task.
+   *
+   * Reads the aabenforms:ecaAction extension element if present
+   * (the preferred, explicit path). Falls back to the legacy name-based
+   * mapTaskToEcaAction heuristic for templates that haven't been annotated
+   * yet, and to an eca_base_log placeholder as a last resort.
+   */
+  protected function actionFromTask(
+    \SimpleXMLElement $task,
+    string $aabenformsNs,
+    string $bpmnNs,
+    array $configuration,
+  ): array {
+    $taskName = (string) $task['name'];
+
+    foreach ($task->children($bpmnNs) as $bpmnChild) {
+      if ($bpmnChild->getName() !== 'extensionElements') {
+        continue;
+      }
+      foreach ($bpmnChild->children($aabenformsNs) as $ext) {
+        if ($ext->getName() !== 'ecaAction') {
+          continue;
+        }
+        // SimpleXML quirk: elements accessed via children($ns) don't expose
+        // unprefixed attributes via [], need attributes() instead.
+        $extAttrs = $ext->attributes();
+        $plugin = (string) ($extAttrs['plugin'] ?? '');
+        if ($plugin === '') {
+          continue;
+        }
+        $config = [];
+        foreach ($ext->children($aabenformsNs) as $cfgNode) {
+          if ($cfgNode->getName() !== 'config') {
+            continue;
+          }
+          $cfgAttrs = $cfgNode->attributes();
+          $key = (string) ($cfgAttrs['key'] ?? '');
+          if ($key === '') {
+            continue;
+          }
+          $raw = trim((string) $cfgNode);
+          if ($raw === 'true') {
+            $config[$key] = TRUE;
+          }
+          elseif ($raw === 'false') {
+            $config[$key] = FALSE;
+          }
+          elseif (is_numeric($raw)) {
+            $config[$key] = $raw + 0;
+          }
+          else {
+            $config[$key] = $raw;
+          }
+        }
+        return [
+          'label' => $taskName,
+          'plugin' => $plugin,
+          'configuration' => $config,
+          'successors' => [],
+        ];
+      }
+    }
+
+    // Legacy fallback: keyword-based mapping. Retained so templates without
+    // an ecaAction extension still produce something, but the extension is
+    // the supported path going forward.
+    $fallback = $this->mapTaskToEcaAction((string) $task['id'], $taskName, $configuration);
+    if ($fallback) {
+      $fallback['label'] = $taskName;
+      $fallback['successors'] = [];
+      return $fallback;
+    }
+
+    return [
+      'label' => $taskName,
+      'plugin' => 'eca_base_log',
+      'configuration' => [
+        'level' => 'info',
+        'message' => 'Executing: ' . $taskName,
+      ],
+      'successors' => [],
+    ];
   }
 
   /**

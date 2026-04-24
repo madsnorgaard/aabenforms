@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:aabenforms="http://aabenforms.dk/bpmn/eca"
                    xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
                    xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
                    id="Definitions_parking_permit"
@@ -53,6 +54,14 @@ Perfect starter workflow for Danish municipalities looking to digitize citizen s
 
     <!-- MitID Authentication (Optional) -->
     <bpmn:serviceTask id="Task_MitIDAuth" name="Authenticate with MitID">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_mitid_validate">
+          <aabenforms:config key="workflow_id_token">workflow_id_parking</aabenforms:config>
+          <aabenforms:config key="result_token">parking_mitid_valid</aabenforms:config>
+          <aabenforms:config key="session_data_token">parking_session</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:extensionElements>
         <eca:action xmlns:eca="http://aabenforms.dk/eca">aabenforms_mitid_validate</eca:action>
       </bpmn:extensionElements>
@@ -69,6 +78,13 @@ Perfect starter workflow for Danish municipalities looking to digitize citizen s
 
     <!-- Validate Address with DAWA -->
     <bpmn:serviceTask id="Task_ValidateAddress" name="Validate Address (DAWA)">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_validate_zoning">
+          <aabenforms:config key="address_token">[webform_submission:values:address:raw]</aabenforms:config>
+          <aabenforms:config key="result_token">parking_zone</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:extensionElements>
         <eca:action xmlns:eca="http://aabenforms.dk/eca">aabenforms_dawa_validate</eca:action>
         <eca:config xmlns:eca="http://aabenforms.dk/eca">
@@ -81,6 +97,13 @@ Perfect starter workflow for Danish municipalities looking to digitize citizen s
 
     <!-- Calculate Fee -->
     <bpmn:serviceTask id="Task_CalculateFee" name="Calculate Parking Fee">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">parking_permit_fee_calculated</aabenforms:config>
+          <aabenforms:config key="message_template">Parking fee calculated (stub)</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:extensionElements>
         <eca:action xmlns:eca="http://aabenforms.dk/eca">custom_calculate_fee</eca:action>
         <eca:config xmlns:eca="http://aabenforms.dk/eca">
@@ -95,6 +118,13 @@ Perfect starter workflow for Danish municipalities looking to digitize citizen s
 
     <!-- Process Payment -->
     <bpmn:serviceTask id="Task_ProcessPayment" name="Process Payment (Nets Easy)">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">parking_permit_payment_placeholder</aabenforms:config>
+          <aabenforms:config key="message_template">Payment step stub (ProcessPaymentAction has a known bug)</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:extensionElements>
         <eca:action xmlns:eca="http://aabenforms.dk/eca">aabenforms_process_payment</eca:action>
         <eca:config xmlns:eca="http://aabenforms.dk/eca">
@@ -116,6 +146,13 @@ Perfect starter workflow for Danish municipalities looking to digitize citizen s
 
     <!-- Payment Failed -->
     <bpmn:serviceTask id="Task_PaymentFailedEmail" name="Send Payment Failed Email">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">parking_permit_payment_failed</aabenforms:config>
+          <aabenforms:config key="message_template">Payment failed email sent (stub)</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:extensionElements>
         <eca:action xmlns:eca="http://aabenforms.dk/eca">email_send</eca:action>
       </bpmn:extensionElements>
@@ -129,6 +166,13 @@ Perfect starter workflow for Danish municipalities looking to digitize citizen s
 
     <!-- Generate PDF Permit -->
     <bpmn:serviceTask id="Task_GeneratePDF" name="Generate Parking Permit PDF">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_generate_pdf">
+          <aabenforms:config key="template_token">parking_permit</aabenforms:config>
+          <aabenforms:config key="result_token">permit_pdf_path</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:extensionElements>
         <eca:action xmlns:eca="http://aabenforms.dk/eca">aabenforms_generate_pdf</eca:action>
         <eca:config xmlns:eca="http://aabenforms.dk/eca">
@@ -142,6 +186,13 @@ Perfect starter workflow for Danish municipalities looking to digitize citizen s
 
     <!-- Send SMS Confirmation -->
     <bpmn:serviceTask id="Task_SendSMS" name="Send SMS Confirmation">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_send_sms">
+          <aabenforms:config key="recipient_token">[webform_submission:values:phone:raw]</aabenforms:config>
+          <aabenforms:config key="message_token">Parking permit issued</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:extensionElements>
         <eca:action xmlns:eca="http://aabenforms.dk/eca">aabenforms_send_sms</eca:action>
         <eca:config xmlns:eca="http://aabenforms.dk/eca">
@@ -156,6 +207,13 @@ Perfect starter workflow for Danish municipalities looking to digitize citizen s
 
     <!-- Email PDF to Citizen -->
     <bpmn:serviceTask id="Task_EmailPDF" name="Email Permit to Citizen">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">parking_permit_emailed</aabenforms:config>
+          <aabenforms:config key="message_template">Permit emailed to citizen (stub)</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:extensionElements>
         <eca:action xmlns:eca="http://aabenforms.dk/eca">email_send</eca:action>
         <eca:config xmlns:eca="http://aabenforms.dk/eca">
@@ -170,6 +228,13 @@ Perfect starter workflow for Danish municipalities looking to digitize citizen s
 
     <!-- Audit Log -->
     <bpmn:serviceTask id="Task_AuditLog" name="Log Permit Issuance">
+      
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_audit_log">
+          <aabenforms:config key="event_type">parking_permit_complete</aabenforms:config>
+          <aabenforms:config key="message_template">Parking permit issuance logged</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
       <bpmn:extensionElements>
         <eca:action xmlns:eca="http://aabenforms.dk/eca">aabenforms_audit_log</eca:action>
         <eca:config xmlns:eca="http://aabenforms.dk/eca">
