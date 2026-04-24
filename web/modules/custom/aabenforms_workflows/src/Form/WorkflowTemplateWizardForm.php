@@ -798,11 +798,18 @@ class WorkflowTemplateWizardForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state): void {
-    // Snapshot step 6's values too so the final payload benefits from the
-    // same wizard_data merge that earlier steps relied on.
+    // Fold step 6's fresh input into wizard_data and then read everything
+    // from storage. We cannot trust $form_state->getValue() here: Drupal's
+    // FormBuilder::processForm() calls $form_state->setValues([]) before
+    // running doBuildForm(), which only repopulates values for elements in
+    // the current step's tree. So webform_id, parameters, action_config and
+    // visibility_mode are all NULL via getValue() at this point, even though
+    // buildForm() restored them in time for rendering the summary.
     $this->captureWizardData($form_state);
+    $data = $form_state->get('wizard_data') ?? [];
 
-    $template_id = $form_state->getValue('template_id')
+    $template_id = $data['template_id']
+      ?? $form_state->getValue('template_id')
       ?? \Drupal::request()->query->get('template_id');
     if (!is_string($template_id) || $template_id === '') {
       $this->messenger()->addError($this->t('Could not determine which template to instantiate. Please start the wizard again from the template browser.'));
@@ -810,14 +817,12 @@ class WorkflowTemplateWizardForm extends FormBase {
       return;
     }
 
-    // Build parameters array.
+    // Build parameters array from wizard_data.
     $parameters = [];
     $template_params = $this->templateMetadata->getTemplateParameters($template_id);
-
     foreach ($template_params as $param_id => $param) {
-      $value = $form_state->getValue($param_id);
-      if ($value !== NULL) {
-        $parameters[$param_id] = $value;
+      if (array_key_exists($param_id, $data) && $data[$param_id] !== NULL) {
+        $parameters[$param_id] = $data[$param_id];
       }
     }
 
@@ -825,12 +830,12 @@ class WorkflowTemplateWizardForm extends FormBase {
     // captured on step 4 (keyed that way to avoid colliding with the nav
     // button group); the instantiator still expects the key 'actions'.
     $configuration = [
-      'label' => $form_state->getValue('workflow_label'),
-      'webform_id' => $form_state->getValue('webform_id'),
+      'label' => $data['workflow_label'] ?? NULL,
+      'webform_id' => $data['webform_id'] ?? NULL,
       'parameters' => $parameters,
-      'actions' => $form_state->getValue('action_config') ?? [],
-      'visibility_mode' => $form_state->getValue('visibility_mode'),
-      'status' => $form_state->getValue('status') ?? TRUE,
+      'actions' => $data['action_config'] ?? [],
+      'visibility_mode' => $data['visibility_mode'] ?? NULL,
+      'status' => $data['status'] ?? TRUE,
     ];
 
     // Instantiate workflow.
