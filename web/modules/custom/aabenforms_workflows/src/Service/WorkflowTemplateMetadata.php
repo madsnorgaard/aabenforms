@@ -59,7 +59,14 @@ class WorkflowTemplateMetadata {
    *   - description: Help text
    *   - options: Array of valid options (for select/radio types)
    */
-  public function getTemplateParameters(string $template_id): array {
+  public function getTemplateParameters(?string $template_id): array {
+    // Wizard steps can end up here with a null id if the user entered via a
+    // URL that didn't carry template_id and form state never bootstrapped it.
+    // Empty return keeps the form rendering with no parameter fields instead
+    // of throwing a TypeError.
+    if ($template_id === NULL || $template_id === '') {
+      return [];
+    }
     $xml = $this->templateManager->loadTemplate($template_id);
 
     if (!$xml) {
@@ -81,7 +88,14 @@ class WorkflowTemplateMetadata {
     $docs = $xml->xpath('//bpmn:process/bpmn:documentation');
 
     if (!empty($docs)) {
-      $doc_content = (string) $docs[0];
+      // asXML(), not (string). SimpleXML's string cast concatenates text
+      // children only and silently drops element children, which meant the
+      // embedded <parameters>...</parameters> XML was invisible to the
+      // parser below. Only templates with hardcoded defaults in
+      // addDefaultParameters (building_permit, contact_form, etc.) showed
+      // their parameters; every other template returned only the auto-added
+      // workflow_label. Use asXML() to get the raw XML including children.
+      $doc_content = $docs[0]->asXML() ?: '';
 
       // Parse parameters section.
       if (preg_match('/<parameters>(.*?)<\/parameters>/s', $doc_content, $matches)) {
