@@ -57,6 +57,13 @@ class TemplateSelectForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
+    // The form cache would try to serialize $form_state including its
+    // user-input, which may contain a Symfony UploadedFile even when the
+    // file input was left empty. Serialization of File is forbidden, so
+    // skip caching entirely - this form has no AJAX-dependent state that
+    // would need it.
+    $form_state->disableCache();
+
     // Handle export operation.
     if ($form_state->get('operation') === 'export') {
       return $this->handleExport($form_state);
@@ -139,13 +146,9 @@ class TemplateSelectForm extends FormBase {
     ];
 
     $form['import']['file'] = [
-      '#type' => 'managed_file',
+      '#type' => 'file',
       '#title' => $this->t('BPMN File'),
       '#description' => $this->t('Upload a BPMN 2.0 XML file (.bpmn extension).'),
-      '#upload_location' => 'temporary://',
-      '#upload_validators' => [
-        'FileExtension' => ['extensions' => 'bpmn xml'],
-      ],
     ];
 
     $form['import']['template_id'] = [
@@ -329,20 +332,15 @@ class TemplateSelectForm extends FormBase {
    *   The form state.
    */
   public function submitImport(array &$form, FormStateInterface $form_state) {
-    $fids = $form_state->getValue('file');
-    if (empty($fids)) {
+    $files = $this->getRequest()->files->get('files', []);
+    if (!isset($files['file'])) {
       $form_state->setErrorByName('file', $this->t('No file was uploaded.'));
       return;
     }
 
-    $fid = reset($fids);
-    $file = \Drupal\file\Entity\File::load($fid);
-    if (!$file) {
-      $form_state->setErrorByName('file', $this->t('Uploaded file could not be loaded.'));
-      return;
-    }
-
+    $file = $files['file'];
     $template_id = $form_state->getValue('template_id');
+
     if (empty($template_id)) {
       $form_state->setErrorByName('template_id', $this->t('Template ID is required.'));
       return;
@@ -355,8 +353,24 @@ class TemplateSelectForm extends FormBase {
       return;
     }
 
-    $temp_path = \Drupal::service('file_system')->realpath($file->getFileUri());
+    $extension = strtolower(pathinfo((string) $file->getClientOriginalName(), PATHINFO_EXTENSION));
+    if (!in_array($extension, ['bpmn', 'xml'], TRUE)) {
+      $form_state->setErrorByName('file',
+        $this->t('Only .bpmn or .xml files are accepted.')
+      );
+      return;
+    }
+
+    // Generate a safe filename: never use the client-supplied name as a path
+    // component. Path traversal in the original would have let an attacker
+    // write outside temporary://.
+    $safe_name = $template_id . '_' . bin2hex(random_bytes(8)) . '.' . $extension;
+    $destination = 'temporary://' . $safe_name;
+    $temp_path = NULL;
     try {
+      $file->move('temporary://', $safe_name);
+      $temp_path = \Drupal::service('file_system')->realpath($destination);
+
       if ($this->templateManager->importTemplate($temp_path, $template_id)) {
         $this->messenger()->addStatus(
           $this->t('Template @id has been imported successfully.', ['@id' => $template_id])
@@ -367,12 +381,16 @@ class TemplateSelectForm extends FormBase {
           $this->t('Failed to import template. Please ensure the file is a valid BPMN 2.0 XML file.')
         );
       }
-      $file->delete();
     }
     catch (\Exception $e) {
       $form_state->setErrorByName('file',
         $this->t('Error uploading file: @message', ['@message' => $e->getMessage()])
       );
+    }
+    finally {
+      if ($temp_path !== NULL && file_exists($temp_path)) {
+        @unlink($temp_path);
+      }
     }
   }
 
