@@ -39,7 +39,7 @@ actions:
       - id: validate_address
         condition: ''
   validate_address:
-    plugin: eca_base_log
+    plugin: aabenforms_log
     configuration:
       level: info
       message: 'Validating address: [webform_submission:values:address]'

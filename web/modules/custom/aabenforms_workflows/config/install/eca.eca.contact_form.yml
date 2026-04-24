@@ -20,7 +20,7 @@ gateways: {  }
 conditions: {  }
 actions:
   validate_input:
-    plugin: eca_base_log
+    plugin: aabenforms_log
     configuration:
       level: info
       message: 'Contact form submitted: [webform_submission:values:name]'
@@ -28,7 +28,7 @@ actions:
       - id: route_to_department
         condition: ''
   route_to_department:
-    plugin: eca_base_log
+    plugin: aabenforms_log
     configuration:
       level: info
       message: 'Routing to department: [webform_submission:values:department]'
@@ -36,7 +36,7 @@ actions:
       - id: send_confirmation
         condition: ''
   send_confirmation:
-    plugin: eca_base_log
+    plugin: aabenforms_log
     configuration:
       level: info
       message: 'Sending confirmation email to: [webform_submission:values:email]'
