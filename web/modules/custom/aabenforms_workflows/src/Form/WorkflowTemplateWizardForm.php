@@ -104,6 +104,19 @@ class WorkflowTemplateWizardForm extends FormBase {
     $step = $form_state->get('step') ?? 1;
     $form_state->set('step', $step);
 
+    // The template browser links into the wizard as
+    // /admin/aabenforms/workflow-templates/wizard?template_id=<id>. On that
+    // first GET, form_state has no submitted values yet - the query string
+    // is the only source of the template_id. Bootstrap it so later steps
+    // (buildStepConfigureWebform, buildStepConfigureActions) find it via
+    // getValue() instead of crashing with null in getTemplateParameters().
+    if ($form_state->getValue('template_id') === NULL) {
+      $query_template = \Drupal::request()->query->get('template_id');
+      if (is_string($query_template) && $query_template !== '') {
+        $form_state->setValue('template_id', $query_template);
+      }
+    }
+
     // Add wizard navigation.
     $form['#attached']['library'][] = 'system/admin';
     $form['#attached']['library'][] = 'aabenforms_workflows/workflow_wizard';
