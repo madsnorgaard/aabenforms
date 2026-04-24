@@ -368,7 +368,7 @@ class WorkflowTemplateInstantiator {
     // Stub action that the event successors point at.
     $actions = [
       'start_workflow' => [
-        'plugin' => 'eca_base_log',
+        'plugin' => 'aabenforms_log',
         'configuration' => [
           'level' => 'info',
           'message' => 'Starting workflow: ' . ($configuration['label'] ?? 'Workflow'),
@@ -473,7 +473,7 @@ class WorkflowTemplateInstantiator {
    * Reads the aabenforms:ecaAction extension element if present
    * (the preferred, explicit path). Falls back to the legacy name-based
    * mapTaskToEcaAction heuristic for templates that haven't been annotated
-   * yet, and to an eca_base_log placeholder as a last resort.
+   * yet, and to an aabenforms_log placeholder as a last resort.
    */
   protected function actionFromTask(
     \SimpleXMLElement $task,
@@ -543,7 +543,7 @@ class WorkflowTemplateInstantiator {
 
     return [
       'label' => $taskName,
-      'plugin' => 'eca_base_log',
+      'plugin' => 'aabenforms_log',
       'configuration' => [
         'level' => 'info',
         'message' => 'Executing: ' . $taskName,
@@ -606,15 +606,18 @@ class WorkflowTemplateInstantiator {
     }
 
     if (strpos($task_name_lower, 'send') !== FALSE || strpos($task_name_lower, 'email') !== FALSE) {
-      // Get email configuration for this action.
+      // The old upstream 'eca_base_mail' plugin was removed from ECA and has
+      // no direct replacement. Emit a placeholder log action so instantiation
+      // produces a valid ECA config; the template's ecaAction extension is
+      // the supported path to wire a real send (e.g. aabenforms_send_approval_email).
       $action_config = $configuration['actions'][$task_id] ?? [];
-
+      $subject = $action_config['subject'] ?? $task_name;
+      $recipient = $action_config['recipient'] ?? '';
       return [
-        'plugin' => 'eca_base_mail',
+        'plugin' => 'aabenforms_log',
         'configuration' => [
-          'to' => $action_config['recipient'] ?? '',
-          'subject' => $action_config['subject'] ?? $task_name,
-          'body' => $action_config['body'] ?? '',
+          'level' => 'info',
+          'message' => 'Email stub (' . $subject . ') → ' . $recipient,
         ],
         'successors' => [],
       ];
@@ -633,7 +636,7 @@ class WorkflowTemplateInstantiator {
 
     // Default log action for unrecognized tasks.
     return [
-      'plugin' => 'eca_base_log',
+      'plugin' => 'aabenforms_log',
       'configuration' => [
         'level' => 'info',
         'message' => 'Executing: ' . $task_name,

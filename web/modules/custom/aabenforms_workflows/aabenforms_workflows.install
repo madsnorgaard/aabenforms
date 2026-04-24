@@ -1,0 +1,66 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the aabenforms_workflows module.
+ */
+
+declare(strict_types=1);
+
+/**
+ * Migrate ECA configs that reference the removed 'eca_base_log' / 'eca_base_mail'
+ * plugins to the custom 'aabenforms_log' shim.
+ *
+ * Upstream ECA removed these base plugins; any existing installed ECA config
+ * entity that still references them breaks /admin/config/workflow/eca with
+ * PluginNotFoundException. Rewrite the plugin ID in place on both the
+ * 'actions' and 'conditions' sub-trees.
+ */
+function aabenforms_workflows_update_11001(): string {
+  $config_factory = \Drupal::configFactory();
+  $replacements = [
+    'eca_base_log' => 'aabenforms_log',
+    'eca_base_mail' => 'aabenforms_log',
+  ];
+
+  $migrated = 0;
+  foreach ($config_factory->listAll('eca.eca.') as $name) {
+    $config = $config_factory->getEditable($name);
+    $changed = FALSE;
+
+    foreach (['actions', 'conditions'] as $section) {
+      $entries = $config->get($section);
+      if (!is_array($entries)) {
+        continue;
+      }
+      foreach ($entries as $key => $entry) {
+        if (!is_array($entry) || empty($entry['plugin'])) {
+          continue;
+        }
+        if (isset($replacements[$entry['plugin']])) {
+          $entries[$key]['plugin'] = $replacements[$entry['plugin']];
+          if ($entry['plugin'] === 'eca_base_mail') {
+            $existing = $entries[$key]['configuration'] ?? [];
+            $subject = $existing['subject'] ?? 'email';
+            $to = $existing['to'] ?? '';
+            $entries[$key]['configuration'] = [
+              'level' => 'info',
+              'message' => 'Email stub (' . $subject . ') → ' . $to,
+            ];
+          }
+          $changed = TRUE;
+        }
+      }
+      if ($changed) {
+        $config->set($section, $entries);
+      }
+    }
+
+    if ($changed) {
+      $config->save();
+      $migrated++;
+    }
+  }
+
+  return sprintf('Migrated %d ECA config entity/ies away from removed base plugins.', $migrated);
+}
