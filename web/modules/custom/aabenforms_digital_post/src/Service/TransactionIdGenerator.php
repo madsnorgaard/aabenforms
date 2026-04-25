@@ -16,7 +16,7 @@ use Symfony\Component\Uid\Uuid;
 final class TransactionIdGenerator {
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function generate(): string {
     return Uuid::v7()->toRfc4122();

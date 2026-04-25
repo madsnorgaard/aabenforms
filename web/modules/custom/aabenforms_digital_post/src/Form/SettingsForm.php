@@ -22,21 +22,21 @@ final class SettingsForm extends ConfigFormBase {
   public const CONFIG = 'aabenforms_digital_post.settings';
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function getFormId(): string {
     return 'aabenforms_digital_post_settings';
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   protected function getEditableConfigNames(): array {
     return [self::CONFIG];
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state): array {
     $config = $this->config(self::CONFIG);
@@ -125,7 +125,7 @@ final class SettingsForm extends ConfigFormBase {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state): void {
     $mode = (string) $form_state->getValue('test_mode');
@@ -162,7 +162,7 @@ final class SettingsForm extends ConfigFormBase {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state): void {
     $config = $this->config(self::CONFIG);
@@ -182,7 +182,7 @@ final class SettingsForm extends ConfigFormBase {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   private function writeAll(Config $config, array $values): void {
     foreach ($values as $key => $value) {
@@ -192,10 +192,11 @@ final class SettingsForm extends ConfigFormBase {
   }
 
   /**
-   * Utility for ensuring the module's valid DigitalPost::VALID_TYPES set is
-   * imported, so PHPStan doesn't flag the use statement as unused. Not
-   * called at runtime. Exists to anchor future validation expansion that
-   * will need the type list.
+   * Returns the canonical list of supported Digital Post delivery types.
+   *
+   * Anchors the DigitalPost::VALID_TYPES use statement so PHPStan
+   * doesn't flag the import as unused, and exposes the list to future
+   * validation expansion. Not called at runtime today.
    */
   private function validTypes(): array {
     return DigitalPost::VALID_TYPES;

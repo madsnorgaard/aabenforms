@@ -25,8 +25,8 @@
         const xField = container.querySelector('.dawa-address-x');
         const yField = container.querySelector('.dawa-address-y');
 
-        let autocompleteList = null;
-        let debounceTimer = null;
+        let autocompleteList = NULL;
+        let debounceTimer = NULL;
 
         // Handle search input.
         searchField.addEventListener('input', function (e) {
@@ -49,7 +49,7 @@
 
         // Fetch addresses from DAWA API.
         function fetchAddresses(query) {
-          const url = `${apiUrl}?q=${encodeURIComponent(query)}&type=adresse&fuzzy=`;
+          const url = `${apiUrl} ? q = ${encodeURIComponent(query)} & type = adresse & fuzzy = `;
 
           fetch(url)
             .then(response => response.json())
@@ -73,16 +73,16 @@
           autocompleteList.className = 'dawa-autocomplete-list';
           autocompleteList.style.cssText = `
             position: absolute;
-            z-index: 1000;
+            z - index: 1000;
             background: white;
             border: 1px solid #ccc;
-            border-radius: 4px;
+            border - radius: 4px;
             margin: 0;
             padding: 0;
-            list-style: none;
-            max-height: 300px;
-            overflow-y: auto;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            list - style: none;
+            max - height: 300px;
+            overflow - y: auto;
+            box - shadow: 0 2px 8px rgba(0,0,0,0.1);
           `;
 
           addresses.forEach(function (address) {
@@ -92,7 +92,7 @@
             item.style.cssText = `
               padding: 8px 12px;
               cursor: pointer;
-              border-bottom: 1px solid #eee;
+              border - bottom: 1px solid #eee;
             `;
 
             item.addEventListener('mouseenter', function () {
@@ -118,7 +118,7 @@
         function hideAutocomplete() {
           if (autocompleteList) {
             autocompleteList.remove();
-            autocompleteList = null;
+            autocompleteList = NULL;
           }
         }
 

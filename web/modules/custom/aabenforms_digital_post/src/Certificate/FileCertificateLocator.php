@@ -8,13 +8,13 @@ use Drupal\aabenforms_digital_post\Exception\CertificateException;
 use Drupal\Core\Config\ConfigFactoryInterface;
 
 /**
- * File-based certificate locator. Reads cert_path from module config and
- * resolves the passphrase from an environment variable named by
- * cert_passphrase_state.
+ * File-based certificate locator.
  *
- * Rationale for env-var passphrase instead of config: passphrases are
- * environment-specific secrets and should never sit in version-controlled
- * config. A future KeyModuleCertificateLocator can replace this with the
+ * Reads cert_path from module config and resolves the passphrase from
+ * an environment variable named by cert_passphrase_state. Rationale for
+ * env-var passphrase instead of config: passphrases are environment-
+ * specific secrets and should never sit in version-controlled config.
+ * A future KeyModuleCertificateLocator can replace this with the
  * drupal:key contrib's encrypted storage for sites that want it.
  */
 final class FileCertificateLocator implements CertificateLocatorInterface {
@@ -25,7 +25,7 @@ final class FileCertificateLocator implements CertificateLocatorInterface {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function locate(): Certificate {
     $config = $this->configFactory->get('aabenforms_digital_post.settings');
@@ -50,14 +50,14 @@ final class FileCertificateLocator implements CertificateLocatorInterface {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function supportsRenewal(): bool {
     return TRUE;
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function expiresAt(): ?\DateTimeImmutable {
     try {

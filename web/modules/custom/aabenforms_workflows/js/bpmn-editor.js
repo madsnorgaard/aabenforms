@@ -7,8 +7,8 @@
   'use strict';
 
   Drupal.behaviors.aabenformsBpmnEditor = {
-    modeler: null,
-    autoSaveTimeout: null,
+    modeler: NULL,
+    autoSaveTimeout: NULL,
 
     attach: function (context, settings) {
       var $canvas = $('#bpmn-canvas', context);
@@ -17,7 +17,7 @@
         return;
       }
 
-      $canvas.data('bpmn-initialized', true);
+      $canvas.data('bpmn-initialized', TRUE);
 
       var self = this;
       var bpmnSettings = settings.aabenforms_workflows.bpmn;
@@ -76,7 +76,7 @@
       var $form = $canvas.closest('form');
       $form.on('submit', function () {
         self.saveBpmnXml();
-        return true;
+        return TRUE;
       });
 
       // Setup validation on blur.
@@ -106,7 +106,7 @@
     saveBpmnXml: function () {
       var self = this;
 
-      this.modeler.saveXML({format: true}).then(function (result) {
+      this.modeler.saveXML({format: TRUE}).then(function (result) {
         var xml = result.xml;
 
         // Update hidden field.

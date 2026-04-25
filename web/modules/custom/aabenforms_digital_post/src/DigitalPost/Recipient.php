@@ -47,8 +47,9 @@ final class Recipient {
   }
 
   /**
-   * Return a stable SHA-256 hash of the identifier. Useful for logging
-   * without persisting the raw CPR/CVR.
+   * Returns a stable SHA-256 hash of the identifier.
+   *
+   * Useful for logging without persisting the raw CPR/CVR.
    */
   public function identifierHash(): string {
     return hash('sha256', $this->type . ':' . $this->identifier);

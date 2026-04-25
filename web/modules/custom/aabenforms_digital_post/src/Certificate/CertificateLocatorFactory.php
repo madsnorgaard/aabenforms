@@ -23,7 +23,10 @@ final class CertificateLocatorFactory {
   }
 
   /**
+   * Returns the locator implementation matching aabenforms_digital_post.settings.cert_source.
    *
+   * @throws \Drupal\aabenforms_digital_post\Exception\CertificateException
+   *   When cert_source is set to an unsupported backend.
    */
   public function create(): CertificateLocatorInterface {
     $source = (string) $this->configFactory

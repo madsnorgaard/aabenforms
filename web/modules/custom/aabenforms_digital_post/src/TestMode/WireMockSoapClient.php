@@ -36,7 +36,7 @@ final class WireMockSoapClient implements Sf1601ClientInterface {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function send(DigitalPost $post, string $transactionId): Result {
     $base = (string) $this->configFactory
@@ -105,7 +105,7 @@ final class WireMockSoapClient implements Sf1601ClientInterface {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function modeLabel(): string {
     return 'wiremock';

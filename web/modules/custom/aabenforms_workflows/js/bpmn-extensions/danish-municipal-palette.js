@@ -130,7 +130,7 @@
 
     actions['tool-separator'] = {
       group: 'tools',
-      separator: true
+      separator: TRUE
     };
 
     // Start/End events.
@@ -168,7 +168,7 @@
 
     actions['event-separator'] = {
       group: 'event',
-      separator: true
+      separator: TRUE
     };
 
     // Gateway.
@@ -190,7 +190,7 @@
 
     actions['gateway-separator'] = {
       group: 'gateway',
-      separator: true
+      separator: TRUE
     };
 
     // Danish municipal tasks - Authentication.

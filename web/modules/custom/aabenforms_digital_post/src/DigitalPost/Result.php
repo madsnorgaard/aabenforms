@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Drupal\aabenforms_digital_post\DigitalPost;
 
 /**
- * Immutable result of a Digital Post send attempt. Either success with a
- * transaction id, or failure with a typed reason code.
+ * Immutable result of a Digital Post send attempt.
+ *
+ * Either success with a transaction id, or failure with a typed reason
+ * code.
  */
 final class Result {
 
@@ -32,7 +34,7 @@ final class Result {
   }
 
   /**
-   *
+   * Builds a success Result.
    */
   public static function success(string $transactionId, string $message = '', ?string $rawResponse = NULL): self {
     return new self(
@@ -45,7 +47,7 @@ final class Result {
   }
 
   /**
-   *
+   * Builds a failure Result with a typed reason code.
    */
   public static function failure(string $transactionId, string $reasonCode, string $message, ?string $rawResponse = NULL): self {
     return new self(
@@ -58,16 +60,17 @@ final class Result {
   }
 
   /**
-   *
+   * Whether this Result is a success.
    */
   public function isSuccess(): bool {
     return $this->status === self::SUCCESS;
   }
 
   /**
-   * Audit-log-safe context array. Does NOT include the full rawResponse
-   * (which may carry PII in the MeMo envelope); callers that want it can
-   * read it explicitly.
+   * Audit-log-safe context array.
+   *
+   * Does NOT include the full rawResponse (which may carry PII in the
+   * MeMo envelope); callers that want it can read it explicitly.
    */
   public function auditContext(): array {
     return [

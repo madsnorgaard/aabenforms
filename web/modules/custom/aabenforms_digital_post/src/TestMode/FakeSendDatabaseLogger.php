@@ -38,7 +38,7 @@ final class FakeSendDatabaseLogger implements Sf1601ClientInterface {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function send(DigitalPost $post, string $transactionId): Result {
     $payload = [
@@ -100,7 +100,7 @@ final class FakeSendDatabaseLogger implements Sf1601ClientInterface {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function modeLabel(): string {
     return 'fake_db';

@@ -8,8 +8,9 @@ use Drupal\aabenforms_digital_post\DigitalPost\DigitalPost;
 use Drupal\aabenforms_digital_post\DigitalPost\Result;
 
 /**
- * Transport contract for sending a DigitalPost. Concrete implementations
- * decide how the bytes travel:
+ * Transport contract for sending a DigitalPost.
+ *
+ * Concrete implementations decide how the bytes travel:
  *
  * - FakeSendDatabaseLogger: writes to {aabenforms_digital_post_log}
  *   and returns a fake receipt. Zero external dependencies.
@@ -24,9 +25,11 @@ use Drupal\aabenforms_digital_post\DigitalPost\Result;
 interface Sf1601ClientInterface {
 
   /**
-   * Send a Digital Post. Returns a Result carrying the transaction id,
-   * status, and (on failure) a typed reason code. Never throws - all
-   * failure modes are returned as Result::failure().
+   * Sends a Digital Post.
+   *
+   * Returns a Result carrying the transaction id, status, and (on
+   * failure) a typed reason code. Never throws - all failure modes are
+   * returned as Result::failure().
    */
   public function send(DigitalPost $post, string $transactionId): Result;
 
