@@ -319,7 +319,7 @@ Examples:
 | 04 - Building Permit |  | ⬜ | ⬜ | ⬜ | ⬜ |
 | 05 - Visual Builder |  | ⬜ | ⬜ | ⬜ | ⬜ |
 
-**Legend**:  Complete | 🔄 In Progress | ⬜ Not Started
+**Legend**:  Complete |  In Progress | ⬜ Not Started
 
 ---
 

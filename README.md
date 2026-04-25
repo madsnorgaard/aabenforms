@@ -151,7 +151,7 @@ curl -s http://localhost:8080/realms/danish-gov-test/.well-known/openid-configur
 | Module | Status | Description |
 |--------|--------|-------------|
 | `aabenforms_mitid` |  Active | MitID OIDC integration, session management, CPR extraction |
-| `aabenforms_gdpr` | 🔄 Partial | Field encryption (), audit logs (), retention policies (planned) |
+| `aabenforms_gdpr` |  Partial | Field encryption (), audit logs (), retention policies (planned) |
 
 ### Phase 3: Complete Workflow System  Complete
 | Module | Status | Description |
@@ -171,19 +171,19 @@ curl -s http://localhost:8080/realms/danish-gov-test/.well-known/openid-configur
 |--------|--------|-------------|
 | `aabenforms_digital_post` |  Session 1 shipped | SF1601 Digital Post core. Plug-and-play on bare Drupal 11 with `drupal:key` + `aabenforms_core` only. Test modes `fake_db`/`wiremock`/`live_test`/`live`. Real SOAP transport in Session 2B. |
 | `aabenforms_digital_post_eca` |  Session 2A shipped | Submodule. ECA action plugin `aabenforms_digital_post_send`, ready for any BPMN template via `<aabenforms:ecaAction>`. |
-| `aabenforms_digital_post_webform` | 📋 Session 3 | Submodule. Webform handler, keeps the core module webform-free. |
-| `aabenforms_digital_post_beskedfordeler` | 📋 Session 3 | Submodule. Optional delivery-status receipts. |
-| `aabenforms_digital_post_os2web_key` | 📋 Session 3 | Submodule. Bridge for sites already using `os2web_key` certificates. |
-| `aabenforms_nemlogin` | 📋 Session 2C | Plug-and-play OIDC core (PKCE S256, ItkOidcClient, ClaimStore). |
-| `aabenforms_nemlogin_keycloak` | 📋 Session 2C | Submodule. Keycloak preset for local dev. |
-| `aabenforms_mitid` | 🔄 deprecation track | Shim over `aabenforms_nemlogin` planned in Session 2C; full removal in Session 3. |
-| `aabenforms_cpr` | 🔄 Partial | SF1520 person lookup (action plugin, production service planned) |
-| `aabenforms_cvr` | 🔄 Partial | SF1530 company lookup (action plugin, production service planned) |
-| `aabenforms_dawa` | 🔄 Partial | DAWA address autocomplete (webform element, full API integration planned) |
-| `aabenforms_sbsys` | 📋 Planned | SBSYS case management integration |
-| `aabenforms_get_organized` | 📋 Planned | GetOrganized ESDH document archiving |
+| `aabenforms_digital_post_webform` |  Session 3 | Submodule. Webform handler, keeps the core module webform-free. |
+| `aabenforms_digital_post_beskedfordeler` |  Session 3 | Submodule. Optional delivery-status receipts. |
+| `aabenforms_digital_post_os2web_key` |  Session 3 | Submodule. Bridge for sites already using `os2web_key` certificates. |
+| `aabenforms_nemlogin` |  Session 2C | Plug-and-play OIDC core (PKCE S256, ItkOidcClient, ClaimStore). |
+| `aabenforms_nemlogin_keycloak` |  Session 2C | Submodule. Keycloak preset for local dev. |
+| `aabenforms_mitid` |  deprecation track | Shim over `aabenforms_nemlogin` planned in Session 2C; full removal in Session 3. |
+| `aabenforms_cpr` |  Partial | SF1520 person lookup (action plugin, production service planned) |
+| `aabenforms_cvr` |  Partial | SF1530 company lookup (action plugin, production service planned) |
+| `aabenforms_dawa` |  Partial | DAWA address autocomplete (webform element, full API integration planned) |
+| `aabenforms_sbsys` |  Planned | SBSYS case management integration |
+| `aabenforms_get_organized` |  Planned | GetOrganized ESDH document archiving |
 
-**Legend**:  Shipped | 🔄 In Progress | 📋 Planned
+**Legend**:  Shipped |  In Progress |  Planned
 
 The Digital Post + NemLogin rewrite plan is the explicit modular alternative to the OS2/Bellcom dependency maze. Goal: each integration installs cleanly on any modern Drupal 11 with at most one mainstream contrib, no `os2web_*` chain.
 
@@ -203,12 +203,12 @@ The Digital Post + NemLogin rewrite plan is the explicit modular alternative to 
 -  Automated test coverage via CI (see badges above for current numbers)
 
 **Phase 4 Next** (In Progress):
-- 🔄 BpmnTemplateManagerTest.php (5 tests)
-- 🔄 WorkflowsModuleTest.php replacement
-- 📋 End-to-end browser tests (FunctionalJavascript)
-- 📋 Performance and security test suites
-- 📋 Achieve 60%+ test coverage
-- 📋 Production Serviceplatformen integration (replace mocks)
+-  BpmnTemplateManagerTest.php (5 tests)
+-  WorkflowsModuleTest.php replacement
+-  End-to-end browser tests (FunctionalJavascript)
+-  Performance and security test suites
+-  Achieve 60%+ test coverage
+-  Production Serviceplatformen integration (replace mocks)
 
 ## Workflow System
 

@@ -106,10 +106,10 @@
 | Payment Processing |  |  |
 | PDF Generation |  |  |
 | SMS Notifications |  |  |
-| GIS Zoning Validation | ✗ |  |
+| GIS Zoning Validation |  |  |
 | Visual Workflow Builder | Limited |  |
-| Open Source | ✗ |  |
-| Self-Hosting | ✗ |  |
+| Open Source |  |  |
+| Self-Hosting |  |  |
 
 #### VISUAL CALLOUTS
 - Highlight each feature with animated checkmark

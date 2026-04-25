@@ -374,7 +374,7 @@
 - Highlight "Godkendt" status with green badge
 - Show time comparison graphic:
   - Manual process: 3-5 days ⏰
-  - ÅbenForms: 5 minutes ⚡
+  - ÅbenForms: 5 minutes 
 - Display satisfaction rating
 - Show call-to-action: "Watch next demo →"
 

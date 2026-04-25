@@ -406,10 +406,10 @@
 3. Show SMS reminder preview (simulated):
    "Påmindelse: Jeres vielse er om 1 uge (23. feb kl. 11:00, Rådhuset). Se detaljer: demo.aabenforms.dk/vielse/VIE-2024-001234"
 4. Show automated workflow timeline:
-   - 📧 Straks: Bekræftelsesmail
-   - 📅 1 uge før: SMS-påmindelse
-   - 📱 1 dag før: SMS-påmindelse
-   - 📧 Efter vielse: Ægteskabsattest
+   -  Straks: Bekræftelsesmail
+   -  1 uge før: SMS-påmindelse
+   -  1 dag før: SMS-påmindelse
+   -  Efter vielse: Ægteskabsattest
 
 #### VISUAL CALLOUTS
 - Highlight calendar invitation file (.ics)

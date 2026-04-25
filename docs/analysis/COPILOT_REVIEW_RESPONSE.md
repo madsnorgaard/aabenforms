@@ -361,7 +361,7 @@ Both require:
 **Lines:** 136-157
 
 **Copilot's Concern:**
-> "testGenderLogic() doesn't exercise CprValidator::getGender() at all—the assertion compares a value to itself, so it will always pass even if the implementation is broken."
+> "testGenderLogic() doesn't exercise CprValidator::getGender() at all-the assertion compares a value to itself, so it will always pass even if the implementation is broken."
 
 **Why We're Not Fixing This Now:**
 

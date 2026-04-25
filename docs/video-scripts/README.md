@@ -588,19 +588,19 @@ Audio:
 ÅbenForms er Danmarks første open source digitale selvbetjeningsplatform,
 bygget specifikt til danske kommuner. I denne video [specific content].
 
-📋 Kapitel:
+ Kapitel:
 0:00 Introduction
 0:30 [Chapter 1]
 1:15 [Chapter 2]
 ... (all chapters)
 
-🔗 Links:
+ Links:
 • Demo: https://demo.aabenforms.dk
 • Dokumentation: https://docs.aabenforms.dk
 • GitHub: https://github.com/aabenforms/platform
 • Website: https://aabenforms.dk
 
-📧 Kontakt:
+ Kontakt:
 • Email: kontakt@aabenforms.dk
 • Community: community.aabenforms.dk
 
@@ -712,7 +712,7 @@ Each page includes:
 - 1-2 minute excerpt (Twitter supports up to 2:20)
 - Thread format:
   ```
-  1/ New video: [Title] 🎥
+  1/ New video: [Title] 
 
   [One sentence hook]
 
