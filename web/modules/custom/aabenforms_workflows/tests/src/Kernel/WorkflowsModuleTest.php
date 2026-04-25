@@ -28,6 +28,8 @@ class WorkflowsModuleTest extends KernelTestBase {
     'webform',
     'eca',
     'eca_base',
+    'eca_content',
+    'eca_user',
     'aabenforms_core',
     'aabenforms_workflows',
   ];
@@ -79,9 +81,12 @@ class WorkflowsModuleTest extends KernelTestBase {
     $templates = $template_manager->getAvailableTemplates();
 
     $this->assertIsArray($templates);
-    $this->assertCount(5, $templates, 'Should discover exactly 5 BPMN templates');
+    // 13 templates ship in workflows/ today (the original 5 plus 8 added
+    // in Phase B/C). Assert >= 5 to preserve the historical floor without
+    // hard-coding a count that breaks whenever a new template is added.
+    $this->assertGreaterThanOrEqual(5, count($templates), 'Should discover at least 5 BPMN templates');
 
-    // Verify all 5 templates exist.
+    // Verify the historical 5 still exist.
     $this->assertArrayHasKey('building_permit', $templates, 'Building permit template should exist');
     $this->assertArrayHasKey('contact_form', $templates, 'Contact form template should exist');
     $this->assertArrayHasKey('company_verification', $templates, 'Company verification template should exist');
@@ -266,12 +271,11 @@ class WorkflowsModuleTest extends KernelTestBase {
     $namespaces = $xml->getNamespaces(TRUE);
     $this->assertArrayHasKey('bpmn', $namespaces, 'BPMN namespace should be present');
 
-    // Validate template.
+    // Validate template. validateTemplate() returns bool; errors are
+    // surfaced separately via getValidationErrors().
     $validation = $template_manager->validateTemplate('building_permit');
-    $this->assertIsArray($validation);
-    $this->assertArrayHasKey('valid', $validation);
-    $this->assertTrue($validation['valid'], 'Building permit template should be valid');
-    $this->assertEmpty($validation['errors'], 'Valid template should have no errors');
+    $this->assertTrue($validation, 'Building permit template should be valid');
+    $this->assertEmpty($template_manager->getValidationErrors(), 'Valid template should have no errors');
   }
 
   /**
