@@ -56,10 +56,14 @@ class ResultTest extends UnitTestCase {
   public function testAuditContextShape(): void {
     $r = Result::failure('tx-4', Result::REASON_TRANSPORT, 'network fail', 'PII goes here');
     $ctx = $r->auditContext();
-    $this->assertSame(
-      ['status', 'transaction_id', 'reason_code', 'message'],
-      array_keys($ctx)
-    );
+    // Assert the key set, not the order. Insertion order is a PHP
+    // implementation detail and not part of the public contract.
+    $expected_keys = ['status', 'transaction_id', 'reason_code', 'message'];
+    $actual_keys = array_keys($ctx);
+    sort($expected_keys);
+    sort($actual_keys);
+    $this->assertCount(4, $ctx);
+    $this->assertSame($expected_keys, $actual_keys);
     $this->assertSame(Result::FAILURE, $ctx['status']);
     $this->assertSame('tx-4', $ctx['transaction_id']);
     $this->assertSame(Result::REASON_TRANSPORT, $ctx['reason_code']);

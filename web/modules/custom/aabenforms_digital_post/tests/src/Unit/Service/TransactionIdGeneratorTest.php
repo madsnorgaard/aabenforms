@@ -43,15 +43,38 @@ class TransactionIdGeneratorTest extends UnitTestCase {
 
   /**
    * Sequential ids sort lexicographically (the v7 time-ordering guarantee).
+   *
+   * Polls the embedded 48-bit ms timestamp instead of trusting a wall-clock
+   * `usleep()` to land in a different ms. On heavy CI a single 2 ms sleep
+   * can stay inside the same millisecond bucket; the bounded retry loop
+   * stays robust without making the test slow in the common case.
    */
   public function testGenerateIsTimeOrdered(): void {
     $gen = new TransactionIdGenerator();
     $first = $gen->generate();
-    // Tiny sleep to guarantee a tick of the v7 millisecond clock so the
-    // ordering is observable; v7 has 48-bit ms precision.
-    usleep(2000);
-    $second = $gen->generate();
+    $firstTs = $this->extractUuidV7Timestamp($first);
+
+    $second = $first;
+    $secondTs = $firstTs;
+    for ($attempt = 0; $attempt < 10 && $secondTs <= $firstTs; $attempt++) {
+      usleep(1000);
+      $second = $gen->generate();
+      $secondTs = $this->extractUuidV7Timestamp($second);
+    }
+
+    $this->assertGreaterThan(
+      $firstTs,
+      $secondTs,
+      'Failed to observe a UUIDv7 timestamp increase within the retry budget.',
+    );
     $this->assertLessThan(0, strcmp($first, $second));
+  }
+
+  /**
+   * Extracts the 48-bit unix-epoch millisecond timestamp from a UUIDv7.
+   */
+  private function extractUuidV7Timestamp(string $uuid): int {
+    return (int) hexdec(substr(str_replace('-', '', $uuid), 0, 12));
   }
 
 }

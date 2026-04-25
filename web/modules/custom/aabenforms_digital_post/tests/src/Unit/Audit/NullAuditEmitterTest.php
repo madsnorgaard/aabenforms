@@ -33,11 +33,14 @@ class NullAuditEmitterTest extends UnitTestCase {
    * Emit() returns void and does not throw, regardless of inputs.
    */
   public function testEmitIsSilentNoOp(): void {
+    // PHPUnit's first-class way to mark "this test deliberately makes no
+    // assertions" - keeps the test out of the risky-test bucket without
+    // a meaningless assertTrue(TRUE) placeholder.
+    $this->expectNotToPerformAssertions();
     $e = new NullAuditEmitter();
     $e->emit('digital_post.send', 'tx-1', 'sent', 'success');
     $e->emit('digital_post.send', 'tx-2', 'failed', 'failure', ['reason' => 'X']);
     $e->emit('', '', '', '', []);
-    $this->assertTrue(TRUE);
   }
 
 }
