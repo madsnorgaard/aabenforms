@@ -104,6 +104,32 @@ function aabenforms_core_install(): void {
 }
 
 /**
+ * Apply the install-hook actions for sites that had aabenforms_core enabled
+ * before the dashboard shipped.
+ *
+ * Idempotent: only changes page.front if it's still the unmodified Drupal
+ * default '/user/login', and only grants the permission if the role lacks
+ * it. Safe to re-run.
+ */
+function aabenforms_core_update_11001(): string {
+  $changes = [];
+
+  $site = \Drupal::configFactory()->getEditable('system.site');
+  if ($site->get('page.front') === '/user/login') {
+    $site->set('page.front', '/aabenforms')->save();
+    $changes[] = 'set system.site.page.front to /aabenforms';
+  }
+
+  $admin_role = \Drupal\user\Entity\Role::load('administrator');
+  if ($admin_role && !$admin_role->hasPermission('access aabenforms admin')) {
+    user_role_grant_permissions('administrator', ['access aabenforms admin']);
+    $changes[] = 'granted access aabenforms admin to administrator';
+  }
+
+  return $changes ? implode('; ', $changes) : 'no changes - dashboard already wired';
+}
+
+/**
  * Implements hook_uninstall().
  */
 function aabenforms_core_uninstall(): void {
