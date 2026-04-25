@@ -25,25 +25,25 @@ class RecipientTest extends UnitTestCase {
    * Bare 10-digit CPR is accepted.
    */
   public function testCprAcceptsBareDigits(): void {
-    $r = Recipient::cpr('0101900001');
+    $r = Recipient::cpr('0000000001');
     $this->assertSame(Recipient::TYPE_CPR, $r->type);
-    $this->assertSame('0101900001', $r->identifier);
+    $this->assertSame('0000000001', $r->identifier);
   }
 
   /**
    * Dashed CPR (DDMMYY-XXXX) is normalised to bare digits.
    */
   public function testCprAcceptsDashed(): void {
-    $r = Recipient::cpr('010190-0001');
-    $this->assertSame('0101900001', $r->identifier);
+    $r = Recipient::cpr('000000-0001');
+    $this->assertSame('0000000001', $r->identifier);
   }
 
   /**
    * CPR with whitespace is normalised.
    */
   public function testCprAcceptsWhitespace(): void {
-    $r = Recipient::cpr(' 010190 0001 ');
-    $this->assertSame('0101900001', $r->identifier);
+    $r = Recipient::cpr(' 000000 0001 ');
+    $this->assertSame('0000000001', $r->identifier);
   }
 
   /**
@@ -99,8 +99,8 @@ class RecipientTest extends UnitTestCase {
    * IdentifierHash() returns a deterministic SHA-256.
    */
   public function testIdentifierHashIsStable(): void {
-    $a = Recipient::cpr('0101900001');
-    $b = Recipient::cpr('010190-0001');
+    $a = Recipient::cpr('0000000001');
+    $b = Recipient::cpr('000000-0001');
     $this->assertSame($a->identifierHash(), $b->identifierHash());
     $this->assertSame(64, strlen($a->identifierHash()));
   }
@@ -112,7 +112,7 @@ class RecipientTest extends UnitTestCase {
    * encoding while avoiding probabilistic substring assertions.
    */
   public function testIdentifierHashDoesNotLeakRaw(): void {
-    $cpr = '2506924015';
+    $cpr = '0000000002';
     $hash = Recipient::cpr($cpr)->identifierHash();
     $this->assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $hash);
     $this->assertSame(hash('sha256', Recipient::TYPE_CPR . ':' . $cpr), $hash);
@@ -125,7 +125,7 @@ class RecipientTest extends UnitTestCase {
    * with a CVR "12345678".
    */
   public function testCprAndCvrHashDifferently(): void {
-    $cpr = Recipient::cpr('1234567812');
+    $cpr = Recipient::cpr('0000000012');
     $cvr = Recipient::cvr('12345678');
     $this->assertNotSame($cpr->identifierHash(), $cvr->identifierHash());
   }

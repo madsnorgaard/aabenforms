@@ -28,7 +28,7 @@ class DigitalPostTest extends UnitTestCase {
     string $type = DigitalPost::TYPE_DIGITAL_POST,
   ): DigitalPost {
     return new DigitalPost(
-      recipient: Recipient::cpr('0101900001'),
+      recipient: Recipient::cpr('0000000001'),
       sender: new Sender('12345678'),
       subject: $subject,
       body: $body,
