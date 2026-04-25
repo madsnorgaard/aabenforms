@@ -1,0 +1,42 @@
+{#
+/**
+ * @file
+ * Recent activity feed for the AabenForms dashboard.
+ *
+ * Variables:
+ * - filter: 'all' | 'digital_post' | 'audit' | 'errors'
+ * - filters: [{ key, label, url, active }]
+ * - rows: [{ kind, created, status, tone, message, context }]
+ * - pivoted: bool — true when the errors-default empty-pivoted to "all"
+ * - empty_message: when rows is empty
+ */
+#}
+<section class="af-activity" role="region" aria-label="{{ 'Recent activity'|t }}" id="activity">
+  <header class="af-activity__header">
+    <h2 class="af-activity__title">{{ 'Recent activity'|t }}</h2>
+    <nav class="af-activity__filters" aria-label="{{ 'Filter activity'|t }}">
+      {% for chip in filters %}
+        <a href="{{ chip.url }}" class="af-chip-link{% if chip.active %} af-chip-link--active{% endif %}">{{ chip.label }}</a>
+      {% endfor %}
+    </nav>
+  </header>
+
+  {% if pivoted %}
+    <p class="af-activity__pivot-note">{{ 'No errors in the last 24h - showing recent events instead.'|t }}</p>
+  {% endif %}
+
+  {% if rows %}
+    <ul class="af-activity__list">
+      {% for row in rows %}
+        <li class="af-activity__row">
+          <span class="af-pill af-pill--{{ row.tone }}">{{ row.kind|replace({'_': ' '}) }}</span>
+          <span class="af-activity__message">{{ row.message }}</span>
+          <span class="af-activity__context">{{ row.context }}</span>
+          <time class="af-activity__time" datetime="{{ row.created|date('c') }}">{{ row.created|format_date('short') }}</time>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="af-activity__empty">{{ empty_message }}</p>
+  {% endif %}
+</section>

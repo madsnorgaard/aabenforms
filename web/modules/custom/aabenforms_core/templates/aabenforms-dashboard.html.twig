@@ -1,0 +1,51 @@
+{#
+/**
+ * @file
+ * AabenForms admin dashboard shell.
+ *
+ * Variables:
+ * - header: { title, environment: { label, tone }, tagline }
+ * - quick_actions: [{ label, url, primary }]
+ * - sections: render array of aabenforms_dashboard_section_card themed items
+ * - activity: render array for the recent activity feed
+ */
+#}
+<div class="af-dashboard">
+
+  <header class="af-dashboard__header">
+    <div class="af-dashboard__brand">
+      <h1 class="af-dashboard__title">{{ header.title }}</h1>
+      {% if header.environment.label %}
+        <span class="af-chip af-chip--{{ header.environment.tone }}">{{ header.environment.label }}</span>
+      {% endif %}
+    </div>
+    {% if header.tagline %}
+      <p class="af-dashboard__tagline">{{ header.tagline }}</p>
+    {% endif %}
+  </header>
+
+  {% if quick_actions %}
+    <nav class="af-dashboard__actions" aria-label="{{ 'Quick actions'|t }}">
+      {% for action in quick_actions %}
+        <a href="{{ action.url }}" class="af-button{% if action.primary %} af-button--primary{% endif %}">
+          {{ action.label }}
+        </a>
+      {% endfor %}
+    </nav>
+  {% endif %}
+
+  {% if sections %}
+    <section class="af-dashboard__grid" aria-label="{{ 'Modules'|t }}">
+      {% for section in sections %}
+        {{ section }}
+      {% endfor %}
+    </section>
+  {% else %}
+    <p class="af-dashboard__empty">{{ 'No dashboard sections registered yet.'|t }}</p>
+  {% endif %}
+
+  {% if activity %}
+    {{ activity }}
+  {% endif %}
+
+</div>

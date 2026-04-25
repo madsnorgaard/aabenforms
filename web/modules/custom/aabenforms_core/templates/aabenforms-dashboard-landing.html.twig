@@ -1,0 +1,20 @@
+{#
+/**
+ * @file
+ * Anonymous brand landing for /aabenforms (and the front page after install).
+ *
+ * Variables: title, tagline, frontend_url, login_url, docs_url
+ */
+#}
+<main class="af-landing">
+  <div class="af-landing__inner">
+    <h1 class="af-landing__title">{{ title }}</h1>
+    <p class="af-landing__tagline">{{ tagline }}</p>
+    <ul class="af-landing__links">
+      <li><a class="af-landing__link af-landing__link--primary" href="{{ frontend_url }}">{{ 'Citizen frontend'|t }} <span aria-hidden="true">→</span></a></li>
+      <li><a class="af-landing__link" href="{{ login_url }}">{{ 'Sign in'|t }}</a></li>
+      <li><a class="af-landing__link" href="{{ docs_url }}">{{ 'GitHub'|t }}</a></li>
+    </ul>
+    <p class="af-landing__meta">{{ 'POC backend · MIT licensed'|t }}</p>
+  </div>
+</main>

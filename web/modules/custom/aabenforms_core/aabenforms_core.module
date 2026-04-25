@@ -8,10 +8,12 @@
  * - ServiceplatformenClient: SOAP client for SF1500 services
  * - EncryptionService: Field-level AES-256 encryption for sensitive data
  * - AuditLogger: GDPR-compliant audit logging for CPR/CVR lookups
- * - TenantResolver: Multi-tenant domain detection.
+ * - TenantResolver: Multi-tenant domain detection
+ * - AabenformsDashboardSection plugin manager (admin dashboard).
  */
 
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
 
 /**
  * Implements hook_help().
@@ -31,13 +33,87 @@ function aabenforms_core_help($route_name, RouteMatchInterface $route_match) {
       $output .= '<dd>' . t('Comprehensive logging of all sensitive data access for compliance and security auditing.') . '</dd>';
       $output .= '<dt>' . t('Multi-Tenancy') . '</dt>';
       $output .= '<dd>' . t('Integration with Domain module for tenant-specific configuration and data isolation.') . '</dd>';
+      $output .= '<dt>' . t('Admin Dashboard') . '</dt>';
+      $output .= '<dd>' . t('Unified entry point at <a href=":url">/admin/aabenforms</a> showing each module\'s state, recent activity, and quick actions.', [
+        ':url' => Url::fromRoute('aabenforms_core.dashboard')->toString(),
+      ]) . '</dd>';
       $output .= '</dl>';
-      $output .= '<h3>' . t('Configuration') . '</h3>';
-      $output .= '<p>' . t('Configure Serviceplatformen connection settings at <a href=":url">Administration » Configuration » ÅbenForms » Core Settings</a>.', [
-        ':url' => \Drupal::url('aabenforms_core.admin.settings'),
-      ]) . '</p>';
       return $output;
   }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function aabenforms_core_theme(): array {
+  return [
+    'aabenforms_dashboard' => [
+      'variables' => [
+        'header' => [],
+        'quick_actions' => [],
+        'sections' => [],
+        'activity' => NULL,
+      ],
+    ],
+    'aabenforms_dashboard_section_card' => [
+      'variables' => [
+        'section_id' => '',
+        'label' => '',
+        'status_badge' => NULL,
+        'hero_metric' => NULL,
+        'secondary_metrics' => [],
+        'main_link' => [],
+      ],
+    ],
+    'aabenforms_dashboard_landing' => [
+      'variables' => [
+        'title' => '',
+        'tagline' => '',
+        'frontend_url' => '',
+        'login_url' => '',
+        'docs_url' => '',
+      ],
+    ],
+    'aabenforms_dashboard_activity' => [
+      'variables' => [
+        'filter' => 'errors',
+        'filters' => [],
+        'rows' => [],
+        'pivoted' => FALSE,
+        'empty_message' => '',
+      ],
+    ],
+  ];
+}
+
+/**
+ * Implements hook_user_login().
+ *
+ * After login, send users with the dashboard permission to
+ * /admin/aabenforms instead of /user/{uid}. Three guard rails:
+ *
+ * 1. Don't override an explicit ?destination= the user (or the password-
+ *    reset flow) already supplied.
+ * 2. Skip on the password-reset route (user.reset / user.reset.login),
+ *    which has its own destination handling.
+ * 3. Only redirect users that have the access aabenforms admin permission.
+ *
+ * The actual redirect happens inside Drupal core's RedirectResponseSubscriber
+ * which respects $request->query['destination'].
+ */
+function aabenforms_core_user_login($account): void {
+  if (!$account->hasPermission('access aabenforms admin')) {
+    return;
+  }
+  $request = \Drupal::request();
+  if ($request->query->has('destination')) {
+    return;
+  }
+  $route_name = \Drupal::routeMatch()->getRouteName();
+  if (in_array($route_name, ['user.reset', 'user.reset.login', 'user.reset.form'], TRUE)) {
+    return;
+  }
+  $request->query->set('destination', '/admin/aabenforms');
 }
 
 /**

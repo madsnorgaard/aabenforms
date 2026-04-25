@@ -32,3 +32,13 @@ services:
       - '@domain.negotiator'
       - '@config.factory'
       - '@logger.factory'
+
+  plugin.manager.aabenforms_dashboard_section:
+    class: Drupal\aabenforms_core\Dashboard\AabenformsDashboardSectionManager
+    parent: default_plugin_manager
+
+  aabenforms_core.dashboard_activity:
+    class: Drupal\aabenforms_core\Dashboard\RecentActivityBuilder
+    arguments:
+      - '@database'
+      - '@datetime.time'

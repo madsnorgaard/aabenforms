@@ -9,6 +9,7 @@ use Drupal\aabenforms_digital_post\DigitalPost\Result;
 use Drupal\aabenforms_digital_post\Service\Sf1601ClientInterface;
 use Drupal\aabenforms_digital_post\Service\TransactionIdGenerator;
 use Drupal\Component\Datetime\TimeInterface;
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Database\Connection;
 use Psr\Log\LoggerInterface;
 use Throwable;
@@ -78,6 +79,8 @@ final class FakeSendDatabaseLogger implements Sf1601ClientInterface {
         '@tx' => $transactionId,
         '@subject' => $post->subject,
       ]);
+      // Refresh the AabenForms admin dashboard's recent-activity panel.
+      Cache::invalidateTags(['aabenforms_dashboard:activity']);
       return Result::success(
         transactionId: $transactionId,
         message: 'fake_db: payload recorded in aabenforms_digital_post_log',

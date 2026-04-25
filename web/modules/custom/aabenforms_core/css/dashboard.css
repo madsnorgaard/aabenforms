@@ -1,0 +1,481 @@
+/**
+ * AabenForms admin dashboard + brand landing.
+ *
+ * Visual tokens (colors, spacing, radii, motion) come from
+ * aabenforms_core/admin via the --af-* CSS custom properties.
+ * Don't introduce hex colors here.
+ */
+
+/* ---------- Dashboard shell ---------- */
+
+.af-dashboard {
+  max-width: 1200px;
+  padding: var(--af-space-6) var(--af-space-5);
+  margin: 0 auto;
+  color: var(--af-color-text);
+}
+
+.af-dashboard__header {
+  margin-bottom: var(--af-space-6);
+}
+
+.af-dashboard__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--af-space-3);
+}
+
+.af-dashboard__title {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--af-color-text);
+}
+
+.af-dashboard__tagline {
+  margin: var(--af-space-2) 0 0;
+  font-size: 0.95rem;
+  color: var(--af-color-text-muted);
+}
+
+.af-dashboard__empty {
+  padding: var(--af-space-8) 0;
+  text-align: center;
+  color: var(--af-color-text-muted);
+}
+
+/* ---------- Quick actions ---------- */
+
+.af-dashboard__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--af-space-2);
+  margin-bottom: var(--af-space-6);
+}
+
+.af-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--af-space-2);
+  padding: var(--af-space-2) var(--af-space-4);
+  border: 1px solid var(--af-color-border-strong);
+  border-radius: var(--af-radius-md);
+  background: var(--af-color-surface);
+  color: var(--af-color-text);
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all var(--af-transition-fast);
+}
+
+.af-button:hover,
+.af-button:focus-visible {
+  border-color: var(--af-color-brand);
+  color: var(--af-color-brand-strong);
+}
+
+.af-button:focus-visible {
+  outline: 2px solid var(--af-color-brand);
+  outline-offset: 2px;
+}
+
+.af-button--primary {
+  background: var(--af-color-brand);
+  border-color: var(--af-color-brand);
+  color: var(--af-color-text-on-brand);
+}
+
+.af-button--primary:hover,
+.af-button--primary:focus-visible {
+  background: var(--af-color-brand-strong);
+  border-color: var(--af-color-brand-strong);
+  color: var(--af-color-text-on-brand);
+}
+
+/* ---------- Module grid ---------- */
+
+.af-dashboard__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--af-space-4);
+}
+
+.af-card {
+  display: flex;
+  flex-direction: column;
+  padding: var(--af-space-4);
+  background: var(--af-color-surface);
+  border: 1px solid var(--af-color-border);
+  border-radius: var(--af-radius-md);
+  box-shadow: var(--af-shadow-sm);
+  transition: border-color var(--af-transition-base), box-shadow var(--af-transition-base);
+}
+
+.af-card:hover {
+  border-color: var(--af-color-border-strong);
+  box-shadow: var(--af-shadow-md);
+}
+
+.af-card__header {
+  margin-bottom: var(--af-space-3);
+}
+
+.af-card__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--af-color-text);
+}
+
+.af-card__hero {
+  min-height: 3rem;
+  margin-bottom: var(--af-space-3);
+}
+
+.af-metric__value {
+  display: block;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--af-color-text);
+}
+
+.af-metric__label {
+  display: block;
+  margin-top: var(--af-space-1);
+  font-size: 0.8rem;
+  color: var(--af-color-text-muted);
+}
+
+.af-card__metrics {
+  margin: 0 0 var(--af-space-3);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--af-space-2);
+}
+
+.af-card__metric-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+}
+
+.af-card__metric-label {
+  margin: 0;
+  color: var(--af-color-text-muted);
+}
+
+.af-card__metric-value {
+  margin: 0;
+  font-weight: 500;
+  color: var(--af-color-text);
+}
+
+.af-card__footer {
+  margin-top: auto;
+  padding-top: var(--af-space-3);
+  border-top: 1px solid var(--af-color-border);
+}
+
+.af-card__cta {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--af-color-brand-strong);
+  text-decoration: none;
+}
+
+.af-card__cta:hover,
+.af-card__cta:focus-visible {
+  text-decoration: underline;
+}
+
+.af-card__cta:focus-visible {
+  outline: 2px solid var(--af-color-brand);
+  outline-offset: 2px;
+  border-radius: var(--af-radius-sm);
+}
+
+/* ---------- Pills (status badges + env chip) ---------- */
+
+.af-pill,
+.af-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: var(--af-radius-pill);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+  line-height: 1.6;
+}
+
+.af-pill--neutral,
+.af-chip--neutral {
+  background: var(--af-color-surface-muted);
+  color: var(--af-color-text-muted);
+  border-color: var(--af-color-border);
+}
+
+.af-pill--brand,
+.af-chip--brand {
+  background: var(--af-color-brand-tint);
+  color: var(--af-color-brand-strong);
+}
+
+.af-pill--success,
+.af-chip--success {
+  background: var(--af-color-success-tint);
+  color: var(--af-color-success);
+}
+
+.af-pill--warning,
+.af-chip--warning {
+  background: rgba(217, 119, 6, 0.14);
+  color: #92400e;
+}
+
+.af-pill--danger,
+.af-chip--danger {
+  background: var(--af-color-danger-tint);
+  color: var(--af-color-danger);
+}
+
+/* ---------- Recent activity feed ---------- */
+
+.af-activity {
+  margin-top: var(--af-space-6);
+  padding: var(--af-space-4);
+  background: var(--af-color-surface);
+  border: 1px solid var(--af-color-border);
+  border-radius: var(--af-radius-md);
+}
+
+.af-activity__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--af-space-3);
+  margin-bottom: var(--af-space-3);
+}
+
+.af-activity__title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--af-color-text);
+}
+
+.af-activity__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--af-space-1);
+}
+
+.af-chip-link {
+  padding: 2px 10px;
+  border-radius: var(--af-radius-pill);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--af-color-text-muted);
+  text-decoration: none;
+  border: 1px solid var(--af-color-border);
+  background: var(--af-color-surface);
+  transition: all var(--af-transition-fast);
+}
+
+.af-chip-link:hover,
+.af-chip-link:focus-visible {
+  border-color: var(--af-color-brand);
+  color: var(--af-color-brand-strong);
+}
+
+.af-chip-link:focus-visible {
+  outline: 2px solid var(--af-color-brand);
+  outline-offset: 2px;
+}
+
+.af-chip-link--active {
+  background: var(--af-color-brand-tint);
+  color: var(--af-color-brand-strong);
+  border-color: var(--af-color-brand-tint);
+}
+
+.af-activity__pivot-note {
+  margin: 0 0 var(--af-space-3);
+  padding: var(--af-space-2) var(--af-space-3);
+  font-size: 0.85rem;
+  color: var(--af-color-text-muted);
+  background: var(--af-color-surface-muted);
+  border-radius: var(--af-radius-sm);
+}
+
+.af-activity__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.af-activity__row {
+  display: grid;
+  grid-template-columns: auto 1fr 1fr auto;
+  align-items: center;
+  gap: var(--af-space-3);
+  padding: var(--af-space-2) var(--af-space-1);
+  border-top: 1px solid var(--af-color-border);
+  font-size: 0.85rem;
+}
+
+.af-activity__row:first-child {
+  border-top: 0;
+}
+
+.af-activity__message {
+  font-weight: 500;
+  color: var(--af-color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.af-activity__context {
+  color: var(--af-color-text-muted);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.af-activity__time {
+  color: var(--af-color-text-subtle);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.8rem;
+}
+
+.af-activity__empty {
+  margin: var(--af-space-4) 0 0;
+  text-align: center;
+  color: var(--af-color-text-muted);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 1024px) {
+  .af-activity__row {
+    grid-template-columns: auto 1fr auto;
+  }
+  .af-activity__context {
+    display: none;
+  }
+}
+
+/* ---------- Anonymous brand landing ---------- */
+
+.af-landing {
+  min-height: 70vh;
+  display: grid;
+  place-items: center;
+  padding: var(--af-space-6);
+  background: var(--af-color-bg);
+}
+
+.af-landing__inner {
+  width: 100%;
+  max-width: 480px;
+  padding: var(--af-space-8) var(--af-space-6);
+  background: var(--af-color-surface);
+  border: 1px solid var(--af-color-border);
+  border-radius: var(--af-radius-lg);
+  box-shadow: var(--af-shadow-md);
+  text-align: center;
+}
+
+.af-landing__title {
+  margin: 0 0 var(--af-space-2);
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--af-color-text);
+}
+
+.af-landing__tagline {
+  margin: 0 0 var(--af-space-6);
+  font-size: 1rem;
+  color: var(--af-color-text-muted);
+  line-height: 1.5;
+}
+
+.af-landing__links {
+  list-style: none;
+  margin: 0 0 var(--af-space-5);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--af-space-2);
+}
+
+.af-landing__link {
+  display: block;
+  padding: var(--af-space-3) var(--af-space-4);
+  border: 1px solid var(--af-color-border-strong);
+  border-radius: var(--af-radius-md);
+  background: var(--af-color-surface);
+  color: var(--af-color-text);
+  font-weight: 500;
+  text-decoration: none;
+  transition: all var(--af-transition-fast);
+}
+
+.af-landing__link:hover,
+.af-landing__link:focus-visible {
+  border-color: var(--af-color-brand);
+  color: var(--af-color-brand-strong);
+}
+
+.af-landing__link:focus-visible {
+  outline: 2px solid var(--af-color-brand);
+  outline-offset: 2px;
+}
+
+.af-landing__link--primary {
+  background: var(--af-color-brand);
+  border-color: var(--af-color-brand);
+  color: var(--af-color-text-on-brand);
+}
+
+.af-landing__link--primary:hover,
+.af-landing__link--primary:focus-visible {
+  background: var(--af-color-brand-strong);
+  border-color: var(--af-color-brand-strong);
+  color: var(--af-color-text-on-brand);
+}
+
+.af-landing__meta {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--af-color-text-subtle);
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 768px) {
+  .af-dashboard {
+    padding: var(--af-space-4) var(--af-space-3);
+  }
+  .af-dashboard__grid {
+    grid-template-columns: 1fr;
+  }
+  .af-dashboard__actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .af-button {
+    justify-content: center;
+  }
+}
