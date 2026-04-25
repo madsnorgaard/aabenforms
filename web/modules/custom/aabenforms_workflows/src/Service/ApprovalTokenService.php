@@ -19,6 +19,15 @@ class ApprovalTokenService {
   const TOKEN_EXPIRATION = 604800;
 
   /**
+   * Allowed clock skew when validating a token timestamp (1 hour).
+   *
+   * A future timestamp is rejected as out-of-range, but we allow a small
+   * grace window so a slightly fast client clock or a token minted on a
+   * peer node with a tiny NTP drift still validates.
+   */
+  const MAX_CLOCK_SKEW = 3600;
+
+  /**
    * The private key service.
    *
    * @var \Drupal\Core\PrivateKey
@@ -86,18 +95,54 @@ class ApprovalTokenService {
    */
   public function validateToken(int $submission_id, int $parent_number, string $token): bool {
     try {
+      // Strict decode: rejects whitespace and non-base64 characters that
+      // would otherwise round-trip silently.
+      //
+      // Format-failure logs below are notice-level: they fire on any
+      // garbage URL hit (typo, mangled email link, scanner). The
+      // ParentApprovalController already logs a single warning per
+      // failed validation with the request context attached, so
+      // doubling up at warning would just spam the channel.
       $decoded = base64_decode($token, TRUE);
-      if (!$decoded) {
-        $this->logger->warning('Invalid token format for submission @sid', [
+      if ($decoded === FALSE || $decoded === '') {
+        $this->logger->notice('Invalid token format for submission @sid', [
           '@sid' => $submission_id,
         ]);
         return FALSE;
       }
 
-      [$hash, $timestamp] = explode(':', $decoded, 2);
+      // Guard the destructure: a token without ':' would raise undefined
+      // array key/offset warnings on unconditional list-assignment, and a
+      // missing or empty timestamp could end up coercing to (int) 0
+      // ("valid in 1970") if not rejected first.
+      $parts = explode(':', $decoded, 2);
+      if (count($parts) !== 2) {
+        $this->logger->notice('Malformed token (no separator) for submission @sid', [
+          '@sid' => $submission_id,
+        ]);
+        return FALSE;
+      }
+      [$hash, $timestamp_raw] = $parts;
+
+      // Range-check the timestamp: must be numeric, positive, and not
+      // implausibly far in the future. MAX_CLOCK_SKEW of slack.
+      if (!is_numeric($timestamp_raw)) {
+        $this->logger->notice('Non-numeric timestamp in token for submission @sid', [
+          '@sid' => $submission_id,
+        ]);
+        return FALSE;
+      }
+      $timestamp = (int) $timestamp_raw;
+      $now = time();
+      if ($timestamp <= 0 || $timestamp > $now + self::MAX_CLOCK_SKEW) {
+        $this->logger->notice('Out-of-range timestamp in token for submission @sid', [
+          '@sid' => $submission_id,
+        ]);
+        return FALSE;
+      }
 
       // Check expiration.
-      if (time() - $timestamp > self::TOKEN_EXPIRATION) {
+      if ($now - $timestamp > self::TOKEN_EXPIRATION) {
         $this->logger->info('Expired token for submission @sid, parent @parent', [
           '@sid' => $submission_id,
           '@parent' => $parent_number,
@@ -124,7 +169,7 @@ class ApprovalTokenService {
 
       return TRUE;
     }
-    catch (\Exception $e) {
+    catch (\Throwable $e) {
       $this->logger->error('Token validation error: @message', [
         '@message' => $e->getMessage(),
       ]);
@@ -158,13 +203,21 @@ class ApprovalTokenService {
   public function getTokenTimestamp(string $token): ?int {
     try {
       $decoded = base64_decode($token, TRUE);
-      if (!$decoded) {
+      if ($decoded === FALSE || $decoded === '') {
         return NULL;
       }
-      [$hash, $timestamp] = explode(':', $decoded, 2);
-      return (int) $timestamp;
+      $parts = explode(':', $decoded, 2);
+      if (count($parts) !== 2) {
+        return NULL;
+      }
+      [, $timestamp_raw] = $parts;
+      if (!is_numeric($timestamp_raw)) {
+        return NULL;
+      }
+      $timestamp = (int) $timestamp_raw;
+      return $timestamp > 0 ? $timestamp : NULL;
     }
-    catch (\Exception $e) {
+    catch (\Throwable $e) {
       return NULL;
     }
   }
