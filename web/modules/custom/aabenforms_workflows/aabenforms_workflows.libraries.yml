@@ -17,6 +17,7 @@ workflow_wizard:
   dependencies:
     - core/drupal
     - core/jquery
+    - aabenforms_core/admin
 
 bpmn_editor:
   version: 1.0
@@ -42,3 +43,4 @@ bpmn_preview:
     - core/drupal
     - core/jquery
     - bpmn_io/ui
+    - aabenforms_core/admin

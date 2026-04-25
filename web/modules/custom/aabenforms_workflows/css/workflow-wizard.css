@@ -1,196 +1,140 @@
 /**
- * Styles for the workflow template wizard.
+ * Workflow template wizard styles.
+ *
+ * Visual tokens (colors, spacing, radii, motion) come from
+ * aabenforms_core/admin via CSS custom properties. Keep wizard-specific
+ * structure here; share visual language at the token level.
  */
 
-/* Wizard progress indicator */
+/* ---------- Wizard step indicator ---------- */
+
 .wizard-progress {
+  position: relative;
   display: flex;
+  align-items: flex-start;
   justify-content: space-between;
-  margin: 2rem 0;
+  gap: 0;
+  margin: var(--af-space-6) 0 var(--af-space-8);
   padding: 0;
   list-style: none;
-  counter-reset: step;
+  counter-reset: af-step;
+}
+
+/* Connecting line behind the circles */
+.wizard-progress::before {
+  content: '';
+  position: absolute;
+  top: calc(var(--af-step-circle-size) / 2);
+  left: calc(100% / (2 * 6));
+  right: calc(100% / (2 * 6));
+  height: 2px;
+  background: var(--af-color-border-strong);
+  z-index: 0;
 }
 
 .wizard-step {
   position: relative;
-  flex: 1;
-  text-align: center;
-  padding: 1rem;
+  z-index: 1;
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--af-space-2);
+  padding: 0 var(--af-space-2);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--af-color-text-muted);
+  background: transparent;
+  counter-increment: af-step;
+  transition: color var(--af-transition-base);
+}
+
+/* Numbered circle */
+.wizard-step::before {
+  content: counter(af-step);
+  display: grid;
+  place-items: center;
+  width: var(--af-step-circle-size);
+  height: var(--af-step-circle-size);
+  border-radius: var(--af-radius-pill);
+  background: var(--af-color-surface);
+  border: 2px solid var(--af-color-border-strong);
+  color: var(--af-color-text-muted);
   font-weight: 600;
-  color: #666;
+  font-size: 0.875rem;
+  line-height: 1;
+  transition: all var(--af-transition-base);
+}
+
+.wizard-step.pending {
+  color: var(--af-color-text-subtle);
 }
 
 .wizard-step.current {
-  color: #0071b9;
-  background-color: #e3f2fd;
-  border-radius: 4px;
+  color: var(--af-color-brand-strong);
+  font-weight: 600;
+}
+.wizard-step.current::before {
+  background: var(--af-color-brand);
+  border-color: var(--af-color-brand);
+  color: var(--af-color-text-on-brand);
+  box-shadow: var(--af-shadow-focus);
 }
 
 .wizard-step.completed {
-  color: #388e3c;
+  color: var(--af-color-success);
 }
-
 .wizard-step.completed::before {
-  content: "✓ ";
-  font-weight: bold;
+  content: '✓';
+  background: var(--af-color-success);
+  border-color: var(--af-color-success);
+  color: var(--af-color-text-on-brand);
+  font-size: 1rem;
 }
 
-/* Template browser */
-.template-browser-header {
-  margin-bottom: 2rem;
+.wizard-step:focus-visible {
+  outline: 2px solid var(--af-color-brand);
+  outline-offset: 4px;
+  border-radius: var(--af-radius-sm);
 }
 
-.template-browser-header h1 {
-  margin-bottom: 0.5rem;
-}
+/* ---------- Wizard form chrome ---------- */
 
-.template-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
-  list-style: none;
-  padding: 0;
-}
-
-.template-card {
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 1.5rem;
-  background: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: box-shadow 0.3s ease;
-}
-
-.template-card:hover {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
-
-.template-card__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1rem;
-}
-
-.template-card__header h3 {
-  margin: 0;
-  font-size: 1.25rem;
-  color: #333;
-}
-
-.template-card__description {
-  color: #666;
-  line-height: 1.5;
-  margin-bottom: 1rem;
-  min-height: 3rem;
-}
-
-.template-card__actions {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #eee;
-}
-
-/* Badge styles */
-.badge {
-  display: inline-block;
-  padding: 0.25rem 0.5rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  border-radius: 4px;
-  background-color: #e0e0e0;
-  color: #333;
-}
-
-.badge--municipal {
-  background-color: #e3f2fd;
-  color: #0071b9;
-}
-
-.badge--citizen_service {
-  background-color: #f3e5f5;
-  color: #7b1fa2;
-}
-
-.badge--business {
-  background-color: #fff3e0;
-  color: #f57c00;
-}
-
-/* Status indicators */
-.status-active {
-  color: #388e3c;
-  font-weight: 600;
-}
-
-.status-active::before {
-  content: "● ";
-}
-
-.status-inactive {
-  color: #d32f2f;
-  font-weight: 600;
-}
-
-.status-inactive::before {
-  content: "● ";
-}
-
-/* Instances table */
-.instances-table {
-  width: 100%;
-  margin-top: 1rem;
-}
-
-.instances-table td {
-  padding: 0.75rem;
-  vertical-align: middle;
-}
-
-/* Form layout */
 .workflow-wizard-form .form-item {
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--af-space-5);
 }
 
 .workflow-wizard-form .form-actions {
-  margin-top: 2rem;
-  padding-top: 1rem;
-  border-top: 2px solid #e0e0e0;
+  margin-top: var(--af-space-6);
+  padding-top: var(--af-space-4);
+  border-top: 1px solid var(--af-color-border);
   display: flex;
-  gap: 0.5rem;
+  gap: var(--af-space-2);
 }
 
-/* Help text */
 .workflow-wizard-form .description {
-  font-size: 0.9rem;
-  color: #666;
-  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: var(--af-color-text-muted);
+  margin-top: var(--af-space-1);
 }
 
-/* Accessibility improvements */
-.wizard-step:focus {
-  outline: 2px solid #0071b9;
-  outline-offset: 2px;
-}
+/* ---------- Responsive ---------- */
 
-.template-card:focus-within {
-  outline: 2px solid #0071b9;
-  outline-offset: 2px;
-}
-
-/* Responsive design */
 @media (max-width: 768px) {
   .wizard-progress {
     flex-direction: column;
+    gap: var(--af-space-3);
   }
-
+  .wizard-progress::before {
+    display: none;
+  }
   .wizard-step {
-    margin-bottom: 0.5rem;
+    flex-direction: row;
+    justify-content: flex-start;
+    text-align: left;
+    padding: 0;
   }
-
-  .template-grid {
-    grid-template-columns: 1fr;
+  .wizard-step::before {
+    flex-shrink: 0;
   }
 }

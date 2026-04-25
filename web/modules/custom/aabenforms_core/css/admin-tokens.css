@@ -1,0 +1,70 @@
+/**
+ * AabenForms admin design tokens.
+ *
+ * Single source of truth for color, spacing, radius, shadow, and motion
+ * used across our admin UIs. Feature modules should depend on the
+ * `aabenforms_core/admin` library and reference these custom properties
+ * rather than hard-coding hex values, so a future Claro / Gin / brand
+ * refresh is one file away.
+ */
+
+:root {
+  /* Brand */
+  --af-color-brand: #0071b9;
+  --af-color-brand-strong: #00558a;
+  --af-color-brand-tint: rgba(0, 113, 185, 0.14);
+
+  /* Semantic */
+  --af-color-success: #16a34a;
+  --af-color-success-tint: rgba(22, 163, 74, 0.12);
+  --af-color-warning: #d97706;
+  --af-color-danger: #dc2626;
+  --af-color-danger-tint: rgba(220, 38, 38, 0.10);
+
+  /* Surfaces */
+  --af-color-bg: #f9fafb;
+  --af-color-surface: #ffffff;
+  --af-color-surface-muted: #f3f4f6;
+  --af-color-border: #e5e7eb;
+  --af-color-border-strong: #d1d5db;
+
+  /* Text */
+  --af-color-text: #111827;
+  --af-color-text-muted: #6b7280;
+  --af-color-text-subtle: #9ca3af;
+  --af-color-text-on-brand: #ffffff;
+
+  /* Spacing scale (4px base) */
+  --af-space-1: 0.25rem;
+  --af-space-2: 0.5rem;
+  --af-space-3: 0.75rem;
+  --af-space-4: 1rem;
+  --af-space-5: 1.5rem;
+  --af-space-6: 2rem;
+  --af-space-8: 3rem;
+
+  /* Radius */
+  --af-radius-sm: 4px;
+  --af-radius-md: 8px;
+  --af-radius-lg: 12px;
+  --af-radius-pill: 999px;
+
+  /* Shadow */
+  --af-shadow-sm: 0 1px 2px rgba(17, 24, 39, 0.06);
+  --af-shadow-md: 0 4px 12px rgba(17, 24, 39, 0.08);
+  --af-shadow-focus: 0 0 0 4px var(--af-color-brand-tint);
+
+  /* Motion */
+  --af-transition-fast: 120ms ease;
+  --af-transition-base: 200ms ease;
+
+  /* Component sizing */
+  --af-step-circle-size: 2rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --af-transition-fast: 0ms;
+    --af-transition-base: 0ms;
+  }
+}

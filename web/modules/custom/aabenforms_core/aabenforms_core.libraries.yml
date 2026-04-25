@@ -1,0 +1,13 @@
+# Shared admin styles for the AabenForms platform.
+#
+# Feature modules whose CSS targets admin UI should depend on
+# `aabenforms_core/admin` so they automatically inherit the design tokens
+# (colors, spacing, radii, motion) defined in css/admin-tokens.css.
+#
+# Each feature module keeps its own component CSS local to that module;
+# only the tokens are centralized.
+admin:
+  version: 1.0.0
+  css:
+    base:
+      css/admin-tokens.css: { weight: -100 }
