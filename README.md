@@ -8,8 +8,8 @@
 
 [![CI](https://github.com/madsnorgaard/aabenforms/actions/workflows/ci.yml/badge.svg)](https://github.com/madsnorgaard/aabenforms/actions/workflows/ci.yml)
 [![Coding Standards](https://github.com/madsnorgaard/aabenforms/actions/workflows/coding-standards.yml/badge.svg)](https://github.com/madsnorgaard/aabenforms/actions/workflows/coding-standards.yml)
-[![Coverage](https://img.shields.io/badge/coverage-45%25-yellow)](https://github.com/madsnorgaard/aabenforms/actions/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/tests-156%20passing-brightgreen)](https://github.com/madsnorgaard/aabenforms/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/madsnorgaard/aabenforms/main/.github/badges/coverage.json)](https://github.com/madsnorgaard/aabenforms/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/madsnorgaard/aabenforms/main/.github/badges/tests.json)](https://github.com/madsnorgaard/aabenforms/actions/workflows/ci.yml)
 
 ## Overview
 
