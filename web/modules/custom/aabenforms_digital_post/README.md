@@ -131,4 +131,4 @@ aabenforms_digital_post/
 
 ## License
 
-MIT. The core module has no AabenForms-specific assumptions in runtime code; a project wanting to rebrand can fork and rename. Report issues at https://github.com/madsnorgaard/aabenforms/issues.
+GPL-2.0 (aligned with Drupal and OS2 ecosystem). The core module has no AabenForms-specific assumptions in runtime code; a project wanting to rebrand can fork and rename. Report issues at https://github.com/madsnorgaard/aabenforms/issues.
