@@ -1,0 +1,4 @@
+employee_provisioning:
+  employee_claim_field: ''
+  employee_claim_match: equals
+  employee_claim_value: ''
