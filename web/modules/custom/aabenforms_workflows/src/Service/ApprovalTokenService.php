@@ -86,18 +86,47 @@ class ApprovalTokenService {
    */
   public function validateToken(int $submission_id, int $parent_number, string $token): bool {
     try {
+      // Strict decode: rejects whitespace and non-base64 characters that
+      // would otherwise round-trip silently.
       $decoded = base64_decode($token, TRUE);
-      if (!$decoded) {
+      if ($decoded === FALSE || $decoded === '') {
         $this->logger->warning('Invalid token format for submission @sid', [
           '@sid' => $submission_id,
         ]);
         return FALSE;
       }
 
-      [$hash, $timestamp] = explode(':', $decoded, 2);
+      // Guard the destructure: a token without ':' would PHP-fatal on
+      // unconditional list-assignment, and an empty $timestamp would
+      // coerce to (int) 0 which is "valid in 1970".
+      $parts = explode(':', $decoded, 2);
+      if (count($parts) !== 2) {
+        $this->logger->warning('Malformed token (no separator) for submission @sid', [
+          '@sid' => $submission_id,
+        ]);
+        return FALSE;
+      }
+      [$hash, $timestamp_raw] = $parts;
+
+      // Range-check the timestamp: must be numeric, positive, and not
+      // implausibly far in the future. One hour of clock-drift slack.
+      if (!is_numeric($timestamp_raw)) {
+        $this->logger->warning('Non-numeric timestamp in token for submission @sid', [
+          '@sid' => $submission_id,
+        ]);
+        return FALSE;
+      }
+      $timestamp = (int) $timestamp_raw;
+      $now = time();
+      if ($timestamp <= 0 || $timestamp > $now + 3600) {
+        $this->logger->warning('Out-of-range timestamp in token for submission @sid', [
+          '@sid' => $submission_id,
+        ]);
+        return FALSE;
+      }
 
       // Check expiration.
-      if (time() - $timestamp > self::TOKEN_EXPIRATION) {
+      if ($now - $timestamp > self::TOKEN_EXPIRATION) {
         $this->logger->info('Expired token for submission @sid, parent @parent', [
           '@sid' => $submission_id,
           '@parent' => $parent_number,
@@ -124,7 +153,7 @@ class ApprovalTokenService {
 
       return TRUE;
     }
-    catch (\Exception $e) {
+    catch (\Throwable $e) {
       $this->logger->error('Token validation error: @message', [
         '@message' => $e->getMessage(),
       ]);
@@ -158,13 +187,21 @@ class ApprovalTokenService {
   public function getTokenTimestamp(string $token): ?int {
     try {
       $decoded = base64_decode($token, TRUE);
-      if (!$decoded) {
+      if ($decoded === FALSE || $decoded === '') {
         return NULL;
       }
-      [$hash, $timestamp] = explode(':', $decoded, 2);
-      return (int) $timestamp;
+      $parts = explode(':', $decoded, 2);
+      if (count($parts) !== 2) {
+        return NULL;
+      }
+      [, $timestamp_raw] = $parts;
+      if (!is_numeric($timestamp_raw)) {
+        return NULL;
+      }
+      $timestamp = (int) $timestamp_raw;
+      return $timestamp > 0 ? $timestamp : NULL;
     }
-    catch (\Exception $e) {
+    catch (\Throwable $e) {
       return NULL;
     }
   }
