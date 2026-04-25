@@ -2,10 +2,11 @@
 
 Send SF1601 Digital Post from any modern Drupal 11 site, without the OS2-ecosystem dependency maze that makes `os2forms_digital_post` painful to adopt.
 
-- Hard Drupal dependencies: `webform`, `key`. That's it.
+- Hard Drupal dependencies: `drupal:key`, `aabenforms_core`. No webform, no OS2 ecosystem, no os2web_*. The webform handler is its own optional submodule.
 - One composer library dependency: `itk-dev/serviceplatformen` (bundled MeMo and Fjernprint types included).
 - Four test modes: `fake_db` (default, zero-config), `wiremock`, `live_test`, `live`.
 - Public API is a single value object and a single service call; no webform coupling in the core module.
+- ECA / BPMN integration ships in the `aabenforms_digital_post_eca` submodule (plugin id `aabenforms_digital_post_send`).
 - Delivery-status receipts, OS2Web certificate storage, and advanced queueing all live in optional bridge submodules (session 3).
 
 ## Install
@@ -93,8 +94,14 @@ drush af:dp:log:tail
 - Delivery status (Beskedfordeler callback). Separate submodule `aabenforms_digital_post_beskedfordeler`, session 3.
 - Fjernprint physical mail fallback. If a recipient is not reachable digitally, we return `RECIPIENT_NOT_REACHABLE` and let the caller decide. A dedicated physical-mail module can ship separately.
 - `os2web_key`, `os2web_audit`, `os2web_datalookup`, `advancedqueue` bridges. All optional, session 3.
-- Webform handler. Lives in `aabenforms_digital_post_webform` submodule, session 2.
-- ECA action plugin. Lives in `aabenforms_digital_post_eca` submodule, session 2.
+- Webform handler. Lives in `aabenforms_digital_post_webform` submodule, session 3.
+
+## Submodules
+
+- **`aabenforms_digital_post_eca`** (Session 2A, SHIPPED). ECA action plugin `aabenforms_digital_post_send` for use in BPMN templates and ECA flows. See `modules/aabenforms_digital_post_eca/README.md`.
+- **`aabenforms_digital_post_webform`** (Session 3, planned). Webform handler that maps a `WebformSubmission` to a `DigitalPost` DTO without coupling the core module to webform.
+- **`aabenforms_digital_post_beskedfordeler`** (Session 3, planned). Delivery-status receipts via Beskedfordeler. Only enable on sites that need delivery receipts; the core send path does not require it.
+- **`aabenforms_digital_post_os2web_key`** (Session 3, planned). Certificate-locator bridge for sites already using `os2web_key`.
 
 ## Files
 

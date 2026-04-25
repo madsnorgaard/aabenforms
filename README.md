@@ -24,13 +24,14 @@ frontend's MitID button is hidden in prod.
 This repository contains the **Drupal 11 backend** that provides:
 - ECA workflow engine (event-driven automation)
 - Visual BPMN 2.0 workflow builder with Danish municipal task palette
-- 7 production-ready workflow templates (parking permit, marriage booking, building permit, etc.)
-- 13 workflow action plugins (payment, SMS, PDF, calendar, GIS, government integrations)
-- 5 mock integration services (ready for production API connections)
+- 13 production-ready BPMN templates (parking permit, marriage booking, building permit, citizen service application, FOI, HR onboarding, mileage expense, MED election, address change, phone declaration, association booking, contact form, company verification)
+- ~15 ECA action plugins (Digital Post, payment, SMS, PDF, calendar, GIS, MitID, CPR/CVR lookup, audit log, log, parent approval emails, etc.)
+- Modular Danish government integrations: `aabenforms_digital_post` SF1601 (shipped in `fake_db` mode, real SOAP transport coming in Session 2B), MitID OIDC, planned NemLogin OIDC core
+- WireMock + Keycloak mock services bundled in DDEV for zero-config local development
 - Dynamic webforms with JSON:API exposure
 - Multi-tenant architecture via Domain module
 - GDPR-compliant CPR encryption and audit logging
-- Danish government service integrations (MitID, SF1520 CPR, SF1530 CVR, SF1601 Digital Post, DAWA)
+- Shared admin design tokens (`aabenforms_core/admin` library) so feature modules style consistently from one source of CSS variables
 
 ## Architecture
 
@@ -156,34 +157,47 @@ curl -s http://localhost:8080/realms/danish-gov-test/.well-known/openid-configur
 | Module | Status | Description |
 |--------|--------|-------------|
 | `aabenforms_workflows` |  Complete | **Full workflow automation platform:** |
-| | | • 5 BPMN 2.0 templates (building permit, contact, company verification, address change, FOI) |
-| | | • Visual workflow wizard (8-step template instantiation) |
+| | | • 13 BPMN 2.0 templates (see "BPMN Workflow Templates" below) |
+| | | • Visual workflow wizard (6-step template instantiation, modernized step bar) |
 | | | • Approval system with secure token-based access |
 | | | • 3 separate workflows for parallel parent approvals |
 | | | • Email notifications (SendApprovalEmailAction) |
-| | | • 14 custom ECA action plugins (MitID validate, CPR/CVR lookup, audit log, payment, SMS, PDF, calendar, GIS, zoning, reminders) |
+| | | • Custom ECA action plugins (MitID validate, CPR/CVR lookup, audit log, payment, SMS, PDF, calendar, GIS, zoning, reminders, `aabenforms_log` shim) |
+| | | • `hook_storage_transform_import` preserves wizard-created configs across `drush cim` |
 | | | • Municipal admin documentation under `docs/` |
 
-### Phase 4: Danish Service Integrations (Current)
+### Phase 4: Modular Danish Service Integrations (Current)
 | Module | Status | Description |
 |--------|--------|-------------|
-| `aabenforms_cpr` | 🔄 Partial | SF1520 person lookup (action plugin , production service planned) |
-| `aabenforms_cvr` | 🔄 Partial | SF1530 company lookup (action plugin , production service planned) |
-| `aabenforms_dawa` | 🔄 Partial | DAWA address autocomplete (webform element , full API integration planned) |
-| `aabenforms_digital_post` | 📋 Planned | SF1601 Digital Post notifications |
+| `aabenforms_digital_post` |  Session 1 shipped | SF1601 Digital Post core. Plug-and-play on bare Drupal 11 with `drupal:key` + `aabenforms_core` only. Test modes `fake_db`/`wiremock`/`live_test`/`live`. Real SOAP transport in Session 2B. |
+| `aabenforms_digital_post_eca` |  Session 2A shipped | Submodule. ECA action plugin `aabenforms_digital_post_send`, ready for any BPMN template via `<aabenforms:ecaAction>`. |
+| `aabenforms_digital_post_webform` | 📋 Session 3 | Submodule. Webform handler, keeps the core module webform-free. |
+| `aabenforms_digital_post_beskedfordeler` | 📋 Session 3 | Submodule. Optional delivery-status receipts. |
+| `aabenforms_digital_post_os2web_key` | 📋 Session 3 | Submodule. Bridge for sites already using `os2web_key` certificates. |
+| `aabenforms_nemlogin` | 📋 Session 2C | Plug-and-play OIDC core (PKCE S256, ItkOidcClient, ClaimStore). |
+| `aabenforms_nemlogin_keycloak` | 📋 Session 2C | Submodule. Keycloak preset for local dev. |
+| `aabenforms_mitid` | 🔄 deprecation track | Shim over `aabenforms_nemlogin` planned in Session 2C; full removal in Session 3. |
+| `aabenforms_cpr` | 🔄 Partial | SF1520 person lookup (action plugin, production service planned) |
+| `aabenforms_cvr` | 🔄 Partial | SF1530 company lookup (action plugin, production service planned) |
+| `aabenforms_dawa` | 🔄 Partial | DAWA address autocomplete (webform element, full API integration planned) |
 | `aabenforms_sbsys` | 📋 Planned | SBSYS case management integration |
 | `aabenforms_get_organized` | 📋 Planned | GetOrganized ESDH document archiving |
 
-**Legend**:  Complete | 🔄 In Progress | 📋 Planned
+**Legend**:  Shipped | 🔄 In Progress | 📋 Planned
+
+The Digital Post + NemLogin rewrite plan is the explicit modular alternative to the OS2/Bellcom dependency maze. Goal: each integration installs cleanly on any modern Drupal 11 with at most one mainstream contrib, no `os2web_*` chain.
 
 ### Development Progress
 
 **Shipped:**
 -  Dual parent approval system with parallel workflows
 -  Secure token-based approval pages (HMAC-SHA256, 7-day expiry)
--  Visual workflow template wizard (no YAML required)
--  7 BPMN templates (building_permit, parking_permit, marriage_booking, address_change, company_verification, foi_request, contact_form)
--  14 ECA action plugins
+-  Visual workflow template wizard (no YAML required, modernized 6-step indicator)
+-  13 BPMN templates (see "BPMN Workflow Templates" below)
+-  ~15 ECA action plugins including `aabenforms_digital_post_send` and `aabenforms_log` shim
+-  `aabenforms_digital_post` core + ECA bridge (Session 1 + 2A): SF1601 in `fake_db` on prod, write-through to `{aabenforms_digital_post_log}`
+-  `aabenforms_core/admin` design tokens: one CSS-variable file feeding all admin styles
+-  `hook_storage_transform_import` preserves wizard-created configs across `drush cim`
 -  Keycloak mock realm with `ssn` client scope for local MitID development
 -  GDPR-oriented data masking for separated parents
 -  Automated test coverage via CI (see badges above for current numbers)
@@ -267,26 +281,33 @@ ddev drush config:export -y
 
 ## BPMN Workflow Templates
 
-ÅbenForms ships 7 BPMN 2.0 workflow templates under
+ÅbenForms ships 13 BPMN 2.0 workflow templates under
 `web/modules/custom/aabenforms_workflows/workflows/`:
 
-| Template | Use Case | ECA Actions |
-|----------|----------|-------------|
-| `building_permit` | Building permit applications | MitID validation, CPR lookup, audit logging |
-| `parking_permit` | Parking permit applications | MitID validation, CPR lookup, zoning checks |
-| `marriage_booking` | Marriage ceremony booking | Appointment booking, calendar integration |
-| `address_change` | Address change notifications | DAWA validation, Digital Post |
-| `company_verification` | Business registration verification | CVR lookup, MitID Erhverv validation |
-| `foi_request` | Freedom of Information requests | Document archiving, deadline tracking |
-| `contact_form` | Generic citizen contact | Email notifications, case creation |
+| Template | Use Case | Notes |
+|----------|----------|-------|
+| `building_permit` | Building permit applications | MitID, CPR lookup, audit logging |
+| `parking_permit` | Parking permit applications | MitID, payment, PDF, SMS |
+| `marriage_booking` | Marriage ceremony booking | Dual MitID, calendar, payment, reminders |
+| `address_change` | Address change notifications | DAWA, parallel system updates |
+| `company_verification` | Business registration verification | CVR + CPR cross-reference |
+| `foi_request` | Freedom of Information | 7-day deadline tracking |
+| `contact_form` | Generic citizen inquiry | Email + auto-response |
+| `citizen_service_application` | Service benefit application | MitID, CPR, caseworker review, **real Digital Post via `aabenforms_digital_post_send`** on both Approved and Rejected branches |
+| `hr_onboarding` | HR-initiated employee onboarding | Three-party cascade (HR → manager → IT) |
+| `mileage_expense` | Employee reimbursement | Manager approval, payroll forwarding |
+| `phone_declaration` | Private phone use declaration | Manager approval, archive |
+| `med_election_nomination` | MED committee election nomination | MitID, audit log (voting phase deferred) |
+| `association_booking` | Association facility booking / grant | MitID Erhverv, CVR lookup, payment |
 
 ### Template Browser
 
-Browse and import templates via admin UI:
-- Navigate to: **Configuration > Workflows > BPMN Templates** (`/admin/config/workflow/bpmn-templates`)
-- Preview templates visually (BPMN diagram)
-- Import/export via XML
-- Customize and save as new templates
+Browse, preview, and instantiate templates via admin UI:
+- Navigate to: **Workflow Templates** (`/admin/aabenforms/workflow-templates`)
+- Active Workflows section appears on top once you have instances
+- Click "Use This Template" to launch the 6-step wizard
+- Preview thumbnails render the BPMN diagram inline (BPMN.iO viewer)
+- Legacy import/export form: `/admin/config/workflow/aabenforms/templates`
 
 For detailed workflow development guide, see [docs/WORKFLOW_GUIDE.md](docs/WORKFLOW_GUIDE.md).
 

@@ -5,14 +5,33 @@
 **ÅbenForms** is a headless workflow automation platform for Danish municipalities, built on:
 - **Backend**: Drupal 11.3.2 (this repository)
 - **Frontend**: Nuxt 3 (separate repository)
-- **Deployment**: Platform.sh orchestration (separate repository)
+- **Deployment**: contabo-infrastructure orchestration (separate repository, deploys to VPS2)
 
 This backend provides:
 - JSON:API endpoints for headless content delivery
 - ECA (Event-Condition-Action) workflow engine (modern replacement for Maestro)
 - Multi-tenancy via Domain module
-- Danish government service integrations (MitID, Serviceplatformen)
+- Danish government service integrations (MitID, Serviceplatformen, Digital Post)
 - GDPR-compliant data handling with field-level encryption
+- Modular SF1601 Digital Post (`aabenforms_digital_post` + ECA bridge submodule, plug-and-play on bare Drupal 11)
+- Shared admin design tokens via `aabenforms_core/admin` library (CSS custom properties)
+
+## Active workstream (Apr 2026)
+
+Modular Digital Post + NemLogin rewrite. Approved plan: `/home/mno/.claude/plans/zesty-wobbling-kahn.md`. Goal: each Danish-gov integration installs cleanly on any modern Drupal 11 with at most one mainstream contrib (`drupal:key`) — no OS2/Bellcom dependency maze.
+
+- **Session 1 SHIPPED**: `aabenforms_digital_post` core (DTOs, sender service, fake_db / wiremock transports, Drush, settings form, log table). Live on prod in `fake_db` mode.
+- **Session 2A SHIPPED**: `aabenforms_digital_post_eca` submodule (plugin id `aabenforms_digital_post_send`). `citizen_service_application.bpmn` Approved + Rejected branches both wired; verified end-to-end on prod.
+- **Session 2B PENDING**: real MeMo XML + SF1601 SOAP via `itk-dev/serviceplatformen`; `live_test` against Serviceplatformen exttest endpoint.
+- **Session 2C PENDING**: `aabenforms_nemlogin` OIDC core + Keycloak preset + shim `aabenforms_mitid` over it.
+- **Session 3 PENDING**: webform / beskedfordeler / os2web_key bridges, advanced queue, examples, remove `aabenforms_mitid`, bare-D11 GitHub Actions verification.
+
+Recent platform-wide fixes (Apr 25, 2026):
+- `aabenforms_log` shim replaces removed upstream `eca_base_log`/`eca_base_mail`. `aabenforms_workflows_update_11001` migrates saved configs.
+- `hook_storage_transform_import` in `aabenforms_workflows.module` preserves wizard-created configs across `drush cim` (without it, every deploy nuked admin-created workflows).
+- Wizard step indicator modernized (numbered circles + track line) using `--af-*` tokens from `aabenforms_core/admin`.
+- TemplateBrowserController preview thumbnails fixed (controller now emits `data-xml` on canvas) + Active Workflows section moved on top when non-empty.
+- TemplateSelectForm: `disableCache()` to dodge File-object serialization on rebuild + path-traversal hardening on import.
 
 ## Technology Stack
 
