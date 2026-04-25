@@ -70,6 +70,9 @@ function aabenforms_core_toolbar(): array {
       '#cache' => [
         'contexts' => ['user.permissions'],
       ],
+      '#attached' => [
+        'library' => ['aabenforms_core/toolbar'],
+      ],
     ],
   ];
 }

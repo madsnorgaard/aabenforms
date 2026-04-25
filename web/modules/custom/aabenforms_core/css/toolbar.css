@@ -1,0 +1,31 @@
+/**
+ * AabenForms toolbar tab icon override.
+ *
+ * Gin's admin theme draws toolbar icons via CSS mask-image with its own
+ * SVG sprite. Without this override, our tab falls back to Gin's empty
+ * "view" placeholder. We replace the mask with our own glyph (a simple
+ * 2x2 grid representing the dashboard) and color it brand-blue.
+ *
+ * This file is attached on every admin page via hook_toolbar() in
+ * aabenforms_core.module so the override is in scope wherever the
+ * tab renders.
+ */
+
+.toolbar .toolbar-icon-aabenforms::before,
+.toolbar .toolbar-icon-aabenforms-core-dashboard::before {
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z'/></svg>") !important;
+  -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z'/></svg>") !important;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-position: center;
+  mask-size: 18px;
+  -webkit-mask-size: 18px;
+  background-color: #0071b9 !important;
+}
+
+.toolbar .toolbar-icon-aabenforms.is-active::before,
+.toolbar .toolbar-icon-aabenforms:hover::before,
+.toolbar .toolbar-icon-aabenforms:focus::before {
+  background-color: #00558a !important;
+}

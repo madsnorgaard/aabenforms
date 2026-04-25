@@ -21,3 +21,11 @@ dashboard:
       css/dashboard.css: {}
   dependencies:
     - aabenforms_core/admin
+
+# Loaded on every admin page (via hook_toolbar) for users with the
+# dashboard permission. Tiny by design - just the toolbar icon override.
+toolbar:
+  version: 1.0.0
+  css:
+    theme:
+      css/toolbar.css: { weight: 100 }
