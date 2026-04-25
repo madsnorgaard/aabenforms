@@ -81,9 +81,9 @@ class WorkflowsModuleTest extends KernelTestBase {
     $templates = $template_manager->getAvailableTemplates();
 
     $this->assertIsArray($templates);
-    // 13 templates ship in workflows/ today (the original 5 plus the
-    // Phase B/C BPMN files). Assert >= 5 for the historical floor; the
-    // exact set is validated by the Playwright all-templates spec.
+    // 13 templates ship in workflows/ today (the original 5 plus 8 added
+    // in Phase B/C). Assert >= 5 to preserve the historical floor without
+    // hard-coding a count that breaks whenever a new template is added.
     $this->assertGreaterThanOrEqual(5, count($templates), 'Should discover at least 5 BPMN templates');
 
     // Verify the historical 5 still exist.
