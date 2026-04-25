@@ -115,7 +115,11 @@ jobs:
           # warnings/deprecations only, 2+ on real failures/errors. Capture
           # via PIPESTATUS so the tee pipe doesn't swallow it, then fail
           # only on >= 2 - warnings are logged but don't block the badge.
+          # Suite scope: unit,kernel only. The functional + functional-
+          # javascript suites need a real browser (ChromeDriver/Selenium)
+          # which this runner doesn't provide; they would 100% fail here.
           XDEBUG_MODE=coverage vendor/bin/phpunit \
+            --testsuite=unit,kernel \
             --coverage-text \
             --coverage-cobertura=coverage/cobertura.xml \
             --coverage-html=coverage/html \
