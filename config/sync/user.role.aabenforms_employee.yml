@@ -1,0 +1,12 @@
+uuid: 869c3378-d168-4683-87e5-fd05259705fd
+langcode: en
+status: true
+dependencies:
+  module:
+    - aabenforms_core
+id: aabenforms_employee
+label: 'AabenForms Employee'
+weight: 5
+is_admin: false
+permissions:
+  - 'access employee webform api'
