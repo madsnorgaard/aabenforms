@@ -21,8 +21,14 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  */
 interface AabenformsDashboardSectionInterface extends PluginInspectionInterface, CacheableDependencyInterface {
 
+  /**
+   * {@inheritdoc}
+   */
   public function getLabel(): TranslatableMarkup;
 
+  /**
+   * {@inheritdoc}
+   */
   public function getWeight(): int;
 
   /**

@@ -35,7 +35,7 @@
     lassoTool,
     handTool,
     globalConnect,
-    translate
+    translate,
   ) {
     this._palette = palette;
     this._create = create;

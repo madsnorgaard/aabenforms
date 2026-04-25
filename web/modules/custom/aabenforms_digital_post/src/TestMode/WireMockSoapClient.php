@@ -35,6 +35,9 @@ final class WireMockSoapClient implements Sf1601ClientInterface {
   ) {
   }
 
+  /**
+   *
+   */
   public function send(DigitalPost $post, string $transactionId): Result {
     $base = (string) $this->configFactory
       ->get('aabenforms_digital_post.settings')
@@ -101,6 +104,9 @@ final class WireMockSoapClient implements Sf1601ClientInterface {
     }
   }
 
+  /**
+   *
+   */
   public function modeLabel(): string {
     return 'wiremock';
   }

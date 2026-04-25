@@ -44,6 +44,7 @@ class AabenformsDashboardSectionManager extends DefaultPluginManager {
    * and skip the broken plugin; the rest of the grid still renders.
    *
    * @return \Drupal\aabenforms_core\Dashboard\AabenformsDashboardSectionInterface[]
+   *   Applicable section plugin instances keyed by id, sorted by weight ASC.
    */
   public function getApplicableSections(): array {
     $sections = [];

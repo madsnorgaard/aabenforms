@@ -9,15 +9,23 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Url;
 
 /**
- * Renders the anonymous brand landing at /aabenforms (and at /, since
- * aabenforms_core_install() points system.site.page.front here).
+ * Renders the anonymous brand landing at /aabenforms.
  *
- * Tiny page: wordmark, one-line description, three links (citizen
- * frontend, sign-in, GitHub). No analytics, no marketing copy. The point
- * is to make the API hostname "obvious" rather than empty.
+ * Also serves the front page since aabenforms_core_install() points
+ * system.site.page.front at this route. Tiny page: wordmark, one-line
+ * description, three links (citizen frontend, sign-in, GitHub). No
+ * analytics, no marketing copy. The point is to make the API hostname
+ * "obvious" rather than empty.
  */
 class LandingController extends ControllerBase {
 
+  /**
+   * Returns the brand landing render array, or redirects admins to the dashboard.
+   *
+   * @return array|\Drupal\Core\Cache\CacheableRedirectResponse
+   *   Render array for anonymous visitors; redirect response for users
+   *   that have the access aabenforms admin permission.
+   */
   public function page(): array|CacheableRedirectResponse {
     // Authenticated users with the dashboard permission already know
     // what AabenForms is - skip the brand landing and send them to the

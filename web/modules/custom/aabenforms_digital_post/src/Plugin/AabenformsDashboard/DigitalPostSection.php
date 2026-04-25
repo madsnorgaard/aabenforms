@@ -13,6 +13,9 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/**
+ * {@inheritdoc}
+ */
 #[AabenformsDashboardSection(id: 'digital_post', weight: -40)]
 class DigitalPostSection extends AabenformsDashboardSectionBase {
 
@@ -27,6 +30,9 @@ class DigitalPostSection extends AabenformsDashboardSectionBase {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $configuration,
@@ -38,16 +44,21 @@ class DigitalPostSection extends AabenformsDashboardSectionBase {
     );
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getLabel(): TranslatableMarkup {
     return $this->t('Digital Post');
   }
 
   /**
+   * Returns a tone-coded status pill for the current Digital Post mode.
+   *
    * Tone rules from the UX brief:
-   * - mock state (fake_db, wiremock) is NEUTRAL
-   * - live_test is BRAND
-   * - live with sender_cvr set is SUCCESS
-   * - live without sender_cvr is DANGER (misconfigured prod)
+   * - mock state (fake_db, wiremock) is NEUTRAL.
+   * - live_test is BRAND.
+   * - live with sender_cvr set is SUCCESS.
+   * - live without sender_cvr is DANGER (misconfigured prod).
    */
   public function getStatusBadge(): ?array {
     $settings = $this->configFactory->get('aabenforms_digital_post.settings');
@@ -62,6 +73,9 @@ class DigitalPostSection extends AabenformsDashboardSectionBase {
     };
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getSecondaryMetrics(): array {
     $cvr = (string) $this->configFactory->get('aabenforms_digital_post.settings')->get('sender_cvr');
 
@@ -83,6 +97,9 @@ class DigitalPostSection extends AabenformsDashboardSectionBase {
     ];
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getMainLink(): array {
     return [
       'label' => $this->t('Configure'),
@@ -90,6 +107,9 @@ class DigitalPostSection extends AabenformsDashboardSectionBase {
     ];
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getCacheTags(): array {
     return [
       'config:aabenforms_digital_post.settings',
@@ -97,6 +117,9 @@ class DigitalPostSection extends AabenformsDashboardSectionBase {
     ];
   }
 
+  /**
+   * {@inheritdoc}
+   */
   protected function modeLabel(string $mode): TranslatableMarkup {
     return match ($mode) {
       'wiremock' => $this->t('WireMock'),

@@ -22,6 +22,9 @@ final class CertificateLocatorFactory {
   ) {
   }
 
+  /**
+   *
+   */
   public function create(): CertificateLocatorInterface {
     $source = (string) $this->configFactory
       ->get('aabenforms_digital_post.settings')

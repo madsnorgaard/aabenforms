@@ -42,12 +42,18 @@ class PreserveWizardConfigsSubscriber implements EventSubscriberInterface {
     private readonly StorageInterface $activeStorage,
   ) {}
 
+  /**
+   * {@inheritdoc}
+   */
   public static function getSubscribedEvents(): array {
     return [
       ConfigEvents::STORAGE_TRANSFORM_IMPORT => ['onImportTransform', 0],
     ];
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function onImportTransform(StorageTransformEvent $event): void {
     $source = $event->getStorage();
     foreach ($this->activeStorage->listAll() as $name) {

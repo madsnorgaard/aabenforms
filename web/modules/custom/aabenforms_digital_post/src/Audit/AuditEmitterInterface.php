@@ -14,6 +14,9 @@ namespace Drupal\aabenforms_digital_post\Audit;
  */
 interface AuditEmitterInterface {
 
+  /**
+   *
+   */
   public function emit(string $eventType, string $identifier, string $message, string $status, array $context = []): void;
 
 }

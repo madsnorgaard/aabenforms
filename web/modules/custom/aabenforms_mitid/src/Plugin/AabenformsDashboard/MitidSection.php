@@ -36,6 +36,9 @@ class MitidSection extends AabenformsDashboardSectionBase {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $configuration,
@@ -47,16 +50,21 @@ class MitidSection extends AabenformsDashboardSectionBase {
     );
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getLabel(): TranslatableMarkup {
     return $this->t('MitID');
   }
 
   /**
+   * Returns a tone-coded status pill for the MitID provider state.
+   *
    * Tone rules:
-   * - production=true + non-mock authorization_endpoint → SUCCESS Live
-   * - production=false but real endpoint configured → BRAND Live test
-   * - localhost/keycloak endpoint → NEUTRAL Mock
-   * - production=true with mock endpoint → DANGER (misconfigured prod)
+   * - production=true + non-mock authorization_endpoint -> SUCCESS Live.
+   * - production=false but real endpoint configured -> BRAND Live test.
+   * - localhost/keycloak endpoint -> NEUTRAL Mock.
+   * - production=true with mock endpoint -> DANGER (misconfigured prod).
    */
   public function getStatusBadge(): ?array {
     $settings = $this->configFactory->get('aabenforms_mitid.settings');
@@ -79,6 +87,9 @@ class MitidSection extends AabenformsDashboardSectionBase {
     };
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getSecondaryMetrics(): array {
     $endpoint = (string) $this->configFactory->get('aabenforms_mitid.settings')->get('authorization_endpoint');
     $host = parse_url($endpoint, PHP_URL_HOST) ?: $this->t('Not set');
@@ -102,6 +113,9 @@ class MitidSection extends AabenformsDashboardSectionBase {
     ];
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getMainLink(): array {
     return [
       'label' => $this->t('Configure'),
@@ -109,6 +123,9 @@ class MitidSection extends AabenformsDashboardSectionBase {
     ];
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getCacheTags(): array {
     return [
       'config:aabenforms_mitid.settings',
