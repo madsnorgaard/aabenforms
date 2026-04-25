@@ -53,3 +53,13 @@ services:
     class: Drupal\aabenforms_workflows\Service\GisService
     arguments:
       - '@logger.factory'
+
+  # Listens to ConfigEvents::STORAGE_TRANSFORM_IMPORT to copy
+  # wizard-created configs into the cim source so drush cim doesn't
+  # delete them. See PreserveWizardConfigsSubscriber for the rationale.
+  aabenforms_workflows.preserve_wizard_configs:
+    class: Drupal\aabenforms_workflows\EventSubscriber\PreserveWizardConfigsSubscriber
+    arguments:
+      - '@config.storage'
+    tags:
+      - { name: event_subscriber }
