@@ -2,12 +2,13 @@
 
 namespace Drupal\aabenforms_workflows\Plugin\Action;
 
+use Drupal\aabenforms_core\Service\WorkflowExecutionCollector;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\aabenforms_core\Service\WorkflowExecutionCollector;
 use Drupal\eca\Plugin\Action\ActionBase;
+use Drupal\webform\WebformSubmissionInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -161,6 +162,32 @@ abstract class AabenFormsActionBase extends ActionBase implements ContainerFacto
       return (string) $value;
     }
     return $default;
+  }
+
+  /**
+   * Resolves the webform submission for the current ECA invocation.
+   *
+   * Eight action plugins call this; before this lived on the base class
+   * each had to inline its own resolution and several called a missing
+   * method, throwing on every cross-fired event. The resolution order is:
+   * (a) the entity ECA passes to execute() if it's already a submission;
+   * (b) the 'webform_submission' ECA token (set by content_entity:insert
+   *     events on webform_submission), the same pattern used in
+   *     SendApprovalEmailAction.
+   *
+   * @param mixed $entity
+   *   Whatever ECA passed to execute(). Often a webform submission;
+   *   sometimes another entity for cross-fired events.
+   *
+   * @return \Drupal\webform\WebformSubmissionInterface|null
+   *   The resolved submission, or NULL when neither path produces one.
+   */
+  protected function getSubmission($entity = NULL): ?WebformSubmissionInterface {
+    if ($entity instanceof WebformSubmissionInterface) {
+      return $entity;
+    }
+    $token_value = $this->tokenService->getTokenData('webform_submission');
+    return $token_value instanceof WebformSubmissionInterface ? $token_value : NULL;
   }
 
 }

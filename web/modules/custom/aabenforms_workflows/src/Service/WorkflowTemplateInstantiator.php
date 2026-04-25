@@ -102,6 +102,10 @@ class WorkflowTemplateInstantiator {
    *   - parameters: Array of parameter values
    *   - actions: Array of action configurations
    *   - status: Active/inactive (defaults to active).
+   * @param string|null $bpmn_xml_override
+   *   BPMN XML edited in the wizard's visual editor (step 2). When
+   *   present, takes precedence over reloading the template from disk
+   *   so admin edits survive the round-trip into ECA config.
    *
    * @return array
    *   Result array:
@@ -110,7 +114,7 @@ class WorkflowTemplateInstantiator {
    *   - message: Success/error message
    *   - errors: Array of error messages.
    */
-  public function instantiate(string $template_id, array $configuration): array {
+  public function instantiate(string $template_id, array $configuration, ?string $bpmn_xml_override = NULL): array {
     // Validate configuration.
     $errors = $this->templateMetadata->validateConfiguration($template_id, $configuration);
     if (!empty($errors)) {
@@ -124,6 +128,13 @@ class WorkflowTemplateInstantiator {
 
     // Generate unique workflow instance ID.
     $workflow_id = $this->generateWorkflowId($template_id, $configuration);
+
+    // Stash the edited BPMN XML for generateEcaWorkflow() to use instead
+    // of re-reading the on-disk template, so wizard edits in step 2 are
+    // preserved when the workflow is created.
+    if ($bpmn_xml_override !== NULL && trim($bpmn_xml_override) !== '') {
+      $configuration['__bpmn_xml_override'] = $bpmn_xml_override;
+    }
 
     try {
       // Create template instance config entity.
@@ -248,10 +259,21 @@ class WorkflowTemplateInstantiator {
    *   The configuration array.
    */
   protected function generateEcaWorkflow(string $workflow_id, string $template_id, array $configuration): void {
-    // Load template.
-    $xml = $this->templateManager->loadTemplate($template_id);
-    if (!$xml) {
-      throw new \Exception('Failed to load template: ' . $template_id);
+    // Wizard step 2 lets admins edit the BPMN diagram. When the wizard
+    // submit hands us that edited XML via __bpmn_xml_override, parse it
+    // directly instead of re-reading the on-disk template - otherwise
+    // those edits silently disappear on instantiate.
+    if (!empty($configuration['__bpmn_xml_override']) && is_string($configuration['__bpmn_xml_override'])) {
+      $xml = @simplexml_load_string($configuration['__bpmn_xml_override']);
+      if ($xml === FALSE) {
+        throw new \Exception('Edited BPMN XML failed to parse for ' . $template_id);
+      }
+    }
+    else {
+      $xml = $this->templateManager->loadTemplate($template_id);
+      if (!$xml) {
+        throw new \Exception('Failed to load template: ' . $template_id);
+      }
     }
 
     // Build ECA config structure.

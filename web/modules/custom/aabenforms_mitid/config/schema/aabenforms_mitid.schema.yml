@@ -76,3 +76,15 @@ aabenforms_mitid.settings:
     redirect_uri:
       type: string
       label: 'Fallback redirect URI'
+    issuer:
+      type: string
+      label: 'Fallback OIDC issuer'
+    scopes:
+      type: sequence
+      label: 'Requested OAuth scopes'
+      sequence:
+        type: string
+        label: 'Scope'
+    pkce_enabled:
+      type: boolean
+      label: 'Use PKCE S256 on the authorization code flow'

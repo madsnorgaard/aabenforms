@@ -151,7 +151,29 @@ class MitIdCprExtractor {
   }
 
   /**
-   * Parses JWT token and extracts claims.
+   * Returns a single named claim from the id_token's payload.
+   *
+   * @param string $id_token
+   *   Compact JWS/JWT.
+   * @param string $claim
+   *   Name of the claim to read (e.g. "nonce", "sub", "acr").
+   *
+   * @return mixed
+   *   The claim value, or NULL if the token is malformed or the claim
+   *   isn't present.
+   */
+  public function extractClaim(string $id_token, string $claim): mixed {
+    try {
+      $claims = $this->parseJwt($id_token);
+    }
+    catch (\InvalidArgumentException) {
+      return NULL;
+    }
+    return $claims[$claim] ?? NULL;
+  }
+
+  /**
+   * Parses a compact JWS/JWT and returns the decoded payload claims.
    *
    * @param string $jwt
    *   The JWT token string.

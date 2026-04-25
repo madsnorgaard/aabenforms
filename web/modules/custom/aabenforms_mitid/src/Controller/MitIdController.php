@@ -101,6 +101,8 @@ class MitIdController extends ControllerBase {
       'workflow_id' => $workflowId,
       'return_url' => $returnUrl,
       'created' => time(),
+      'code_verifier' => $result['code_verifier'] ?? '',
+      'nonce' => $result['nonce'] ?? '',
     ]);
 
     // Redirect to MitID (external URL - use TrustedRedirectResponse).
@@ -157,9 +159,13 @@ class MitIdController extends ControllerBase {
     $tempStore->delete('oauth_state_' . $state);
 
     try {
-      // Complete OIDC flow.
+      // Complete OIDC flow. Pass code_verifier + nonce stashed alongside
+      // the state record so PKCE-enabled providers accept the token
+      // exchange and id_token replay protection works.
       $sessionData = $this->oidcClient->completeFlow($code, $workflowId, [
         'redirect_uri' => Url::fromRoute('aabenforms_mitid.callback', [], ['absolute' => TRUE])->toString(),
+        'code_verifier' => $stateData['code_verifier'] ?? '',
+        'nonce' => $stateData['nonce'] ?? '',
       ]);
 
       // Store session ID in user's session for frontend access.

@@ -11,15 +11,16 @@ use Psr\Log\LoggerInterface;
 /**
  * Service for MitID OpenID Connect (OIDC) authentication.
  *
- * Implements the OIDC Authorization Code Flow for MitID:
- * 1. Generate authorization URL
+ * Implements the OIDC Authorization Code Flow with optional PKCE S256:
+ * 1. Generate authorization URL (code_challenge + nonce when pkce_enabled)
  * 2. Handle callback with authorization code
- * 3. Exchange code for access + ID tokens
- * 4. Validate and extract user data.
+ * 3. Exchange code for access + ID tokens (with code_verifier when pkce)
+ * 4. Validate and extract user data; reject id_token nonce mismatch.
  *
- * Note: PKCE (Proof Key for Code Exchange) is not yet implemented.
- * This is acceptable for confidential clients with client_secret,
- * but PKCE should be added for enhanced security in future versions.
+ * PKCE is opt-in via aabenforms_mitid.settings.pkce_enabled (default
+ * TRUE). Real Digitaliseringsstyrelsen test gateway requires it; the
+ * Keycloak mock supports it; turning it off only makes sense for
+ * legacy IdPs that pre-date RFC 7636.
  */
 class MitIdOidcClient {
 
@@ -93,11 +94,15 @@ class MitIdOidcClient {
    *   Options for authorization:
    *   - redirect_uri: The callback URL.
    *   - state: Optional state parameter for CSRF protection.
-   *   - scope: Space-separated scopes (default: 'openid ssn').
-   *   - acr_values: Assurance level (default: 'substantial').
+   *   - scope: Space-separated scopes (default from config, falls back to
+   *     'openid ssn' if config is empty).
+   *   - acr_values: Assurance level (default from config, falls back to
+   *     'substantial').
    *
    * @return array
-   *   Array with 'url' and 'state' keys.
+   *   Array with keys: 'url', 'state', 'code_verifier' (PKCE - empty when
+   *   pkce_enabled is false), 'nonce'. Callers must persist code_verifier
+   *   + nonce keyed by state and pass them back via completeFlow().
    */
   public function getAuthorizationUrl(array $options = []): array {
     $config = $this->configFactory->get('aabenforms_mitid.settings');
@@ -111,19 +116,31 @@ class MitIdOidcClient {
         ?? '';
 
     $state = $options['state'] ?? $this->generateState();
-    $scope = $options['scope'] ?? 'openid ssn';
-    $acrValues = $options['acr_values'] ?? 'substantial';
+    $scope = $options['scope'] ?? $this->resolveScopes();
+    $acrValues = $options['acr_values']
+        ?? (string) ($config->get('security.required_assurance_level') ?: 'substantial');
 
-    // Build authorization URL.
+    // Always generate a fresh nonce. Bound to the state record by the
+    // caller and validated against the id_token's nonce claim later.
+    $nonce = $this->generateState();
+
     $params = [
       'client_id' => $clientId,
       'redirect_uri' => $redirectUri,
       'response_type' => 'code',
       'scope' => $scope,
       'state' => $state,
+      'nonce' => $nonce,
       'acr_values' => $acrValues,
       'response_mode' => 'query',
     ];
+
+    $codeVerifier = '';
+    if ((bool) ($config->get('pkce_enabled') ?? TRUE)) {
+      $codeVerifier = $this->generateCodeVerifier();
+      $params['code_challenge'] = $this->codeChallenge($codeVerifier);
+      $params['code_challenge_method'] = 'S256';
+    }
 
     $authUrl = $authorizationEndpoint . '?' . http_build_query($params);
 
@@ -132,13 +149,45 @@ class MitIdOidcClient {
             'client_id' => $clientId,
             'scope' => $scope,
             'acr_values' => $acrValues,
+            'pkce' => $codeVerifier !== '',
           ]
       );
 
     return [
       'url' => $authUrl,
       'state' => $state,
+      'code_verifier' => $codeVerifier,
+      'nonce' => $nonce,
     ];
+  }
+
+  /**
+   * Reads the configured scope list and renders it as a space-separated string.
+   */
+  protected function resolveScopes(): string {
+    $config = $this->configFactory->get('aabenforms_mitid.settings');
+    $scopes = $config->get('scopes');
+    if (is_array($scopes) && $scopes !== []) {
+      $scopes = array_filter(array_map('trim', $scopes), 'strlen');
+      if ($scopes !== []) {
+        return implode(' ', $scopes);
+      }
+    }
+    return 'openid ssn';
+  }
+
+  /**
+   * Generates an RFC 7636 code_verifier (URL-safe, 43..128 chars).
+   */
+  protected function generateCodeVerifier(): string {
+    return rtrim(strtr(base64_encode(random_bytes(64)), '+/', '-_'), '=');
+  }
+
+  /**
+   * Computes the S256 code_challenge for a verifier.
+   */
+  protected function codeChallenge(string $verifier): string {
+    return rtrim(strtr(base64_encode(hash('sha256', $verifier, TRUE)), '+/', '-_'), '=');
   }
 
   /**
@@ -148,6 +197,9 @@ class MitIdOidcClient {
    *   The authorization code from MitID callback.
    * @param string $redirect_uri
    *   The redirect URI used in authorization.
+   * @param string $code_verifier
+   *   PKCE verifier paired with the code_challenge sent during auth.
+   *   Empty when PKCE is disabled.
    *
    * @return array
    *   Token response with 'access_token', 'id_token', 'expires_in'.
@@ -155,7 +207,7 @@ class MitIdOidcClient {
    * @throws \RuntimeException
    *   If token exchange fails.
    */
-  public function exchangeCode(string $code, string $redirect_uri = ''): array {
+  public function exchangeCode(string $code, string $redirect_uri = '', string $code_verifier = ''): array {
     $config = $this->configFactory->get('aabenforms_mitid.settings');
 
     $clientId = $config->get('client_id');
@@ -167,7 +219,7 @@ class MitIdOidcClient {
       $redirect_uri = $config->get('redirect_uri');
     }
 
-    // Build token request.
+    // Build token request. PKCE: include code_verifier when supplied.
     $params = [
       'grant_type' => 'authorization_code',
       'code' => $code,
@@ -175,6 +227,9 @@ class MitIdOidcClient {
       'client_id' => $clientId,
       'client_secret' => $clientSecret,
     ];
+    if ($code_verifier !== '') {
+      $params['code_verifier'] = $code_verifier;
+    }
 
     try {
       $response = $this->httpClient->post(
@@ -249,11 +304,23 @@ class MitIdOidcClient {
    *   If flow fails.
    */
   public function completeFlow(string $code, string $workflow_id, array $options = []): array {
-    // Exchange code for tokens.
-    $tokens = $this->exchangeCode($code, $options['redirect_uri'] ?? '');
+    // Exchange code for tokens. options.code_verifier comes from the
+    // tempstore record the login() controller stashed alongside state.
+    $tokens = $this->exchangeCode(
+      $code,
+      $options['redirect_uri'] ?? '',
+      (string) ($options['code_verifier'] ?? '')
+    );
 
-    // Validate and extract person data.
+    // Validate and extract person data. If a nonce was issued, the
+    // id_token's nonce claim must match - protects against replay.
     $personData = $this->validateIdToken($tokens['id_token']);
+    if (!empty($options['nonce'])) {
+      $tokenNonce = $this->cprExtractor->extractClaim($tokens['id_token'], 'nonce');
+      if ($tokenNonce === NULL || !hash_equals((string) $options['nonce'], (string) $tokenNonce)) {
+        throw new \RuntimeException('id_token nonce mismatch');
+      }
+    }
 
     // Create session with flat structure (MitIdSessionManager expects
     // person fields at top level, not nested under 'person' key).

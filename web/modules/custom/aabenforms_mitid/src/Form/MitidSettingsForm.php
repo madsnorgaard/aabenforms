@@ -84,6 +84,12 @@ class MitidSettingsForm extends ConfigFormBase {
       '#title' => $this->t('Security'),
       '#open' => FALSE,
     ];
+    $form['security']['pkce_enabled'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('PKCE S256 (recommended)'),
+      '#description' => $this->t('Required by Digitaliseringsstyrelsen test gateway and supported by Keycloak. Disable only for legacy IdPs that pre-date RFC 7636.'),
+      '#default_value' => (bool) ($config->get('pkce_enabled') ?? TRUE),
+    ];
     $form['security']['required_assurance_level'] = [
       '#type' => 'select',
       '#title' => $this->t('Required assurance level'),
@@ -93,6 +99,13 @@ class MitidSettingsForm extends ConfigFormBase {
         'high' => $this->t('High'),
       ],
       '#default_value' => (string) $config->get('security.required_assurance_level') ?: 'substantial',
+    ];
+    $form['security']['scopes'] = [
+      '#type' => 'textarea',
+      '#title' => $this->t('Requested scopes'),
+      '#description' => $this->t('One scope per line. Real MitID typically expects "openid mitid cpr"; the local Keycloak mock uses "openid ssn".'),
+      '#default_value' => implode("\n", (array) ($config->get('scopes') ?: ['openid', 'ssn'])),
+      '#rows' => 5,
     ];
 
     return parent::buildForm($form, $form_state);
@@ -113,6 +126,10 @@ class MitidSettingsForm extends ConfigFormBase {
       $config->set('client_secret', $secret);
     }
     $config->set('security.required_assurance_level', (string) $form_state->getValue('required_assurance_level'));
+    $config->set('pkce_enabled', (bool) $form_state->getValue('pkce_enabled'));
+    $scopes_raw = (string) $form_state->getValue('scopes');
+    $scopes = array_values(array_filter(array_map('trim', preg_split('/\R+/', $scopes_raw) ?: []), 'strlen'));
+    $config->set('scopes', $scopes !== [] ? $scopes : ['openid', 'ssn']);
     $config->save();
 
     parent::submitForm($form, $form_state);

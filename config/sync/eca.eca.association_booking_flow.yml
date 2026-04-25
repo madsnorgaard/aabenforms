@@ -62,15 +62,18 @@ actions:
       message_template: 'Stub. Production would email the assigned reviewer.'
     successors:
       -
-        id: log_payment_placeholder
+        id: process_payment
         condition: ''
-  log_payment_placeholder:
-    label: 'Log: payment step (stub for aabenforms_process_payment)'
-    plugin: aabenforms_audit_log
+  process_payment:
+    label: 'Process booking fee payment'
+    plugin: aabenforms_process_payment
     configuration:
-      event_type: association_booking_payment_placeholder
-      additional_data_token: '[webform_submission:values:amount:raw]'
-      message_template: 'Stub. Production would call aabenforms_process_payment once ProcessPaymentAction::getSubmission is fixed - see followup #11.'
+      amount_field: amount
+      currency: DKK
+      payment_method: nets_easy
+      description_field: booking_purpose
+      store_payment_id_in: payment_id
+      store_status_in: payment_status
     successors:
       -
         id: log_complete
