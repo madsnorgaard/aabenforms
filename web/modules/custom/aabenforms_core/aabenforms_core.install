@@ -82,18 +82,37 @@ function aabenforms_core_schema() {
 
 /**
  * Implements hook_install().
+ *
+ * - Sets the site front page to /aabenforms (anonymous brand landing) only
+ *   if the current value is the unmodified Drupal default '/user/login'.
+ *   Doesn't clobber a custom front page set by the operator.
+ * - Grants the new 'access aabenforms admin' permission to the
+ *   administrator role so admins can reach /admin/aabenforms.
  */
-function aabenforms_core_install() {
-  \Drupal::messenger()->addStatus(t('ÅbenForms Core module installed successfully. Configure Serviceplatformen settings at Administration » Configuration » ÅbenForms » Core Settings.'));
+function aabenforms_core_install(): void {
+  $site = \Drupal::configFactory()->getEditable('system.site');
+  if ($site->get('page.front') === '/user/login') {
+    $site->set('page.front', '/aabenforms')->save();
+  }
+
+  $admin_role = \Drupal\user\Entity\Role::load('administrator');
+  if ($admin_role) {
+    user_role_grant_permissions('administrator', ['access aabenforms admin']);
+  }
+
+  \Drupal::messenger()->addStatus(t('ÅbenForms Core installed. Admin dashboard at /admin/aabenforms.'));
 }
 
 /**
  * Implements hook_uninstall().
  */
-function aabenforms_core_uninstall() {
-  // Remove all module configuration.
+function aabenforms_core_uninstall(): void {
+  $site = \Drupal::configFactory()->getEditable('system.site');
+  if ($site->get('page.front') === '/aabenforms') {
+    $site->set('page.front', '/user/login')->save();
+  }
+
   \Drupal::configFactory()->getEditable('aabenforms_core.settings')->delete();
 
-  // Note: Audit log table is automatically removed by Drupal's schema system.
-  \Drupal::messenger()->addStatus(t('ÅbenForms Core module uninstalled. All configuration and audit logs have been removed.'));
+  \Drupal::messenger()->addStatus(t('ÅbenForms Core uninstalled. Configuration and audit log removed.'));
 }

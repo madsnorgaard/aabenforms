@@ -2,6 +2,7 @@
 
 namespace Drupal\aabenforms_core\Service;
 
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Session\AccountProxyInterface;
@@ -180,6 +181,8 @@ class AuditLogger {
         'ip_address' => $ip_address,
       ]);
 
+      // Refresh the AabenForms admin dashboard's recent-activity panel.
+      Cache::invalidateTags(['aabenforms_dashboard:activity']);
     }
     catch (\Exception $e) {
       $this->logger->error('Failed to write audit log: {error}', [

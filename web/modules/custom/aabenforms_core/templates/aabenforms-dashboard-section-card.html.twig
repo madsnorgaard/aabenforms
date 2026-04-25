@@ -1,0 +1,50 @@
+{#
+/**
+ * @file
+ * One AabenForms dashboard section card.
+ *
+ * Variables:
+ * - section_id, label
+ * - status_badge: { label, tone } | null
+ * - hero_metric: { label, value } | null  (mutually exclusive with badge)
+ * - secondary_metrics: [ { label, value } ]
+ * - main_link: { label, url }
+ */
+#}
+<article class="af-card" data-section="{{ section_id }}">
+  <header class="af-card__header">
+    <h2 class="af-card__title">{{ label }}</h2>
+  </header>
+
+  <div class="af-card__hero">
+    {% if status_badge %}
+      <span class="af-pill af-pill--{{ status_badge.tone }}">{{ status_badge.label }}</span>
+    {% elseif hero_metric %}
+      <div class="af-metric">
+        <span class="af-metric__value">{{ hero_metric.value }}</span>
+        {% if hero_metric.label %}
+          <span class="af-metric__label">{{ hero_metric.label }}</span>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+
+  {% if secondary_metrics %}
+    <dl class="af-card__metrics">
+      {% for metric in secondary_metrics %}
+        <div class="af-card__metric-row">
+          <dt class="af-card__metric-label">{{ metric.label }}</dt>
+          <dd class="af-card__metric-value">{{ metric.value }}</dd>
+        </div>
+      {% endfor %}
+    </dl>
+  {% endif %}
+
+  {% if main_link.url %}
+    <footer class="af-card__footer">
+      <a href="{{ main_link.url }}" class="af-card__cta">
+        {{ main_link.label }} <span aria-hidden="true">→</span>
+      </a>
+    </footer>
+  {% endif %}
+</article>

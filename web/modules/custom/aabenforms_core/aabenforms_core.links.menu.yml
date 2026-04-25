@@ -1,0 +1,8 @@
+# Top-level admin toolbar entry. weight: -100 puts it leftmost,
+# ahead of system.admin (weight: 9).
+aabenforms_core.dashboard:
+  title: 'AabenForms'
+  description: 'Unified admin dashboard for the AabenForms platform.'
+  route_name: aabenforms_core.dashboard
+  menu_name: admin
+  weight: -100

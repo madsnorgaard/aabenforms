@@ -4,3 +4,8 @@ access webform api:
   title: 'Access webform API endpoints'
   description: 'Allows access to custom REST API endpoints for fetching and submitting webforms.'
   restrict access: true
+
+access aabenforms admin:
+  title: 'Access AabenForms admin dashboard'
+  description: 'View the unified AabenForms admin dashboard at /admin/aabenforms.'
+  restrict access: true

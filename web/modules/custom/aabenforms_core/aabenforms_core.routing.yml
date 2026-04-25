@@ -1,3 +1,19 @@
+aabenforms_core.dashboard:
+  path: '/admin/aabenforms'
+  defaults:
+    _controller: '\Drupal\aabenforms_core\Controller\DashboardController::overview'
+    _title: 'AabenForms'
+  requirements:
+    _permission: 'access aabenforms admin'
+
+aabenforms_core.landing:
+  path: '/aabenforms'
+  defaults:
+    _controller: '\Drupal\aabenforms_core\Controller\LandingController::page'
+    _title: 'AabenForms'
+  requirements:
+    _access: 'TRUE'
+
 aabenforms_core.webform_api:
   path: '/api/webform/{id}'
   defaults:

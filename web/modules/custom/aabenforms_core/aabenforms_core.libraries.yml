@@ -11,3 +11,13 @@ admin:
   css:
     base:
       css/admin-tokens.css: { weight: -100 }
+
+# Dashboard layout: header, card grid, pills, activity feed, brand landing.
+# Depends on the admin token library for --af-* CSS custom properties.
+dashboard:
+  version: 1.0.0
+  css:
+    theme:
+      css/dashboard.css: {}
+  dependencies:
+    - aabenforms_core/admin
