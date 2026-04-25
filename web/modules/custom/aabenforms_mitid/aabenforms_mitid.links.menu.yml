@@ -1,0 +1,5 @@
+aabenforms_mitid.settings:
+  title: 'MitID OIDC'
+  description: 'Configure MitID OIDC endpoints, client credentials, and assurance level.'
+  route_name: aabenforms_mitid.settings
+  parent: system.admin_config_services
