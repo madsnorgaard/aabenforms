@@ -19,7 +19,7 @@ events:
         id: validate_voter_mitid
         condition: ''
   on_cron_tick:
-    plugin: eca_base_cron
+    plugin: 'eca_base:eca_cron'
     configuration:
       frequency: '+1 minute'
     successors:
