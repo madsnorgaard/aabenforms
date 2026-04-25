@@ -66,6 +66,12 @@ class TemplateBrowserController extends ControllerBase {
   public function browse(): array {
     $build = [];
 
+    // bpmn_io/core auto-init shim - see templatePreview() for details.
+    $build['bpmn_io_shim'] = [
+      '#markup' => '<div id="bpmn-io" hidden aria-hidden="true"><div class="canvas"></div></div>',
+      '#weight' => -100,
+    ];
+
     // Page header.
     $build['header'] = [
       '#markup' => '<div class="template-browser-header">' .
@@ -288,6 +294,13 @@ class TemplateBrowserController extends ControllerBase {
       ],
     ];
 
+    // bpmn_io contrib's bpmn-modeler.js auto-instantiates
+    // window.modeler against '#bpmn-io .canvas' at load. Shim the DOM
+    // so the auto-init doesn't crash before our own code runs.
+    $build['bpmn_io_shim'] = [
+      '#markup' => '<div id="bpmn-io" hidden aria-hidden="true"><div class="canvas"></div></div>',
+    ];
+
     // The data-xml attribute is what bpmn-preview.js's thumbnail loader
     // extracts when this page is fetched via AJAX. Without it, every
     // thumbnail falls back to the empty parent-page drupalSettings and
@@ -296,7 +309,9 @@ class TemplateBrowserController extends ControllerBase {
       '#markup' => '<div id="bpmn-preview-canvas" class="bpmn-preview-canvas" data-xml="' . htmlspecialchars($bpmn_xml, ENT_QUOTES | ENT_HTML5) . '"></div>',
     ];
 
-    $build['#attached']['library'][] = 'bpmn_io/ui';
+    // bpmn_io/core gives us BpmnJS without the modeler_api-coupled wrapper
+    // (bpmn_io/ui) which crashes on standalone pages.
+    $build['#attached']['library'][] = 'bpmn_io/core';
     $build['#attached']['library'][] = 'aabenforms_workflows/bpmn_preview';
     $build['#attached']['drupalSettings']['aabenforms_workflows']['preview'] = [
       'xml' => $bpmn_xml,

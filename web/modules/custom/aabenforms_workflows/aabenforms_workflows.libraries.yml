@@ -30,7 +30,11 @@ bpmn_editor:
   dependencies:
     - core/drupal
     - core/jquery
-    - bpmn_io/ui
+    # bpmn_io/core gives us just the BpmnJS global (bare bpmn-js library).
+    # bpmn_io/ui is the modeler_api-integrated wrapper which assumes a
+    # window.modeler global, settings.modeler_api.mode, and a #bpmn-io
+    # div - none of which exist on our standalone wizard / preview pages.
+    - bpmn_io/core
 
 bpmn_preview:
   version: 1.0
@@ -42,5 +46,9 @@ bpmn_preview:
   dependencies:
     - core/drupal
     - core/jquery
-    - bpmn_io/ui
+    # bpmn_io/core gives us just the BpmnJS global (bare bpmn-js library).
+    # bpmn_io/ui is the modeler_api-integrated wrapper which assumes a
+    # window.modeler global, settings.modeler_api.mode, and a #bpmn-io
+    # div - none of which exist on our standalone wizard / preview pages.
+    - bpmn_io/core
     - aabenforms_core/admin

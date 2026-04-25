@@ -40,20 +40,30 @@
      * Renders full BPMN preview.
      */
     renderFullPreview: function ($canvas, xml) {
-      if (typeof BpmnJS === 'undefined') {
-        console.error('BPMN.io library not loaded');
+      if (!window.modeler || typeof window.modeler.constructor !== 'function') {
+        console.error('bpmn_io library did not initialize a window.modeler');
         return;
       }
+      var BpmnJSCtor = window.modeler.constructor;
 
-      var viewer = new BpmnJS({
+      var viewer = new BpmnJSCtor({
         container: $canvas[0],
         height: 600
       });
 
-      viewer.importXML(xml).then(function () {
-        var canvas = viewer.get('canvas');
-        canvas.zoom('fit-viewport');
-      }).catch(function (err) {
+      var importer = function (theXml) {
+        return viewer.importXML(theXml).then(function () {
+          var canvas = viewer.get('canvas');
+          canvas.zoom('fit-viewport');
+        });
+      };
+      var loaded;
+      if (typeof window.layoutProcess === 'function' && xml.indexOf('BPMNDiagram') === -1) {
+        loaded = window.layoutProcess(xml).then(importer);
+      } else {
+        loaded = importer(xml);
+      }
+      loaded.catch(function (err) {
         console.error('Failed to load BPMN preview:', err);
         $canvas.html('<div class="error">Failed to load preview: ' + err.message + '</div>');
       });
@@ -99,25 +109,33 @@
      * Renders a thumbnail preview.
      */
     renderThumbnail: function ($thumbnail, $canvas, xml) {
-      if (typeof BpmnJS === 'undefined') {
+      if (!window.modeler || typeof window.modeler.constructor !== 'function') {
         $thumbnail.find('.bpmn-preview-loading').html(
           '<span class="info-icon">ℹ</span> BPMN.io not loaded'
         );
         return;
       }
+      var BpmnJSCtor = window.modeler.constructor;
 
-      var viewer = new BpmnJS({
+      var viewer = new BpmnJSCtor({
         container: $canvas[0],
         height: 200
       });
 
-      viewer.importXML(xml).then(function () {
-        var canvas = viewer.get('canvas');
-        canvas.zoom('fit-viewport');
-
-        // Hide loading indicator.
-        $thumbnail.find('.bpmn-preview-loading').fadeOut();
-      }).catch(function (err) {
+      var importer = function (theXml) {
+        return viewer.importXML(theXml).then(function () {
+          var canvas = viewer.get('canvas');
+          canvas.zoom('fit-viewport');
+          $thumbnail.find('.bpmn-preview-loading').fadeOut();
+        });
+      };
+      var loaded;
+      if (typeof window.layoutProcess === 'function' && xml.indexOf('BPMNDiagram') === -1) {
+        loaded = window.layoutProcess(xml).then(importer);
+      } else {
+        loaded = importer(xml);
+      }
+      loaded.catch(function (err) {
         console.error('Failed to load thumbnail:', err);
         $thumbnail.find('.bpmn-preview-loading').html(
           '<span class="error-icon">✗</span> Preview error'
