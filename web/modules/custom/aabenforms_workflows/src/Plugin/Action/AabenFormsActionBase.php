@@ -42,8 +42,20 @@ abstract class AabenFormsActionBase extends ActionBase implements ContainerFacto
       $container->get('eca.state'),
       $container->get('logger.factory')->get('aabenforms_workflows')
     );
-    $instance->executionCollector = $container->get('aabenforms_core.workflow_execution_collector');
+    $instance->setExecutionCollector(
+      $container->get('aabenforms_core.workflow_execution_collector')
+    );
     return $instance;
+  }
+
+  /**
+   * Setter injection for the workflow execution collector.
+   *
+   * Public so unit tests can wire a collector mock without reaching into
+   * private state via reflection. Production wiring goes through create().
+   */
+  public function setExecutionCollector(WorkflowExecutionCollector $collector): void {
+    $this->executionCollector = $collector;
   }
 
   /**
