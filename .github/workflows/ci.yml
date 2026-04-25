@@ -111,16 +111,12 @@ jobs:
         run: |
           # Tee the output so the test/assertion summary line is parseable
           # later. --log-junit gives us a machine-readable count too.
-          # The aabenforms_workflows exclusion is tracked as a follow-up
-          # (see the README) - those tests have rotted and need a real
-          # fix rather than masking inside the badge number.
           set -o pipefail
           XDEBUG_MODE=coverage vendor/bin/phpunit \
             --coverage-text \
             --coverage-cobertura=coverage/cobertura.xml \
             --coverage-html=coverage/html \
             --log-junit=phpunit-junit.xml \
-            --exclude-group aabenforms_workflows \
             --testdox 2>&1 | tee phpunit-output.log
         env:
           SIMPLETEST_DB: mysql://root:root@127.0.0.1/drupal_test

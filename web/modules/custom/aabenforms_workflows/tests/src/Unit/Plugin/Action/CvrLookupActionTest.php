@@ -3,6 +3,7 @@
 namespace Drupal\Tests\aabenforms_workflows\Unit\Plugin\Action;
 
 use Drupal\aabenforms_core\Service\ServiceplatformenClient;
+use Drupal\aabenforms_core\Service\WorkflowExecutionCollector;
 use Drupal\aabenforms_workflows\Plugin\Action\CvrLookupAction;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -105,6 +106,7 @@ class CvrLookupActionTest extends UnitTestCase {
           $ecaState,
           $this->logger
       );
+    $this->action->setExecutionCollector($this->createMock(WorkflowExecutionCollector::class));
 
     // Inject Serviceplatformen client using reflection.
     $reflectionClass = new \ReflectionClass($this->action);
