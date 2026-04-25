@@ -106,17 +106,16 @@ class RecipientTest extends UnitTestCase {
   }
 
   /**
-   * The hash never contains the raw identifier as a substring.
+   * The hash is a deterministic SHA-256 of the namespaced identifier.
    *
-   * The contract is "no leakage in logs" - this test fails loudly if a
-   * future refactor swaps SHA-256 for a reversible/format-preserving
-   * encoding.
+   * This guards against future refactors replacing hashing with some other
+   * encoding while avoiding probabilistic substring assertions.
    */
   public function testIdentifierHashDoesNotLeakRaw(): void {
     $cpr = '2506924015';
     $hash = Recipient::cpr($cpr)->identifierHash();
-    $this->assertStringNotContainsString($cpr, $hash);
-    $this->assertStringNotContainsString(substr($cpr, 0, 6), $hash);
+    $this->assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $hash);
+    $this->assertSame(hash('sha256', Recipient::TYPE_CPR . ':' . $cpr), $hash);
   }
 
   /**
