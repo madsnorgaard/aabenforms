@@ -95,8 +95,9 @@ class ApprovalTokenServiceTest extends UnitTestCase {
   /**
    * Base64 that decodes to a string with no ':' separator is rejected.
    *
-   * This is the path that previously fataled or fell through with an
-   * empty $timestamp. The count(parts) !== 2 guard short-circuits it.
+   * This is the path that previously caused a fatal error or fell
+   * through with an empty $timestamp. The count(parts) !== 2 guard
+   * short-circuits it.
    */
   public function testTokenWithoutSeparatorRejected(): void {
     $token = base64_encode('no-colon-here');
