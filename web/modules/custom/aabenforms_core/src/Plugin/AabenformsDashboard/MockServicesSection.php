@@ -47,9 +47,11 @@ class MockServicesSection extends AabenformsDashboardSectionBase {
   }
 
   public function isApplicable(): bool {
-    $mode = (string) $this->configFactory->get('aabenforms_digital_post.settings')->get('test_mode');
-    $isProd = !getenv('DDEV_HOSTNAME') && !getenv('DDEV_PROJECT');
-    return !($mode === 'live' && $isProd);
+    // The mock services live in DDEV - their endpoints are localhost
+    // ports unreachable from prod containers. Pinging them from prod
+    // always reports "Down", which is noise rather than signal. Render
+    // the card only when DDEV is detected via its env vars.
+    return (bool) (getenv('DDEV_HOSTNAME') ?: getenv('DDEV_PROJECT'));
   }
 
   public function getStatusBadge(): ?array {
