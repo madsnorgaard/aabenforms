@@ -22,32 +22,45 @@
       var self = this;
       var bpmnSettings = settings.aabenforms_workflows.bpmn;
 
-      // Initialize BPMN.io modeler with Danish municipal palette.
-      if (typeof BpmnJS === 'undefined') {
-        console.error('BPMN.io library not loaded');
+      // bpmn_io contrib exposes the bpmn-js library by auto-instantiating
+      // window.modeler — it does NOT expose a window.BpmnJS class. Grab
+      // the constructor off the existing instance to spin up our own.
+      if (!window.modeler || typeof window.modeler.constructor !== 'function') {
+        console.error('bpmn_io library did not initialize a window.modeler');
         return;
       }
+      var BpmnJSCtor = window.modeler.constructor;
 
-      // Create modeler with custom palette.
-      this.modeler = new BpmnJS({
+      // Create modeler with custom palette. bpmn-js 13 removed the
+      // explicit keyboard.bindTo option (it's implicit now).
+      var additionalModules = [];
+      if (window.DanishMunicipalPaletteProvider) {
+        additionalModules.push({
+          __init__: ['danishMunicipalPalette'],
+          danishMunicipalPalette: ['type', window.DanishMunicipalPaletteProvider]
+        });
+      }
+      this.modeler = new BpmnJSCtor({
         container: '#bpmn-canvas',
-        keyboard: {
-          bindTo: document
-        },
-        additionalModules: [
-          {
-            __init__: ['danishMunicipalPalette'],
-            danishMunicipalPalette: ['type', window.DanishMunicipalPaletteProvider]
-          }
-        ]
+        additionalModules: additionalModules
       });
 
-      // Load initial BPMN XML.
-      this.modeler.importXML(bpmnSettings.xml).then(function () {
+      // Our hand-authored .bpmn templates don't include bpmndi:BPMNDiagram
+      // (visual layout) - bpmn-js refuses to render those with "no
+      // diagram to display". window.layoutProcess() (from bpmn_io contrib)
+      // computes the layout server-side and returns enriched XML.
+      var loadXml = bpmnSettings.xml;
+      var importPromise;
+      if (typeof window.layoutProcess === 'function' && loadXml.indexOf('BPMNDiagram') === -1) {
+        importPromise = window.layoutProcess(loadXml).then(function (laidOutXml) {
+          return self.modeler.importXML(laidOutXml);
+        });
+      } else {
+        importPromise = self.modeler.importXML(loadXml);
+      }
+      importPromise.then(function () {
         var canvas = self.modeler.get('canvas');
         canvas.zoom('fit-viewport');
-
-        // Validate on load.
         self.validateBpmn();
       }).catch(function (err) {
         console.error('Failed to load BPMN diagram:', err);

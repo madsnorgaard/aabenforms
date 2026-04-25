@@ -262,6 +262,16 @@ class WorkflowTemplateWizardForm extends FormBase {
       $form_state->set('bpmn_xml', $bpmn_xml);
     }
 
+    // bpmn_io contrib's bpmn-modeler.js auto-instantiates
+    // window.modeler = new BpmnJS({container: '#bpmn-io .canvas'}) at
+    // script load. If that DOM is absent, every page using the library
+    // crashes with `Cannot read properties of null (reading 'appendChild')`.
+    // This hidden shim satisfies the auto-init; our own editor JS
+    // instantiates a separate BpmnJS against #bpmn-canvas below.
+    $form['bpmn_io_shim'] = [
+      '#markup' => '<div id="bpmn-io" hidden aria-hidden="true"><div class="canvas"></div></div>',
+    ];
+
     // BPMN.io editor container.
     $form['bpmn_editor'] = [
       '#type' => 'container',
@@ -296,7 +306,9 @@ class WorkflowTemplateWizardForm extends FormBase {
     ];
 
     // Attach BPMN.io libraries and custom palette.
-    $form['#attached']['library'][] = 'bpmn_io/ui';
+    // bpmn_io/core gives us BpmnJS without the modeler_api-coupled wrapper
+    // (bpmn_io/ui) which crashes on standalone pages.
+    $form['#attached']['library'][] = 'bpmn_io/core';
     $form['#attached']['library'][] = 'aabenforms_workflows/bpmn_editor';
     $form['#attached']['drupalSettings']['aabenforms_workflows']['bpmn'] = [
       'xml' => $bpmn_xml,
