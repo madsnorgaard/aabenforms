@@ -45,6 +45,36 @@ function aabenforms_core_help($route_name, RouteMatchInterface $route_match) {
 }
 
 /**
+ * Implements hook_toolbar().
+ *
+ * Registers a top-bar tab that links to the AabenForms admin dashboard
+ * from anywhere in the admin UI. The link only renders for users with
+ * the dashboard permission so the tab is invisible to ordinary editors.
+ */
+function aabenforms_core_toolbar(): array {
+  $access = \Drupal::currentUser()->hasPermission('access aabenforms admin');
+  return [
+    'aabenforms' => [
+      '#type' => 'toolbar_item',
+      '#weight' => -200,
+      '#access' => $access,
+      'tab' => [
+        '#type' => 'link',
+        '#title' => t('AabenForms'),
+        '#url' => Url::fromRoute('aabenforms_core.dashboard'),
+        '#attributes' => [
+          'title' => t('AabenForms admin dashboard'),
+          'class' => ['toolbar-icon', 'toolbar-icon-aabenforms'],
+        ],
+      ],
+      '#cache' => [
+        'contexts' => ['user.permissions'],
+      ],
+    ],
+  ];
+}
+
+/**
  * Implements hook_theme().
  */
 function aabenforms_core_theme(): array {

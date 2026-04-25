@@ -68,3 +68,13 @@
     --af-transition-base: 0ms;
   }
 }
+
+/* Toolbar tab icon - visible on every admin page for users with
+ * access aabenforms admin. Uses a simple inline SVG dot so it's
+ * recognizable without depending on an icon font. */
+.toolbar-icon-aabenforms::before {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%230071b9'><path d='M12 2 2 7v10l10 5 10-5V7L12 2zm0 2.18 7.5 3.75-7.5 3.75-7.5-3.75L12 4.18zm-8 5.07 7 3.5v7.5l-7-3.5v-7.5zm9 11v-7.5l7-3.5v7.5l-7 3.5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 18px;
+}
