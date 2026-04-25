@@ -12,8 +12,10 @@
  * - AabenformsDashboardSection plugin manager (admin dashboard).
  */
 
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
+use Drupal\user\Entity\User;
 
 /**
  * Implements hook_help().
@@ -87,19 +89,48 @@ function aabenforms_core_theme(): array {
 }
 
 /**
+ * Implements hook_form_FORM_ID_alter() for user_login_form.
+ *
+ * The standard /user/login form sets $form_state->setRedirect('user.page')
+ * as its default landing target (which resolves to /user/{uid}). We want
+ * users with the dashboard permission to land on /admin/aabenforms
+ * instead. Inject our own submit handler that runs AFTER Drupal core's
+ * default and overrides the redirect when applicable.
+ *
+ * Guards: skip if the user supplied an explicit ?destination=
+ * (RedirectResponseSubscriber will honor that anyway).
+ */
+function aabenforms_core_form_user_login_form_alter(array &$form, FormStateInterface $form_state, string $form_id): void {
+  $form['#submit'][] = 'aabenforms_core_user_login_form_redirect';
+}
+
+/**
+ * Submit handler for user_login_form. Sends admins to /admin/aabenforms.
+ */
+function aabenforms_core_user_login_form_redirect(array &$form, FormStateInterface $form_state): void {
+  if (\Drupal::request()->query->has('destination')) {
+    return;
+  }
+  $uid = (int) $form_state->get('uid');
+  if (!$uid) {
+    return;
+  }
+  $account = User::load($uid);
+  if ($account && $account->hasPermission('access aabenforms admin')) {
+    $form_state->setRedirect('aabenforms_core.dashboard');
+  }
+}
+
+/**
  * Implements hook_user_login().
  *
- * After login, send users with the dashboard permission to
- * /admin/aabenforms instead of /user/{uid}. Three guard rails:
+ * Covers the non-form login paths: password-reset URL, SSO callbacks,
+ * Drush uli, etc. The standard /user/login flow is handled by the
+ * form-alter above (more reliable than nudging request->query).
  *
- * 1. Don't override an explicit ?destination= the user (or the password-
- *    reset flow) already supplied.
- * 2. Skip on the password-reset route (user.reset / user.reset.login),
- *    which has its own destination handling.
- * 3. Only redirect users that have the access aabenforms admin permission.
- *
- * The actual redirect happens inside Drupal core's RedirectResponseSubscriber
- * which respects $request->query['destination'].
+ * Guards: skip if a destination is already set, skip on the password-
+ * reset route's own form (it has its own redirect logic), only act
+ * when the account has access aabenforms admin.
  */
 function aabenforms_core_user_login($account): void {
   if (!$account->hasPermission('access aabenforms admin')) {
