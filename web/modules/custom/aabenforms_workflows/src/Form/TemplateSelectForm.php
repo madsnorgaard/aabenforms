@@ -2,6 +2,7 @@
 
 namespace Drupal\aabenforms_workflows\Form;
 
+use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\aabenforms_workflows\Service\BpmnTemplateManager;
@@ -28,13 +29,23 @@ class TemplateSelectForm extends FormBase {
   protected BpmnTemplateManager $templateManager;
 
   /**
+   * The file system service.
+   *
+   * @var \Drupal\Core\File\FileSystemInterface
+   */
+  protected FileSystemInterface $fileSystem;
+
+  /**
    * Constructs a TemplateSelectForm object.
    *
    * @param \Drupal\aabenforms_workflows\Service\BpmnTemplateManager $template_manager
    *   The BPMN template manager service.
+   * @param \Drupal\Core\File\FileSystemInterface $file_system
+   *   The file system service.
    */
-  public function __construct(BpmnTemplateManager $template_manager) {
+  public function __construct(BpmnTemplateManager $template_manager, FileSystemInterface $file_system) {
     $this->templateManager = $template_manager;
+    $this->fileSystem = $file_system;
   }
 
   /**
@@ -42,7 +53,8 @@ class TemplateSelectForm extends FormBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('aabenforms_workflows.bpmn_template_manager')
+      $container->get('aabenforms_workflows.bpmn_template_manager'),
+      $container->get('file_system')
     );
   }
 
@@ -369,7 +381,7 @@ class TemplateSelectForm extends FormBase {
     $temp_path = NULL;
     try {
       $file->move('temporary://', $safe_name);
-      $temp_path = \Drupal::service('file_system')->realpath($destination);
+      $temp_path = $this->fileSystem->realpath($destination);
 
       if ($this->templateManager->importTemplate($temp_path, $template_id)) {
         $this->messenger()->addStatus(
