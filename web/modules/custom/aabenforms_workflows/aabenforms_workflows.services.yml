@@ -54,6 +54,26 @@ services:
     arguments:
       - '@logger.factory'
 
+  # Stub default for the org-chart lookup. A real LDAP/AD/HR-system
+  # integration replaces this via service decoration without touching
+  # the action plugin.
+  aabenforms_workflows.org_chart:
+    class: Drupal\aabenforms_workflows\Service\StubOrgChartService
+
+  # Payroll forwarding. fake_db default writes to {aabenforms_payroll_log};
+  # a real KMD Lon / Silkeborg Data / similar client decorates this when
+  # those API contracts are added.
+  aabenforms_workflows.payroll:
+    class: Drupal\aabenforms_workflows\Service\PayrollService
+    arguments:
+      - '@database'
+      - '@datetime.time'
+      - '@logger.channel.aabenforms_workflows'
+
+  logger.channel.aabenforms_workflows:
+    parent: logger.channel_base
+    arguments: ['aabenforms_workflows']
+
   # Listens to ConfigEvents::STORAGE_TRANSFORM_IMPORT to copy
   # wizard-created configs into the cim source so drush cim doesn't
   # delete them. See PreserveWizardConfigsSubscriber for the rationale.

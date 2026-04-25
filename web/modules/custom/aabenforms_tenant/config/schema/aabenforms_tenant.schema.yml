@@ -1,0 +1,17 @@
+aabenforms_tenant.settings:
+  type: config_object
+  label: 'AabenForms Tenant settings'
+  mapping:
+    employee_provisioning:
+      type: mapping
+      label: 'Employee role provisioning'
+      mapping:
+        employee_claim_field:
+          type: string
+          label: 'OIDC claim field used to detect employees'
+        employee_claim_match:
+          type: string
+          label: 'Match rule (equals or starts_with)'
+        employee_claim_value:
+          type: string
+          label: 'Expected claim value'

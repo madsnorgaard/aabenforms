@@ -29,6 +29,17 @@ actions:
       message_template: 'Expense claim submitted'
     successors:
       -
+        id: lookup_manager
+        condition: ''
+  lookup_manager:
+    label: 'Resolve manager email from org-chart'
+    plugin: aabenforms_manager_lookup
+    configuration:
+      employee_id_token: '[webform_submission:values:employee_id:raw]'
+      fallback_email_token: '[webform_submission:values:manager_email:raw]'
+      result_token: mileage_expense_manager_email
+    successors:
+      -
         id: log_manager_notified
         condition: ''
   log_manager_notified:
@@ -36,17 +47,18 @@ actions:
     plugin: aabenforms_audit_log
     configuration:
       event_type: mileage_expense_manager_notified
-      additional_data_token: '[webform_submission:values:manager_email:raw]'
+      additional_data_token: '[mileage_expense_manager_email]'
       message_template: 'Stub. Production would send approval email.'
     successors:
       -
-        id: log_payroll_forwarded
+        id: forward_to_payroll
         condition: ''
-  log_payroll_forwarded:
-    label: 'Log: forwarded to payroll (stub)'
-    plugin: aabenforms_audit_log
+  forward_to_payroll:
+    label: 'Forward expense claim to payroll'
+    plugin: aabenforms_payroll_post
     configuration:
-      event_type: mileage_expense_payroll_forwarded
-      additional_data_token: '[webform_submission:values:employee_id:raw]'
-      message_template: 'Stub. Production would POST to payroll API on manager approval.'
+      employee_id_token: '[webform_submission:values:employee_id:raw]'
+      amount_token: '[webform_submission:values:amount:raw]'
+      claim_type: mileage_expense
+      result_token: mileage_expense_payroll_result
     successors: {  }

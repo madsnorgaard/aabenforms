@@ -8,6 +8,90 @@
 declare(strict_types=1);
 
 /**
+ * Implements hook_schema().
+ */
+function aabenforms_workflows_schema(): array {
+  $schema['aabenforms_payroll_log'] = [
+    'description' => 'Audit log of payroll-forwarded claims (e.g. mileage_expense). One row per PayrollPostAction execution.',
+    'fields' => [
+      'id' => ['type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE],
+      'transaction_id' => [
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+        'description' => 'UUID-like opaque id for the payroll submission.',
+      ],
+      'mode' => [
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => 'fake_db',
+        'description' => 'Transport mode: fake_db / wiremock / live.',
+      ],
+      'employee_id_hash' => [
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+        'description' => 'SHA-256 hash of the employee identifier; never the raw value.',
+      ],
+      'claim_type' => [
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+        'default' => 'unspecified',
+        'description' => 'Type of payroll claim (mileage, expense, etc.).',
+      ],
+      'amount_cents' => [
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Claim amount in DKK cents (øre).',
+      ],
+      'status' => [
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'description' => 'success | failure.',
+      ],
+      'reason_code' => [
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => FALSE,
+        'description' => 'Typed failure code (TRANSPORT, VALIDATION, ...).',
+      ],
+      'payload' => [
+        'type' => 'text',
+        'size' => 'medium',
+        'not null' => FALSE,
+        'description' => 'JSON of the claim payload sent to the transport.',
+      ],
+      'response' => [
+        'type' => 'text',
+        'size' => 'medium',
+        'not null' => FALSE,
+        'description' => 'Transport response.',
+      ],
+      'created' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Unix timestamp.',
+      ],
+    ],
+    'primary key' => ['id'],
+    'unique keys' => [
+      'transaction_id' => ['transaction_id'],
+    ],
+    'indexes' => [
+      'created' => ['created'],
+      'employee_id_hash' => ['employee_id_hash'],
+      'status' => ['status'],
+    ],
+  ];
+  return $schema;
+}
+
+/**
  * Migrates ECA configs from removed base plugins to the aabenforms_log shim.
  *
  * Upstream ECA removed eca_base_log and eca_base_mail; any existing

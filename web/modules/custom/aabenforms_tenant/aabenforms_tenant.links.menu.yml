@@ -1,0 +1,5 @@
+aabenforms_tenant.settings:
+  title: 'AabenForms Tenant'
+  description: 'Configure tenant-scoped employee role provisioning from MitID/NemLogin claims.'
+  route_name: aabenforms_tenant.settings
+  parent: system.admin_config_services
