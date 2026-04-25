@@ -61,13 +61,13 @@ Deprecations:    215
 ####  **PASSING TESTS** (63 tests)
 
 **Services** (14 tests - 10 passed):
-- ✔ BpmnTemplateManager::getAvailableTemplates
-- ✔ BpmnTemplateManager::loadTemplate
-- ✔ BpmnTemplateManager::loadTemplateNotFound
-- ✔ BpmnTemplateManager::importTemplate
-- ✔ AuditLogAction::gdprCompliance
-- ✔ AuditLogAction::defaultConfiguration
-- ⚠ 4 BPMN validation failures (incorrect return types)
+-  BpmnTemplateManager::getAvailableTemplates
+-  BpmnTemplateManager::loadTemplate
+-  BpmnTemplateManager::loadTemplateNotFound
+-  BpmnTemplateManager::importTemplate
+-  AuditLogAction::gdprCompliance
+-  AuditLogAction::defaultConfiguration
+-  4 BPMN validation failures (incorrect return types)
 
 ####  **FAILING TESTS** (101 errors + 6 failures)
 

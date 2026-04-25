@@ -206,7 +206,7 @@ $sms_result = $services["sms"]->sendSms(
 );
 echo "   SMS " . $sms_result["status"] . "\n";
 
-echo "\n🎉 Complete workflow executed successfully!\n";
+echo "\n Complete workflow executed successfully!\n";
 echo "This is what XFlow does - but we did it with open source!\n";
 '
 ```
@@ -253,16 +253,16 @@ echo "This is what XFlow does - but we did it with open source!\n";
 ##  Next Steps
 
 1.  **Core functionality works** (as demonstrated)
-2. 🚧 **Complete UI** (frontend components)
-3. 🚧 **Add tests** (quality assurance)
+2.  **Complete UI** (frontend components)
+3.  **Add tests** (quality assurance)
 4.  **Write docs** (user guides)
-5. 🎥 **Record videos** (training materials)
+5.  **Record videos** (training materials)
 
 **Status**: **Ready for pilot deployment in forward-thinking municipality!**
 
 ---
 
-## 📞 Contact
+##  Contact
 
 - **Email**: aabenforms@example.dk
 - **Demo Site**: https://demo.aabenforms.dk (coming soon)

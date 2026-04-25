@@ -115,7 +115,7 @@ Timeout: 14 days
 Both Parents Must Approve: Yes
 ```
 
-> "Forældrene kan godkende parallelt – altså samtidig. Efter 14 dage udløber anmodningen automatisk."
+> "Forældrene kan godkende parallelt - altså samtidig. Efter 14 dage udløber anmodningen automatisk."
 >
 > [SELECT options while speaking]
 
@@ -396,10 +396,10 @@ Key Benefits:
 **On-Screen**:
 ```
 Resources:
-  📖 Documentation: aabenforms.dk/docs
-  🎓 Training: aabenforms.dk/training
-  💬 Community: aabenforms.dk/forum
-  📧 Support: support@aabenforms.dk
+   Documentation: aabenforms.dk/docs
+   Training: aabenforms.dk/training
+   Community: aabenforms.dk/forum
+   Support: support@aabenforms.dk
 ```
 
 > "Tak fordi du så med, og held og lykke med jeres workflows!"

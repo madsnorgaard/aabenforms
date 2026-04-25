@@ -60,7 +60,7 @@ ddev exec phpunit --group functional_javascript --debug
 ddev exec phpunit --group functional_javascript --stop-on-failure
 ```
 
-## 🧪 Test Coverage Map
+##  Test Coverage Map
 
 | Test File | Tests | Coverage |
 |-----------|-------|----------|
@@ -174,7 +174,7 @@ $this->assertSession()->waitForElementRemoved('css', '.element', 10000);
 $this->assertSession()->assertWaitOnAjaxRequest();
 ```
 
-## 🐛 Common Issues & Solutions
+##  Common Issues & Solutions
 
 | Issue | Solution |
 |-------|----------|
@@ -184,7 +184,7 @@ $this->assertSession()->assertWaitOnAjaxRequest();
 | Test hangs | Add timeout to wait: `waitForText('text', 10000)` |
 | Random failures | Increase wait times, ensure AJAX completes |
 
-## 📁 File Locations
+##  File Locations
 
 ```
 web/modules/custom/aabenforms_workflows/tests/src/FunctionalJavascript/
@@ -197,7 +197,7 @@ web/modules/custom/aabenforms_workflows/tests/src/FunctionalJavascript/
 └── QUICK_REFERENCE.md                  # This file
 ```
 
-## 🎓 Learning Resources
+##  Learning Resources
 
 - [Drupal FunctionalJavascript Testing](https://www.drupal.org/docs/automated-testing/phpunit-in-drupal/functional-javascript-testing)
 - [WebDriver Documentation](https://www.selenium.dev/documentation/webdriver/)
@@ -216,13 +216,13 @@ Before running tests:
 - [ ] aabenforms_workflows module enabled
 - [ ] Test database configured in phpunit.xml
 
-## 📈 Coverage Goals
+##  Coverage Goals
 
 - **Current**: 43 tests created
 - **Target**: All tests passing
 - **Coverage**: 60%+ code coverage
 
-## 🚨 Known Limitations
+##  Known Limitations
 
 - Some routes may not exist yet (dashboard, wizard)
 - Controllers need implementation
