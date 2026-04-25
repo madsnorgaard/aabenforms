@@ -111,9 +111,10 @@ class ApprovalTokenService {
         return FALSE;
       }
 
-      // Guard the destructure: a token without ':' would PHP-fatal on
-      // unconditional list-assignment, and an empty $timestamp would
-      // coerce to (int) 0 which is "valid in 1970".
+      // Guard the destructure: a token without ':' would raise undefined
+      // array key/offset warnings on unconditional list-assignment, and a
+      // missing or empty timestamp could end up coercing to (int) 0
+      // ("valid in 1970") if not rejected first.
       $parts = explode(':', $decoded, 2);
       if (count($parts) !== 2) {
         $this->logger->notice('Malformed token (no separator) for submission @sid', [
