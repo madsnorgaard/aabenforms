@@ -1,12 +1,29 @@
 # ÅbenForms - Next Steps & Priorities
 
-**Updated**: 2026-01-27 10:15 UTC
-**Current Sprint**: Week 2 (Testing Coverage)
-**Phase**: Phase 2 - Authentication & Security
+**Updated**: 2026-04-25 UTC
+**Phase**: Phase 4 - Modular Danish Service Integrations
 
 ---
 
-## Immediate Priorities (This Week)
+## Status (Apr 25, 2026)
+
+Live at https://api.aabenforms.dk + https://aabenforms.dk. POC/demo. Active workstream: modular Digital Post + NemLogin rewrite. Approved plan at `/home/mno/.claude/plans/zesty-wobbling-kahn.md`.
+
+**Shipped:**
+- **Session 1** - `aabenforms_digital_post` core. Plug-and-play on bare Drupal 11; hard deps `drupal:key` + `aabenforms_core` only. 4 test modes (`fake_db`/`wiremock`/`live_test`/`live`). Drush: `af:dp:send`, `af:dp:log:tail`, `af:dp:status`. Service: `aabenforms_digital_post.sender`. Live on prod in `fake_db` mode.
+- **Session 2A** - `aabenforms_digital_post_eca` submodule. ECA action plugin `aabenforms_digital_post_send`. `citizen_service_application.bpmn` Approved + Rejected branches both wired to it; verified end-to-end on prod.
+- Platform fixes shipped alongside: `aabenforms_log` shim replacing removed upstream `eca_base_log`; `hook_storage_transform_import` preserves wizard-created configs across `drush cim`; `aabenforms_core/admin` design tokens (`--af-*` CSS vars); modernized wizard step indicator; preview thumbnails fixed; Active Workflows on top of templates page; TemplateSelectForm cache + path-traversal hardened.
+
+**Next sessions (in order):**
+1. **Session 2B** - Real MeMo XML via `itk-dev/serviceplatformen`; real SF1601 SOAP transport; `live_test` against Serviceplatformen exttest endpoint. Update WireMock mapping to match real SOAP envelope.
+2. **Session 2C** - `aabenforms_nemlogin` OIDC core (PKCE S256, ItkOidcClient, ClaimStore, SessionGuard, provider config entity); `aabenforms_nemlogin_keycloak` preset; shim `aabenforms_mitid` over it.
+3. **Session 3** - `_webform`, `_beskedfordeler`, `_os2web_key`, AdvancedQueueDispatcher bridge, examples submodule, remove `aabenforms_mitid` entirely, bare-Drupal-11 GitHub Actions verification.
+
+The historical sprint detail below is preserved for context but is superseded by the session plan above.
+
+---
+
+## Historical (Jan 2026 sprint): Immediate Priorities
 
 ### 1. Complete Core Service Tests (PRIORITY HIGH)
 
