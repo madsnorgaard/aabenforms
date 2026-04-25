@@ -1,0 +1,56 @@
+uuid: a7b8c9d0-e1f2-3456-0123-678901234599
+langcode: en
+status: true
+dependencies:
+  module:
+    - aabenforms_workflows
+    - eca_base
+    - eca_content
+id: med_election_voting_flow
+weight: null
+template: null
+events:
+  on_ballot_submitted:
+    plugin: 'content_entity:insert'
+    configuration:
+      type: 'webform_submission med_election_ballot'
+    successors:
+      -
+        id: validate_voter_mitid
+        condition: ''
+  on_cron_tick:
+    plugin: eca_base_cron
+    configuration:
+      frequency: '+1 minute'
+    successors:
+      -
+        id: tabulate_due
+        condition: ''
+conditions: {  }
+gateways: {  }
+actions:
+  validate_voter_mitid:
+    label: 'Validate voter MitID'
+    plugin: aabenforms_mitid_validate
+    configuration:
+      workflow_id_token: workflow_id_med_voting
+      result_token: voter_mitid_valid
+      session_data_token: voter_session
+    successors:
+      -
+        id: record_ballot
+        condition: ''
+  record_ballot:
+    label: 'Record voter ballot'
+    plugin: aabenforms_record_ballot
+    configuration:
+      election_id_token: '[webform_submission:values:election_id:raw]'
+      choice_index_token: '[webform_submission:values:choice_index:raw]'
+      cpr_token: '[voter_session:cpr]'
+      result_token: ballot_result
+    successors: {  }
+  tabulate_due:
+    label: 'Cron: open/close due elections'
+    plugin: aabenforms_tabulate_election
+    configuration: {  }
+    successors: {  }

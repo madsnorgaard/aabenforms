@@ -91,6 +91,14 @@ function aabenforms_workflows_mail(string $key, array &$message, array $params):
  */
 function aabenforms_workflows_theme(array $existing, string $type, string $theme, string $path): array {
   return [
+    'aabenforms_election_results' => [
+      'variables' => [
+        'election' => [],
+        'tally' => [],
+        'total_ballots' => 0,
+      ],
+      'template' => 'aabenforms-election-results',
+    ],
     'parent_approval_login' => [
       'variables' => [
         'child_name' => NULL,

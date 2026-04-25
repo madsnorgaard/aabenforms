@@ -1,0 +1,51 @@
+{#
+/**
+ * @file
+ * Election results table.
+ *
+ * Variables:
+ * - election: { id, label, description, status, opens_at, closes_at }
+ * - tally: [ { index, label, count, percent } ]
+ * - total_ballots: int
+ */
+#}
+<article class="af-election-results">
+  <header>
+    <h1>{{ election.label }}</h1>
+    {% if election.description %}
+      <p class="af-election-results__desc">{{ election.description }}</p>
+    {% endif %}
+    <p class="af-election-results__meta">
+      {{ 'Window'|t }}: {{ election.opens_at }} – {{ election.closes_at }} ·
+      {{ 'Status'|t }}: <span class="af-pill af-pill--{{ election.status == 'published' ? 'success' : (election.status == 'open' ? 'brand' : 'neutral') }}">{{ election.status }}</span> ·
+      {{ '@n ballots'|t({'@n': total_ballots}) }}
+    </p>
+  </header>
+
+  {% if tally %}
+    <table class="af-election-results__table">
+      <thead>
+        <tr>
+          <th>{{ 'Choice'|t }}</th>
+          <th>{{ 'Votes'|t }}</th>
+          <th>{{ 'Share'|t }}</th>
+          <th>{{ 'Distribution'|t }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in tally %}
+          <tr>
+            <td>{{ row.label }}</td>
+            <td class="af-election-results__count">{{ row.count }}</td>
+            <td class="af-election-results__percent">{{ row.percent }}%</td>
+            <td>
+              <div class="af-election-results__bar" style="width:{{ row.percent }}%"></div>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>{{ 'Tally not available yet. Cron will close the window automatically when the deadline passes.'|t }}</p>
+  {% endif %}
+</article>

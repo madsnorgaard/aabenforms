@@ -60,6 +60,16 @@ services:
   aabenforms_workflows.org_chart:
     class: Drupal\aabenforms_workflows\Service\StubOrgChartService
 
+  # MED voting service: window open/close, ballot recording (with
+  # CPR-hash uniqueness), tabulation. Used by the cron-driven ECA flow
+  # and the dashboard ElectionsSection card.
+  aabenforms_workflows.election:
+    class: Drupal\aabenforms_workflows\Service\ElectionService
+    arguments:
+      - '@database'
+      - '@datetime.time'
+      - '@logger.channel.aabenforms_workflows'
+
   # Payroll forwarding. fake_db default writes to {aabenforms_payroll_log};
   # a real KMD Lon / Silkeborg Data / similar client decorates this when
   # those API contracts are added.
