@@ -1,8 +1,11 @@
-# Top-level admin toolbar entry. weight: -100 puts it leftmost,
-# ahead of system.admin (weight: 9).
+# AabenForms link inside the Manage admin toolbar tray
+# (system.admin -> AabenForms), with low weight so it sits at the top.
+# A dedicated top-bar tab is also registered via hook_toolbar()
+# in aabenforms_core.module - see toolbar() implementation.
 aabenforms_core.dashboard:
   title: 'AabenForms'
   description: 'Unified admin dashboard for the AabenForms platform.'
   route_name: aabenforms_core.dashboard
   menu_name: admin
+  parent: system.admin
   weight: -100
