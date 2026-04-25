@@ -1,16 +1,5 @@
 _core:
   default_config_hash: r0zQF0o9lkA3FLcd7pKqaZyOl2tRbtJbeDwLM6eP64I
-issuer: 'http://keycloak:8080/realms/danish-gov-test'
-authorization_endpoint: 'http://localhost:8080/realms/danish-gov-test/protocol/openid-connect/auth'
-token_endpoint: 'http://keycloak:8080/realms/danish-gov-test/protocol/openid-connect/token'
-userinfo_endpoint: 'http://keycloak:8080/realms/danish-gov-test/protocol/openid-connect/userinfo'
-client_id: 'aabenforms-backend'
-client_secret: 'aabenforms-backend-secret-change-in-production'
-redirect_uri: 'https://aabenforms.ddev.site/mitid/callback'
-scopes:
-  - openid
-  - profile
-  - email
 session:
   expiration: 900
   storage: tempstore
@@ -18,3 +7,14 @@ security:
   validate_tokens: false
   required_assurance_level: substantial
 production: false
+client_id: aabenforms-backend
+client_secret: aabenforms-backend-secret-change-in-production
+authorization_endpoint: 'http://localhost:8080/realms/danish-gov-test/protocol/openid-connect/auth'
+token_endpoint: 'http://keycloak:8080/realms/danish-gov-test/protocol/openid-connect/token'
+userinfo_endpoint: 'http://keycloak:8080/realms/danish-gov-test/protocol/openid-connect/userinfo'
+redirect_uri: 'https://aabenforms.ddev.site/mitid/callback'
+issuer: 'http://keycloak:8080/realms/danish-gov-test'
+scopes:
+  - openid
+  - ssn
+pkce_enabled: true

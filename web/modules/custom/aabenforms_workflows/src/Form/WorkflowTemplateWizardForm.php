@@ -856,8 +856,16 @@ class WorkflowTemplateWizardForm extends FormBase {
       'status' => $data['status'] ?? TRUE,
     ];
 
-    // Instantiate workflow.
-    $result = $this->instantiator->instantiate($template_id, $configuration);
+    // Instantiate workflow. Pass the BPMN XML last edited in step 2 so
+    // visual edits survive the round-trip to ECA config; without this the
+    // instantiator re-reads the on-disk template and ignores them.
+    $edited_xml = $form_state->get('bpmn_xml')
+      ?: ($data['bpmn_xml'] ?? NULL);
+    $result = $this->instantiator->instantiate(
+      $template_id,
+      $configuration,
+      is_string($edited_xml) && $edited_xml !== '' ? $edited_xml : NULL,
+    );
 
     if ($result['success']) {
       $this->messenger()->addStatus(
