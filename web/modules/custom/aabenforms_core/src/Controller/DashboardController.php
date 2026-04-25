@@ -42,20 +42,23 @@ class DashboardController extends ControllerBase {
     $cache->mergeCacheMaxAge(60);
 
     foreach ($sections as $id => $section) {
-      $cards[$id] = [
-        '#theme' => 'aabenforms_dashboard_section_card',
-        '#section_id' => $id,
-        '#label' => $section->getLabel(),
-        '#status_badge' => $section->getStatusBadge(),
-        '#hero_metric' => $section->getHeroMetric(),
-        '#secondary_metrics' => $section->getSecondaryMetrics(),
-        '#main_link' => $section->getMainLink(),
-      ];
-      $cache->merge(CacheableMetadata::createFromObject($section));
+      $cards[$id] = $this->buildSectionCard($id, $section);
+      try {
+        $cache->merge(CacheableMetadata::createFromObject($section));
+      }
+      catch (\Throwable $e) {
+        $this->logSectionFailure($id, 'cache_metadata', $e);
+      }
     }
 
     $filter = (string) $request->query->get('filter', RecentActivityBuilder::DEFAULT_FILTER);
-    $activity = $this->activityBuilder->build($filter);
+    try {
+      $activity = $this->activityBuilder->build($filter);
+    }
+    catch (\Throwable $e) {
+      \Drupal::logger('aabenforms_core')->error('Activity feed failed: @msg', ['@msg' => $e->getMessage()]);
+      $activity = ['rows' => [], 'pivoted' => FALSE, 'filter' => $filter];
+    }
     $cache->addCacheTags(['aabenforms_dashboard:activity']);
     $cache->addCacheContexts(['url.query_args:filter']);
 
@@ -86,6 +89,59 @@ class DashboardController extends ControllerBase {
 
     $cache->applyTo($build);
     return $build;
+  }
+
+  /**
+   * Compose one section card with each accessor wrapped in try/catch.
+   *
+   * Any single accessor blowing up (e.g. a DB query against a column
+   * that briefly disappears during cim, a config key shape change, a
+   * stale plugin cache between cim and cr) drops to a safe default for
+   * that field instead of bubbling the exception and 500'ing the whole
+   * dashboard.
+   */
+  protected function buildSectionCard(string $id, $section): array {
+    $card = [
+      '#theme' => 'aabenforms_dashboard_section_card',
+      '#section_id' => $id,
+      '#label' => $this->safeAccessor($id, 'getLabel', fn () => $section->getLabel(), $this->t('@id', ['@id' => $id])),
+      '#status_badge' => $this->safeAccessor($id, 'getStatusBadge', fn () => $section->getStatusBadge()),
+      '#hero_metric' => $this->safeAccessor($id, 'getHeroMetric', fn () => $section->getHeroMetric()),
+      '#secondary_metrics' => $this->safeAccessor($id, 'getSecondaryMetrics', fn () => $section->getSecondaryMetrics(), []),
+      '#main_link' => $this->safeAccessor($id, 'getMainLink', fn () => $section->getMainLink(), []),
+    ];
+
+    // If everything bombed (no badge, no metric, no link) tag the card
+    // visually as unavailable so the user sees something rather than an
+    // empty hole.
+    $allEmpty = $card['#status_badge'] === NULL
+      && $card['#hero_metric'] === NULL
+      && empty($card['#secondary_metrics'])
+      && empty($card['#main_link']);
+    if ($allEmpty) {
+      $card['#status_badge'] = ['label' => $this->t('Unavailable'), 'tone' => 'warning'];
+    }
+    return $card;
+  }
+
+  /**
+   * Run a section-data accessor; return a safe fallback on any throw.
+   */
+  protected function safeAccessor(string $id, string $method, callable $fn, $fallback = NULL) {
+    try {
+      return $fn();
+    }
+    catch (\Throwable $e) {
+      $this->logSectionFailure($id, $method, $e);
+      return $fallback;
+    }
+  }
+
+  protected function logSectionFailure(string $id, string $method, \Throwable $e): void {
+    \Drupal::logger('aabenforms_core')->error(
+      'Dashboard section @id::@method failed: @msg',
+      ['@id' => $id, '@method' => $method, '@msg' => $e->getMessage()],
+    );
   }
 
   /**

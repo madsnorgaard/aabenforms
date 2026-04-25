@@ -38,15 +38,28 @@ class AabenformsDashboardSectionManager extends DefaultPluginManager {
   /**
    * Returns instantiated, applicable sections sorted by weight ascending.
    *
+   * Defensive: a single section plugin failing to instantiate (stale
+   * plugin cache during cim/cr, missing service after a partial deploy,
+   * exception in isApplicable) must not 500 the entire dashboard. Log
+   * and skip the broken plugin; the rest of the grid still renders.
+   *
    * @return \Drupal\aabenforms_core\Dashboard\AabenformsDashboardSectionInterface[]
    */
   public function getApplicableSections(): array {
     $sections = [];
     foreach (array_keys($this->getDefinitions()) as $id) {
-      /** @var \Drupal\aabenforms_core\Dashboard\AabenformsDashboardSectionInterface $section */
-      $section = $this->createInstance($id);
-      if ($section->isApplicable()) {
-        $sections[$id] = $section;
+      try {
+        /** @var \Drupal\aabenforms_core\Dashboard\AabenformsDashboardSectionInterface $section */
+        $section = $this->createInstance($id);
+        if ($section->isApplicable()) {
+          $sections[$id] = $section;
+        }
+      }
+      catch (\Throwable $e) {
+        \Drupal::logger('aabenforms_core')->error(
+          'Dashboard section @id failed to load: @msg',
+          ['@id' => $id, '@msg' => $e->getMessage()],
+        );
       }
     }
     uasort($sections, static fn ($a, $b) => $a->getWeight() <=> $b->getWeight());

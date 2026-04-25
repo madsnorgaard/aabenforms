@@ -53,6 +53,19 @@ function aabenforms_core_help($route_name, RouteMatchInterface $route_match) {
  */
 function aabenforms_core_toolbar(): array {
   $access = \Drupal::currentUser()->hasPermission('access aabenforms admin');
+  // Defensive: Url::fromRoute throws if the dashboard route is briefly
+  // missing (e.g. mid cim/cr cycle on deploy). Suppress that case so the
+  // toolbar - which renders on every admin page - never 500s.
+  try {
+    $url = Url::fromRoute('aabenforms_core.dashboard');
+  }
+  catch (\Throwable $e) {
+    \Drupal::logger('aabenforms_core')->warning(
+      'Toolbar tab skipped: dashboard route not available (@msg)',
+      ['@msg' => $e->getMessage()],
+    );
+    return [];
+  }
   return [
     'aabenforms' => [
       '#type' => 'toolbar_item',
@@ -61,7 +74,7 @@ function aabenforms_core_toolbar(): array {
       'tab' => [
         '#type' => 'link',
         '#title' => t('AabenForms'),
-        '#url' => Url::fromRoute('aabenforms_core.dashboard'),
+        '#url' => $url,
         '#attributes' => [
           'title' => t('AabenForms admin dashboard'),
           'class' => ['toolbar-icon', 'toolbar-icon-aabenforms'],
