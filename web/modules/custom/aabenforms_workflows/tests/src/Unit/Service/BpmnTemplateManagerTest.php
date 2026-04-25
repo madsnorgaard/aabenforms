@@ -328,13 +328,10 @@ XML;
    * @covers ::validateTemplate
    */
   public function testValidateTemplate(): void {
+    // validateTemplate() returns bool; errors are surfaced separately.
     $result = $this->templateManager->validateTemplate('building_permit');
-
-    $this->assertIsArray($result);
-    $this->assertArrayHasKey('valid', $result);
-    $this->assertArrayHasKey('errors', $result);
-    $this->assertTrue($result['valid'], 'Valid template should pass validation');
-    $this->assertEmpty($result['errors'], 'Valid template should have no errors');
+    $this->assertTrue($result, 'Valid template should pass validation');
+    $this->assertEmpty($this->templateManager->getValidationErrors(), 'Valid template should have no errors');
   }
 
   /**
@@ -344,10 +341,10 @@ XML;
    */
   public function testValidateTemplateMissingStartEvent(): void {
     $result = $this->templateManager->validateTemplate('missing_start');
-
-    $this->assertFalse($result['valid']);
-    $this->assertNotEmpty($result['errors']);
-    $this->assertContains('No start event found', $result['errors']);
+    $errors = $this->templateManager->getValidationErrors();
+    $this->assertFalse($result);
+    $this->assertNotEmpty($errors);
+    $this->assertStringContainsString('No start event found', implode(' | ', $errors));
   }
 
   /**
@@ -357,10 +354,10 @@ XML;
    */
   public function testValidateTemplateMissingEndEvent(): void {
     $result = $this->templateManager->validateTemplate('missing_end');
-
-    $this->assertFalse($result['valid']);
-    $this->assertNotEmpty($result['errors']);
-    $this->assertContains('No end event found', $result['errors']);
+    $errors = $this->templateManager->getValidationErrors();
+    $this->assertFalse($result);
+    $this->assertNotEmpty($errors);
+    $this->assertStringContainsString('No end event found', implode(' | ', $errors));
   }
 
   /**
@@ -369,13 +366,13 @@ XML;
    * @covers ::validateTemplate
    */
   public function testValidateTemplateInvalidXml(): void {
-    // Invalid XML should cause loadTemplate to return NULL.
-    // This will trigger a "Failed to load template" error.
+    // Invalid XML causes loadTemplate to return NULL, which surfaces
+    // as a "Failed to load template" entry in getValidationErrors().
     $result = $this->templateManager->validateTemplate('invalid_xml');
-
-    $this->assertFalse($result['valid'], 'Invalid XML should fail validation');
-    $this->assertNotEmpty($result['errors'], 'Should have validation errors');
-    $this->assertContains('Failed to load template', $result['errors'], 'Should indicate template load failure');
+    $errors = $this->templateManager->getValidationErrors();
+    $this->assertFalse($result, 'Invalid XML should fail validation');
+    $this->assertNotEmpty($errors, 'Should have validation errors');
+    $this->assertStringContainsString('Failed to load', implode(' | ', $errors), 'Should indicate template load failure');
   }
 
   /**
