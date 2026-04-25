@@ -7,7 +7,7 @@ namespace Drupal\aabenforms_digital_post_eca\Plugin\Action;
 use Drupal\aabenforms_digital_post\DigitalPost\DigitalPost;
 use Drupal\aabenforms_digital_post\DigitalPost\Recipient;
 use Drupal\aabenforms_digital_post\DigitalPost\Sender;
-use Drupal\aabenforms_digital_post\Service\DigitalPostSender;
+use Drupal\aabenforms_digital_post\Service\DigitalPostSenderInterface;
 use Drupal\aabenforms_workflows\Plugin\Action\AabenFormsActionBase;
 use Drupal\Core\Action\Attribute\Action;
 use Drupal\Core\Config\ConfigFactoryInterface;
@@ -42,9 +42,9 @@ class SendDigitalPostAction extends AabenFormsActionBase {
   /**
    * The Digital Post sender service.
    *
-   * @var \Drupal\aabenforms_digital_post\Service\DigitalPostSender
+   * @var \Drupal\aabenforms_digital_post\Service\DigitalPostSenderInterface
    */
-  protected DigitalPostSender $sender;
+  protected DigitalPostSenderInterface $sender;
 
   /**
    * The config factory used to resolve the default sender CVR.
@@ -58,9 +58,29 @@ class SendDigitalPostAction extends AabenFormsActionBase {
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     $instance = parent::create($container, $configuration, $plugin_id, $plugin_definition);
-    $instance->sender = $container->get('aabenforms_digital_post.sender');
-    $instance->configFactory = $container->get('config.factory');
+    $instance->setSender($container->get('aabenforms_digital_post.sender'));
+    $instance->setConfigFactory($container->get('config.factory'));
     return $instance;
+  }
+
+  /**
+   * Setter injection for the Digital Post sender service.
+   *
+   * Public so unit tests can swap in a stub without reflection. The
+   * production wiring goes through create() above.
+   */
+  public function setSender(DigitalPostSenderInterface $sender): void {
+    $this->sender = $sender;
+  }
+
+  /**
+   * Setter injection for the config factory.
+   *
+   * Public so unit tests can swap in a stub without reflection. The
+   * production wiring goes through create() above.
+   */
+  public function setConfigFactory(ConfigFactoryInterface $configFactory): void {
+    $this->configFactory = $configFactory;
   }
 
   /**

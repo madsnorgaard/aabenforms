@@ -20,7 +20,7 @@ use Psr\Log\LoggerInterface;
  * This class intentionally knows nothing about MeMo XML, certificates,
  * or SOAP. Those concerns live below the Sf1601ClientInterface boundary.
  */
-final class DigitalPostSender {
+final class DigitalPostSender implements DigitalPostSenderInterface {
 
   public function __construct(
     private readonly Sf1601ClientInterface $client,

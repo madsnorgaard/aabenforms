@@ -42,8 +42,20 @@ abstract class AabenFormsActionBase extends ActionBase implements ContainerFacto
       $container->get('eca.state'),
       $container->get('logger.factory')->get('aabenforms_workflows')
     );
-    $instance->executionCollector = $container->get('aabenforms_core.workflow_execution_collector');
+    $instance->setExecutionCollector(
+      $container->get('aabenforms_core.workflow_execution_collector')
+    );
     return $instance;
+  }
+
+  /**
+   * Setter injection for the workflow execution collector.
+   *
+   * Public so unit tests can wire a collector mock without reaching into
+   * private state via reflection. Production wiring goes through create().
+   */
+  public function setExecutionCollector(WorkflowExecutionCollector $collector): void {
+    $this->executionCollector = $collector;
   }
 
   /**
@@ -72,12 +84,16 @@ abstract class AabenFormsActionBase extends ActionBase implements ContainerFacto
   /**
    * Handles action execution errors.
    *
-   * @param \Exception $e
-   *   The exception.
+   * Param is `\Throwable`, not `\Exception`, so a `\TypeError` or
+   * `\ParseError` propagating out of an action's execute() still hits
+   * the audit/logging path instead of escaping unobserved.
+   *
+   * @param \Throwable $e
+   *   The throwable that aborted the action.
    * @param string $context_message
    *   Context about what was being attempted.
    */
-  protected function handleError(\Exception $e, string $context_message = ''): void {
+  protected function handleError(\Throwable $e, string $context_message = ''): void {
     $this->log(
       'Action failed: {message}. Context: {context}',
       [
