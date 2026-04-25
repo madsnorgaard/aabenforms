@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Drupal\aabenforms_digital_post\DigitalPost;
 
-use InvalidArgumentException;
-
 /**
  * Immutable Digital Post DTO. The unit of work accepted by
  * DigitalPostSender::send().
@@ -51,27 +49,30 @@ final class DigitalPost {
     public readonly array $meta = [],
   ) {
     if (trim($subject) === '') {
-      throw new InvalidArgumentException('DigitalPost subject cannot be empty.');
+      throw new \InvalidArgumentException('DigitalPost subject cannot be empty.');
     }
     if (strlen($subject) > 255) {
-      throw new InvalidArgumentException(sprintf('DigitalPost subject is %d chars, max 255.', strlen($subject)));
+      throw new \InvalidArgumentException(sprintf('DigitalPost subject is %d chars, max 255.', strlen($subject)));
     }
     if (trim($body) === '') {
-      throw new InvalidArgumentException('DigitalPost body cannot be empty.');
+      throw new \InvalidArgumentException('DigitalPost body cannot be empty.');
     }
     if (!in_array($type, self::VALID_TYPES, TRUE)) {
-      throw new InvalidArgumentException(sprintf(
+      throw new \InvalidArgumentException(sprintf(
         'DigitalPost type "%s" is invalid. Must be one of: %s',
         $type, implode(', ', self::VALID_TYPES)
       ));
     }
     foreach ($attachments as $i => $a) {
       if (!$a instanceof Attachment) {
-        throw new InvalidArgumentException(sprintf('attachments[%d] must be an Attachment.', $i));
+        throw new \InvalidArgumentException(sprintf('attachments[%d] must be an Attachment.', $i));
       }
     }
   }
 
+  /**
+   * Returns the total byte size of all attachments.
+   */
   public function totalAttachmentBytes(): int {
     $total = 0;
     foreach ($this->attachments as $a) {

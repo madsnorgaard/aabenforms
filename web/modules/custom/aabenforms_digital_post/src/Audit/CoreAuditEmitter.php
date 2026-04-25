@@ -14,11 +14,20 @@ use Drupal\aabenforms_core\Service\AuditLogger;
  */
 final class CoreAuditEmitter implements AuditEmitterInterface {
 
+  /**
+   * Constructs a CoreAuditEmitter.
+   *
+   * @param \Drupal\aabenforms_core\Service\AuditLogger $auditLogger
+   *   The core audit logger service.
+   */
   public function __construct(
     private readonly AuditLogger $auditLogger,
   ) {
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function emit(string $eventType, string $identifier, string $message, string $status, array $context = []): void {
     $this->auditLogger->log(
       action: $eventType,

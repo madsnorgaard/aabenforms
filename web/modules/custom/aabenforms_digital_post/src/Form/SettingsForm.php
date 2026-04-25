@@ -21,14 +21,23 @@ final class SettingsForm extends ConfigFormBase {
 
   public const CONFIG = 'aabenforms_digital_post.settings';
 
+  /**
+   * {@inheritdoc}
+   */
   public function getFormId(): string {
     return 'aabenforms_digital_post_settings';
   }
 
+  /**
+   * {@inheritdoc}
+   */
   protected function getEditableConfigNames(): array {
     return [self::CONFIG];
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function buildForm(array $form, FormStateInterface $form_state): array {
     $config = $this->config(self::CONFIG);
 
@@ -115,6 +124,9 @@ final class SettingsForm extends ConfigFormBase {
     return parent::buildForm($form, $form_state);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function validateForm(array &$form, FormStateInterface $form_state): void {
     $mode = (string) $form_state->getValue('test_mode');
     $cvr = trim((string) $form_state->getValue('sender_cvr'));
@@ -149,6 +161,9 @@ final class SettingsForm extends ConfigFormBase {
     parent::validateForm($form, $form_state);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function submitForm(array &$form, FormStateInterface $form_state): void {
     $config = $this->config(self::CONFIG);
     $cvr = preg_replace('/\D+/', '', (string) $form_state->getValue('sender_cvr')) ?? '';
@@ -166,6 +181,14 @@ final class SettingsForm extends ConfigFormBase {
     parent::submitForm($form, $form_state);
   }
 
+  /**
+   * Writes all key/value pairs to a Config object and saves it.
+   *
+   * @param \Drupal\Core\Config\Config $config
+   *   The config object to write to.
+   * @param array $values
+   *   Key/value pairs to set.
+   */
   private function writeAll(Config $config, array $values): void {
     foreach ($values as $key => $value) {
       $config->set($key, $value);

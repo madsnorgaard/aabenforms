@@ -16,12 +16,26 @@ use Drupal\Core\Config\ConfigFactoryInterface;
  */
 final class CertificateLocatorFactory {
 
+  /**
+   * Constructs a CertificateLocatorFactory.
+   *
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+   *   The config factory service.
+   * @param \Drupal\aabenforms_digital_post\Certificate\FileCertificateLocator $fileLocator
+   *   The file-based certificate locator.
+   */
   public function __construct(
     private readonly ConfigFactoryInterface $configFactory,
     private readonly FileCertificateLocator $fileLocator,
   ) {
   }
 
+  /**
+   * Returns the certificate locator for the currently configured source.
+   *
+   * @return \Drupal\aabenforms_digital_post\Certificate\CertificateLocatorInterface
+   *   The resolved certificate locator.
+   */
   public function create(): CertificateLocatorInterface {
     $source = (string) $this->configFactory
       ->get('aabenforms_digital_post.settings')

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Drupal\aabenforms_digital_post\DigitalPost;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
-use InvalidArgumentException;
 
 /**
  * Immutable Digital Post sender (the authority sending the message).
@@ -19,6 +18,16 @@ final class Sender {
   public readonly string $name;
   public readonly ?string $returnAddress;
 
+  /**
+   * Constructs a Sender.
+   *
+   * @param string $cvr
+   *   Eight-digit CVR; formatted input like "12 34 56 78" is accepted.
+   * @param string $name
+   *   Display name of the sending authority.
+   * @param string|null $returnAddress
+   *   Optional return address.
+   */
   public function __construct(
     string $cvr,
     string $name = '',
@@ -26,7 +35,7 @@ final class Sender {
   ) {
     $digits = preg_replace('/\D+/', '', $cvr) ?? '';
     if (strlen($digits) !== 8) {
-      throw new InvalidArgumentException(sprintf('Sender CVR must be 8 digits; got "%s".', $cvr));
+      throw new \InvalidArgumentException(sprintf('Sender CVR must be 8 digits; got "%s".', $cvr));
     }
     $this->cvr = $digits;
     $this->name = $name;
@@ -40,7 +49,7 @@ final class Sender {
     $config = $configFactory->get('aabenforms_digital_post.settings');
     $cvr = (string) $config->get('sender_cvr');
     if ($cvr === '') {
-      throw new InvalidArgumentException('aabenforms_digital_post.settings:sender_cvr is empty. Configure it at /admin/config/aabenforms/digital-post.');
+      throw new \InvalidArgumentException('aabenforms_digital_post.settings:sender_cvr is empty. Configure it at /admin/config/aabenforms/digital-post.');
     }
     return new self(
       cvr: $cvr,

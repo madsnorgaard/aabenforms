@@ -21,6 +21,16 @@ use Drush\Commands\DrushCommands;
  */
 final class DigitalPostCommands extends DrushCommands {
 
+  /**
+   * Constructs a DigitalPostCommands instance.
+   *
+   * @param \Drupal\aabenforms_digital_post\Service\DigitalPostSender $sender
+   *   The Digital Post sender service.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+   *   The config factory service.
+   * @param \Drupal\Core\Database\Connection $database
+   *   The database connection.
+   */
   public function __construct(
     private readonly DigitalPostSender $sender,
     private readonly ConfigFactoryInterface $configFactory,

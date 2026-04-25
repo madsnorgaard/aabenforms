@@ -22,6 +22,20 @@ final class Result {
   public const REASON_VALIDATION = 'VALIDATION';
   public const REASON_UNKNOWN = 'UNKNOWN';
 
+  /**
+   * Constructs a Result.
+   *
+   * @param string $status
+   *   Result status (SUCCESS or FAILURE).
+   * @param string $transactionId
+   *   Transaction identifier.
+   * @param string|null $reasonCode
+   *   Failure reason code, or NULL on success.
+   * @param string $message
+   *   Human-readable result message.
+   * @param string|null $rawResponse
+   *   Raw transport response, or NULL if unavailable.
+   */
   private function __construct(
     public readonly string $status,
     public readonly string $transactionId,
@@ -31,6 +45,19 @@ final class Result {
   ) {
   }
 
+  /**
+   * Creates a success Result.
+   *
+   * @param string $transactionId
+   *   Transaction identifier.
+   * @param string $message
+   *   Optional human-readable success message.
+   * @param string|null $rawResponse
+   *   Optional raw transport response.
+   *
+   * @return self
+   *   The success result.
+   */
   public static function success(string $transactionId, string $message = '', ?string $rawResponse = NULL): self {
     return new self(
       status: self::SUCCESS,
@@ -41,6 +68,21 @@ final class Result {
     );
   }
 
+  /**
+   * Creates a failure Result.
+   *
+   * @param string $transactionId
+   *   Transaction identifier.
+   * @param string $reasonCode
+   *   One of the REASON_* constants describing the failure.
+   * @param string $message
+   *   Human-readable failure message.
+   * @param string|null $rawResponse
+   *   Optional raw transport response.
+   *
+   * @return self
+   *   The failure result.
+   */
   public static function failure(string $transactionId, string $reasonCode, string $message, ?string $rawResponse = NULL): self {
     return new self(
       status: self::FAILURE,
@@ -51,6 +93,9 @@ final class Result {
     );
   }
 
+  /**
+   * Returns true when the send succeeded.
+   */
   public function isSuccess(): bool {
     return $this->status === self::SUCCESS;
   }

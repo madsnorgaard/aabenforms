@@ -17,6 +17,16 @@ use Drupal\Core\Config\ConfigFactoryInterface;
  */
 final class Sf1601ClientFactory {
 
+  /**
+   * Constructs a Sf1601ClientFactory.
+   *
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+   *   The config factory service.
+   * @param \Drupal\aabenforms_digital_post\TestMode\FakeSendDatabaseLogger $fakeDbClient
+   *   The fake database logger transport.
+   * @param \Drupal\aabenforms_digital_post\TestMode\WireMockSoapClient $wireMockClient
+   *   The WireMock SOAP transport.
+   */
   public function __construct(
     private readonly ConfigFactoryInterface $configFactory,
     private readonly FakeSendDatabaseLogger $fakeDbClient,
@@ -24,6 +34,12 @@ final class Sf1601ClientFactory {
   ) {
   }
 
+  /**
+   * Returns the SF1601 transport client for the currently configured mode.
+   *
+   * @return \Drupal\aabenforms_digital_post\Service\Sf1601ClientInterface
+   *   The resolved transport client.
+   */
   public function create(): Sf1601ClientInterface {
     $mode = (string) $this->configFactory
       ->get('aabenforms_digital_post.settings')

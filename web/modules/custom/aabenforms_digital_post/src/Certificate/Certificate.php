@@ -13,6 +13,16 @@ namespace Drupal\aabenforms_digital_post\Certificate;
  */
 final class Certificate {
 
+  /**
+   * Constructs a Certificate.
+   *
+   * @param string $path
+   *   Absolute path to the certificate file on disk.
+   * @param string|null $passphrase
+   *   Passphrase for the certificate, or NULL if none.
+   * @param string $sourceLabel
+   *   Human-readable label identifying the certificate source (e.g. "file").
+   */
   public function __construct(
     public readonly string $path,
     public readonly ?string $passphrase,

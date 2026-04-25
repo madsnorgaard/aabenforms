@@ -16,6 +16,22 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 #[AabenformsDashboardSection(id: 'digital_post', weight: -40)]
 class DigitalPostSection extends AabenformsDashboardSectionBase {
 
+  /**
+   * Constructs a DigitalPostSection plugin instance.
+   *
+   * @param array $configuration
+   *   Plugin configuration.
+   * @param string $plugin_id
+   *   The plugin ID.
+   * @param array $plugin_definition
+   *   The plugin definition.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+   *   The config factory service.
+   * @param \Drupal\Core\Database\Connection $database
+   *   The database connection.
+   * @param \Drupal\Component\Datetime\TimeInterface $time
+   *   The time service.
+   */
   public function __construct(
     array $configuration,
     string $plugin_id,
@@ -27,6 +43,9 @@ class DigitalPostSection extends AabenformsDashboardSectionBase {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $configuration,
@@ -38,6 +57,9 @@ class DigitalPostSection extends AabenformsDashboardSectionBase {
     );
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getLabel(): TranslatableMarkup {
     return $this->t('Digital Post');
   }
@@ -62,6 +84,9 @@ class DigitalPostSection extends AabenformsDashboardSectionBase {
     };
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getSecondaryMetrics(): array {
     $cvr = (string) $this->configFactory->get('aabenforms_digital_post.settings')->get('sender_cvr');
 
@@ -83,6 +108,9 @@ class DigitalPostSection extends AabenformsDashboardSectionBase {
     ];
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getMainLink(): array {
     return [
       'label' => $this->t('Configure'),
@@ -90,6 +118,9 @@ class DigitalPostSection extends AabenformsDashboardSectionBase {
     ];
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getCacheTags(): array {
     return [
       'config:aabenforms_digital_post.settings',
@@ -97,6 +128,15 @@ class DigitalPostSection extends AabenformsDashboardSectionBase {
     ];
   }
 
+  /**
+   * Returns a translatable display label for a transport mode string.
+   *
+   * @param string $mode
+   *   The raw test_mode config value.
+   *
+   * @return \Drupal\Core\StringTranslation\TranslatableMarkup
+   *   A human-readable label for the mode.
+   */
   protected function modeLabel(string $mode): TranslatableMarkup {
     return match ($mode) {
       'wiremock' => $this->t('WireMock'),

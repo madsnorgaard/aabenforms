@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Drupal\aabenforms_digital_post\Certificate;
 
-use DateTimeImmutable;
 use Drupal\aabenforms_digital_post\Exception\CertificateException;
 use Drupal\Core\Config\ConfigFactoryInterface;
 
@@ -20,11 +19,20 @@ use Drupal\Core\Config\ConfigFactoryInterface;
  */
 final class FileCertificateLocator implements CertificateLocatorInterface {
 
+  /**
+   * Constructs a FileCertificateLocator.
+   *
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+   *   The config factory service.
+   */
   public function __construct(
     private readonly ConfigFactoryInterface $configFactory,
   ) {
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function locate(): Certificate {
     $config = $this->configFactory->get('aabenforms_digital_post.settings');
     $path = (string) $config->get('cert_path');
@@ -47,11 +55,17 @@ final class FileCertificateLocator implements CertificateLocatorInterface {
     );
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function supportsRenewal(): bool {
     return TRUE;
   }
 
-  public function expiresAt(): ?DateTimeImmutable {
+  /**
+   * {@inheritdoc}
+   */
+  public function expiresAt(): ?\DateTimeImmutable {
     try {
       $cert = $this->locate();
     }
@@ -68,7 +82,7 @@ final class FileCertificateLocator implements CertificateLocatorInterface {
     if ($parsed === FALSE || !isset($parsed['validTo_time_t'])) {
       return NULL;
     }
-    return (new DateTimeImmutable())->setTimestamp((int) $parsed['validTo_time_t']);
+    return (new \DateTimeImmutable())->setTimestamp((int) $parsed['validTo_time_t']);
   }
 
 }
