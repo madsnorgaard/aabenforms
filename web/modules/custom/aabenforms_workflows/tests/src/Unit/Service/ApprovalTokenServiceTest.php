@@ -137,7 +137,7 @@ class ApprovalTokenServiceTest extends UnitTestCase {
    * One hour of clock-drift slack is allowed; anything beyond that fails.
    */
   public function testFarFutureTimestampRejected(): void {
-    $future = time() + 86400;
+    $future = time() + ApprovalTokenService::MAX_CLOCK_SKEW + 1;
     $token = base64_encode('somehash:' . $future);
     $this->assertFalse($this->service->validateToken(42, 1, $token));
   }
