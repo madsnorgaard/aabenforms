@@ -90,22 +90,22 @@
 1. Show BPMN.io editor interface with three panels:
 
    **Left Panel - Task Palette (Værktøjskasse):**
-   - 📋 Start Event (Start)
-   - 🔐 MitID Authentication
+   -  Start Event (Start)
+   -  MitID Authentication
    -  Form Task (Formular)
    -  Validation Task (Validering)
-   - 💳 Payment Task (Betaling)
-   - 📧 Email Task (Email)
-   - 📱 SMS Task (SMS)
-   - 📄 PDF Generation (PDF-generering)
-   - 🗺️ GIS Validation (GIS-validering)
-   - 📨 Neighbor Notification (Naboorientering)
-   - 🔄 Integration Task (Integration)
-   - 👤 User Task (Manual opgave)
-   - ⚙️ Service Task (Automatisk opgave)
-   - ❓ Gateway (Beslutning)
+   -  Payment Task (Betaling)
+   -  Email Task (Email)
+   -  SMS Task (SMS)
+   -  PDF Generation (PDF-generering)
+   -  GIS Validation (GIS-validering)
+   -  Neighbor Notification (Naboorientering)
+   -  Integration Task (Integration)
+   -  User Task (Manual opgave)
+   -  Service Task (Automatisk opgave)
+   -  Gateway (Beslutning)
    -  Subprocess (Underproces)
-   - 🏁 End Event (Slut)
+   -  End Event (Slut)
 
    **Center Panel - Canvas:**
    - Grid background
@@ -123,7 +123,7 @@
    - Workflow navn: "Hunderegistrering"
    - Beskrivelse: "Registrering af ny hund i hunderegistret"
    - Kategori: "Natur & Miljø"
-   - Ikon: 🐕 (dog icon)
+   - Ikon:  (dog icon)
 
 #### VISUAL CALLOUTS
 - Box each panel with label overlay
@@ -158,7 +158,7 @@
 #### SCREEN ACTIONS
 
 **Step 1: Add Start Event (0:00-0:15)**
-1. Drag "📋 Start Event" from palette to canvas
+1. Drag " Start Event" from palette to canvas
 2. Drop in center-top of canvas
 3. Properties panel auto-opens:
    - Label: "Borger starter registrering"
@@ -166,7 +166,7 @@
    - Form URL: /hunderegistrering
 
 **Step 2: Add MitID Authentication (0:15-0:30)**
-1. Drag "🔐 MitID Authentication" to canvas
+1. Drag " MitID Authentication" to canvas
 2. Place below Start Event
 3. Configure properties:
    - Label: "Log ind med MitID"
@@ -199,7 +199,7 @@
 4. Connect MitID → Form Task
 
 **Step 5: Add Payment Task (0:50-1:10)**
-1. Drag "💳 Payment Task" to canvas
+1. Drag " Payment Task" to canvas
 2. Configure properties:
    - Label: "Betaling af registreringsgebyr"
    - Provider: "Nets"
@@ -210,7 +210,7 @@
 3. Connect Form Task → Payment Task
 
 **Step 6: Add PDF Generation (1:10-1:30)**
-1. Drag "📄 PDF Generation" to canvas
+1. Drag " PDF Generation" to canvas
 2. Configure properties:
    - Label: "Generer registreringsbevis"
    - Template: "dog_registration_certificate"
@@ -225,7 +225,7 @@
 3. Connect Payment Task → PDF Generation
 
 **Step 7: Add Email Task (1:30-1:50)**
-1. Drag "📧 Email Task" to canvas
+1. Drag " Email Task" to canvas
 2. Configure properties:
    - Label: "Send bekræftelse"
    - To: ${mitid.email}
@@ -237,7 +237,7 @@
 3. Connect PDF Generation → Email Task
 
 **Step 8: Add End Event (1:50-2:00)**
-1. Drag "🏁 End Event" to canvas
+1. Drag " End Event" to canvas
 2. Configure properties:
    - Label: "Registrering gennemført"
    - Completion message: "Din hund er nu registreret!"
@@ -276,7 +276,7 @@
 **Step 1: Insert Gateway (0:00-0:20)**
 1. Click on connection between Form Task and Payment Task
 2. Click "Insert" icon
-3. Select "❓ Exclusive Gateway (XOR)"
+3. Select " Exclusive Gateway (XOR)"
 4. Gateway inserted in flow
 5. Configure properties:
    - Label: "Kræver særlig godkendelse?"
@@ -285,7 +285,7 @@
 
 **Step 2: Configure Dangerous Breed Path (0:20-0:50)**
 1. Drag new connection from Gateway
-2. Add "👤 User Task" to canvas
+2. Add " User Task" to canvas
 3. Configure User Task:
    - Label: "Manuel godkendelse af farlig hund"
    - Assignee: "Natur & Miljø afdeling"
@@ -353,7 +353,7 @@
 #### SCREEN ACTIONS
 
 **GIS Validation Task (0:00-0:30)**
-1. Drag "🗺️ GIS Validation" to demo canvas
+1. Drag " GIS Validation" to demo canvas
 2. Show properties panel:
    - Label: "Valider adresse og zonering"
    - Input address: ${mitid.address}
@@ -369,7 +369,7 @@
    - Integration: WMS/WFS endpoints (pre-configured)
 
 **Neighbor Notification Task (0:30-1:00)**
-1. Drag "📨 Neighbor Notification" to canvas
+1. Drag " Neighbor Notification" to canvas
 2. Show properties:
    - Label: "Send naboorientering"
    - Center address: ${form.propertyAddress}
@@ -384,7 +384,7 @@
    - Track responses: Yes
 
 **Integration Task - BBR (1:00-1:30)**
-1. Drag "🔄 Integration Task" to canvas
+1. Drag " Integration Task" to canvas
 2. Show properties:
    - Label: "Hent bygningsdata fra BBR"
    - Integration type: "BBR (Building and Dwelling Register)"
@@ -453,7 +453,7 @@
      - Valid variable syntax
      - Correct data types
 
-   ⚠ **Best practice warnings**: 2 warnings
+    **Best practice warnings**: 2 warnings
      - Warning: "Email task has no error handler"
      - Suggestion: "Add error handling for email delivery failures"
      - Warning: "Consider adding timeout to payment task"
@@ -780,22 +780,22 @@
 
 Complete reference for demonstration:
 
-1. **📋 Start Event** - Workflow start trigger
-2. **🔐 MitID Authentication** - Citizen authentication
+1. ** Start Event** - Workflow start trigger
+2. ** MitID Authentication** - Citizen authentication
 3. ** Form Task** - Data collection forms
 4. ** Validation Task** - Data validation logic
-5. **💳 Payment Task** - Nets payment processing
-6. **📧 Email Task** - Email notifications
-7. **📱 SMS Task** - SMS notifications
-8. **📄 PDF Generation** - Document generation
-9. **🗺️ GIS Validation** - Address/zoning validation
-10. **📨 Neighbor Notification** - Automatic neighbor notification
-11. **🔄 Integration Task** - BBR/CPR/SBSYS integration
-12. **👤 User Task** - Manual staff task
-13. **⚙️ Service Task** - Automated background task
-14. **❓ Gateway** - Decision point (XOR/AND/OR/Event)
+5. ** Payment Task** - Nets payment processing
+6. ** Email Task** - Email notifications
+7. ** SMS Task** - SMS notifications
+8. ** PDF Generation** - Document generation
+9. ** GIS Validation** - Address/zoning validation
+10. ** Neighbor Notification** - Automatic neighbor notification
+11. ** Integration Task** - BBR/CPR/SBSYS integration
+12. ** User Task** - Manual staff task
+13. ** Service Task** - Automated background task
+14. ** Gateway** - Decision point (XOR/AND/OR/Event)
 15. ** Subprocess** - Reusable workflow component
-16. **🏁 End Event** - Workflow completion
+16. ** End Event** - Workflow completion
 
 ---
 

@@ -1722,27 +1722,27 @@ Save workflows as templates:
 
 | Symbol | Name | Usage |
 |--------|------|-------|
-| ⚪ (thin) | Start Event | Workflow begins |
-| ⚪ (thick) | End Event | Workflow ends |
-| ⚪⚪ (double) | Intermediate Event | Event during workflow |
-| ⚪⏰ | Timer Event | Wait for time period |
-| ⚪✉️ | Message Event | Wait for message |
+|  (thin) | Start Event | Workflow begins |
+|  (thick) | End Event | Workflow ends |
+|  (double) | Intermediate Event | Event during workflow |
+| ⏰ | Timer Event | Wait for time period |
+|  | Message Event | Wait for message |
 
 ### Task Types
 
 | Symbol | Name | Usage |
 |--------|------|-------|
 | ▭ | Service Task | Automated action |
-| ▭👤 | User Task | Manual work |
-| ▭✉️ | Send Task | Send message |
-| ▭📥 | Receive Task | Receive message |
+| ▭ | User Task | Manual work |
+| ▭ | Send Task | Send message |
+| ▭ | Receive Task | Receive message |
 
 ### Gateway Types
 
 | Symbol | Name | Usage |
 |--------|------|-------|
-| ◇✖️ | Exclusive Gateway | ONE path taken (decision) |
-| ◇➕ | Parallel Gateway | ALL paths taken (split/merge) |
+| ◇ | Exclusive Gateway | ONE path taken (decision) |
+| ◇ | Parallel Gateway | ALL paths taken (split/merge) |
 | ◇⬠ | Event-Based Gateway | First event determines path |
 
 ### Flow Types

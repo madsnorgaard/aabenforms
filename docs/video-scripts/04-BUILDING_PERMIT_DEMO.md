@@ -242,7 +242,7 @@
      - Påkrævet: 2 pladser 
      - Ingen ændring nødvendig
 
-   ⚠ **Bemærkning**:
+    **Bemærkning**:
    - Tilbygningen kræver naboorientering (indenfor 25m)
 
 3. Show interactive map update:
@@ -255,8 +255,8 @@
 - Animate progress checkmarks appearing one by one
 - Highlight each validation result with color coding:
   - Green : Approved
-  - Red ✗: Rejected
-  - Yellow ⚠: Warning/Note
+  - Red : Rejected
+  - Yellow : Warning/Note
 - Show building coverage calculation:
   - Existing: 165 m² / 750 m² = 22%
   - Addition: +25 m²
@@ -604,8 +604,8 @@
    - QR code (links to permit details)
 
 6. Show timeline comparison graphic:
-   - Manual process: 4-8 uger 📅
-   - ÅbenForms: 12 dage ⚡
+   - Manual process: 4-8 uger 
+   - ÅbenForms: 12 dage 
    - Time saved: 75%
 
 #### VISUAL CALLOUTS
@@ -729,7 +729,7 @@
 
 | Feature | XFlow | ÅbenForms |
 |---------|-------|-----------|
-| GIS Zoning Validation | ✗ |  Automatic |
+| GIS Zoning Validation |  |  Automatic |
 | Neighbor Notification | Manual |  Automatic |
 | BPMN Workflow Engine | Limited |  Full BPMN 2.0 |
 | SBSYS Integration | API only |  Real-time sync |

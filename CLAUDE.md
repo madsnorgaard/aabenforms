@@ -18,7 +18,7 @@ This backend provides:
 
 ## Active workstream (Apr 2026)
 
-Modular Digital Post + NemLogin rewrite. Approved plan: `/home/mno/.claude/plans/zesty-wobbling-kahn.md`. Goal: each Danish-gov integration installs cleanly on any modern Drupal 11 with at most one mainstream contrib (`drupal:key`) — no OS2/Bellcom dependency maze.
+Modular Digital Post + NemLogin rewrite. Approved plan: `/home/mno/.claude/plans/zesty-wobbling-kahn.md`. Goal: each Danish-gov integration installs cleanly on any modern Drupal 11 with at most one mainstream contrib (`drupal:key`) - no OS2/Bellcom dependency maze.
 
 - **Session 1 SHIPPED**: `aabenforms_digital_post` core (DTOs, sender service, fake_db / wiremock transports, Drush, settings form, log table). Live on prod in `fake_db` mode.
 - **Session 2A SHIPPED**: `aabenforms_digital_post_eca` submodule (plugin id `aabenforms_digital_post_send`). `citizen_service_application.bpmn` Approved + Rejected branches both wired; verified end-to-end on prod.

@@ -2,7 +2,7 @@
 
 ECA action plugin that lets BPMN workflows and ECA flows send a SF1601 Digital Post via the `aabenforms_digital_post.sender` service.
 
-A thin bridge between two concerns: BPMN/ECA orchestration on one side, the Digital Post transport on the other. The plugin does not know about SOAP, MeMo XML, certificates, or test modes — those all live behind the `DigitalPostSender` service boundary.
+A thin bridge between two concerns: BPMN/ECA orchestration on one side, the Digital Post transport on the other. The plugin does not know about SOAP, MeMo XML, certificates, or test modes - those all live behind the `DigitalPostSender` service boundary.
 
 ## Install
 
@@ -10,11 +10,11 @@ A thin bridge between two concerns: BPMN/ECA orchestration on one side, the Digi
 drush pm:enable aabenforms_digital_post_eca
 ```
 
-Hard deps: `aabenforms_digital_post`, `aabenforms_workflows`, `eca:eca`, `eca:eca_content`. Configure the underlying core module first (sender CVR + `test_mode`) — see `aabenforms_digital_post/README.md`.
+Hard deps: `aabenforms_digital_post`, `aabenforms_workflows`, `eca:eca`, `eca:eca_content`. Configure the underlying core module first (sender CVR + `test_mode`) - see `aabenforms_digital_post/README.md`.
 
 ## Plugin id
 
-`aabenforms_digital_post_send` — appears in the ECA modeller and is callable from any BPMN template via the `<aabenforms:ecaAction>` extension element our `WorkflowTemplateInstantiator` reads.
+`aabenforms_digital_post_send` - appears in the ECA modeller and is callable from any BPMN template via the `<aabenforms:ecaAction>` extension element our `WorkflowTemplateInstantiator` reads.
 
 ## Configuration
 

@@ -222,7 +222,7 @@ Click **"Next"**.
 ### Wizard Step 3: Authentication Settings
 
 ```
-Require MitID Authentication: ☑ Yes
+Require MitID Authentication:  Yes
 
 Authentication Level:
   ○ Low (Password)
@@ -230,9 +230,9 @@ Authentication Level:
   ● High (App or hardware token) ← Recommended
 
 Who Must Authenticate:
-  ☑ Parent 1
-  ☑ Parent 2
-  ☐ Case Worker (optional, depends on internal policy)
+   Parent 1
+   Parent 2
+   Case Worker (optional, depends on internal policy)
 ```
 
 **GDPR Note**: MitID High provides strongest identity assurance.
@@ -254,7 +254,7 @@ Approval Timeout:
     ○ Escalate to supervisor
     ○ Extend deadline by [7] days
 
-Both Parents Must Approve: ☑ Yes
+Both Parents Must Approve:  Yes
   (If one rejects, entire request is rejected)
 ```
 
@@ -266,9 +266,9 @@ This is where you configure how parents are notified.
 
 ```
 Notification Method:
-  ☑ Email (always sent)
-  ☑ Digital Post (SF1601) (if configured)
-  ☐ SMS (future feature)
+   Email (always sent)
+   Digital Post (SF1601) (if configured)
+   SMS (future feature)
 
 Email Template for Parent 1:
   Subject: Daycare Enrollment - Action Required
@@ -294,16 +294,16 @@ Email Template for Parent 2:
 
 ```
 If Parents Living Together:
-  ☑ Show full child information
-  ☑ Show both parents' names
-  ☑ Show shared address
-  ☑ Show full case details
+   Show full child information
+   Show both parents' names
+   Show shared address
+   Show full case details
 
 If Parents Living Apart:
-  ☑ Show child name and masked CPR (XXXXXX-1234)
-  ☑ Show only requesting parent's information
-  ☐ Hide other parent's contact info
-  ☑ Show limited case details
+   Show child name and masked CPR (XXXXXX-1234)
+   Show only requesting parent's information
+   Hide other parent's contact info
+   Show limited case details
 ```
 
 Click **"Next"**.
@@ -321,10 +321,10 @@ Assign To:
   ○ Round-robin (distribute evenly)
 
 Case Worker Can:
-  ☑ Approve
-  ☑ Reject (with reason)
-  ☑ Request additional information
-  ☐ Modify enrollment details
+   Approve
+   Reject (with reason)
+   Request additional information
+   Modify enrollment details
 ```
 
 Click **"Next"**.
@@ -334,24 +334,24 @@ Click **"Next"**.
 ```
 After Final Approval:
 
-☑ Create Case in External System
+ Create Case in External System
   System: [Select] SBSYS Daycare Module
   Case Type: Daycare Enrollment
   Priority: Normal
 
-☑ Send Confirmation Notifications
+ Send Confirmation Notifications
   Via: Digital Post (SF1601)
   Recipients: Both parents
   Message Template: [Select] Daycare Confirmation
 
-☑ Update Waiting List
+ Update Waiting List
   Action: Remove child from waiting list
   System: Municipal Daycare Portal
 
-☐ Generate PDF Certificate
+ Generate PDF Certificate
   (Not needed for daycare)
 
-☑ Archive Documents
+ Archive Documents
   System: GetOrganized ESDH
   Document Type: Daycare Enrollment
 ```
@@ -366,17 +366,17 @@ Data Retention:
   After Rejection: [2] years
 
 Audit Logging:
-  ☑ Log all MitID authentications
-  ☑ Log all CPR lookups
-  ☑ Log all approvals/rejections
-  ☑ Log case worker decisions
-  ☑ Log system integrations
+   Log all MitID authentications
+   Log all CPR lookups
+   Log all approvals/rejections
+   Log case worker decisions
+   Log system integrations
 
 Privacy Settings:
-  ☑ Encrypt CPR numbers at rest (AES-256)
-  ☑ Mask CPR in UI (show XXXXXX-1234)
-  ☑ Support Right to Erasure requests
-  ☑ Support Data Export requests (JSON/PDF)
+   Encrypt CPR numbers at rest (AES-256)
+   Mask CPR in UI (show XXXXXX-1234)
+   Support Right to Erasure requests
+   Support Data Export requests (JSON/PDF)
 ```
 
 Click **"Next"**.
@@ -460,7 +460,7 @@ Message Template:
   Title: Dagreplads - Godkendelse Nødvendig
   Body: [Same as email template]
 
-Legal Notice Required: ☐ No
+Legal Notice Required:  No
   (Only for official decisions)
 ```
 
@@ -533,8 +533,8 @@ Parents: Linked to Test Forælder En & To
 
 2. Check emails sent:
    ```
-   ☑ Parent 1 received notification
-   ☑ Parent 2 received notification
+    Parent 1 received notification
+    Parent 2 received notification
    ```
 
 3. **As Parent 1**:
@@ -562,11 +562,11 @@ Parents: Linked to Test Forælder En & To
 
 6. **Verify Results**:
    ```
-   ☑ SBSYS case created (check case number)
-   ☑ Digital Post sent to both parents
-   ☑ Child removed from waiting list
-   ☑ Documents archived in ESDH
-   ☑ Audit log shows all actions
+    SBSYS case created (check case number)
+    Digital Post sent to both parents
+    Child removed from waiting list
+    Documents archived in ESDH
+    Audit log shows all actions
    ```
 
 **Expected Timeline**: 2-5 minutes for full completion.
@@ -588,11 +588,11 @@ Parents: Linked to Test Forælder En & To
 
 4. **Verify Results**:
    ```
-   ☑ Workflow stopped (not sent to case worker)
-   ☑ Municipality notified of rejection
-   ☑ Parent 1 notified that Parent 2 rejected
-   ☑ No SBSYS case created
-   ☑ Audit log shows rejection with reason
+    Workflow stopped (not sent to case worker)
+    Municipality notified of rejection
+    Parent 1 notified that Parent 2 rejected
+    No SBSYS case created
+    Audit log shows rejection with reason
    ```
 
 ### Test Scenario 3: Parents Living Apart
@@ -623,9 +623,9 @@ Parents: Linked to Test Forælder En & To
 
 4. **Verify**:
    ```
-   ☑ Data visibility respected
-   ☑ GDPR compliance maintained
-   ☑ Both approvals recorded
+    Data visibility respected
+    GDPR compliance maintained
+    Both approvals recorded
    ```
 
 ### Test Scenario 4: Timeout
@@ -646,11 +646,11 @@ Parents: Linked to Test Forælder En & To
 
 5. **After 5 minutes, verify**:
    ```
-   ☑ Workflow auto-rejected
-   ☑ Municipality notified
-   ☑ Parent 1 notified of timeout
-   ☑ Parent 2 notified of missed deadline
-   ☑ Audit log shows timeout event
+    Workflow auto-rejected
+    Municipality notified
+    Parent 1 notified of timeout
+    Parent 2 notified of missed deadline
+    Audit log shows timeout event
    ```
 
 6. **Restore workflow**:

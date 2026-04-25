@@ -650,8 +650,8 @@ T+2h:   Parent 1 notified of rejection
 ```
 
 **Outcomes**:
-- ✗ No case worker review
-- ✗ No SBSYS case created
+-  No case worker review
+-  No SBSYS case created
 -  Municipality can resubmit with adjusted details
 -  All actions logged for audit
 
@@ -672,7 +672,7 @@ T+14d:    Parent 2 notified of missed deadline
 ```
 
 **Outcomes**:
-- ✗ Request not approved
+-  Request not approved
 -  Can be resubmitted
 -  All parties notified of timeout
 
