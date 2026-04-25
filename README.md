@@ -25,7 +25,7 @@ This repository contains the **Drupal 11 backend** that provides:
 - ECA workflow engine (event-driven automation)
 - Visual BPMN 2.0 workflow builder with Danish municipal task palette
 - 13 production-ready BPMN templates (parking permit, marriage booking, building permit, citizen service application, FOI, HR onboarding, mileage expense, MED election, address change, phone declaration, association booking, contact form, company verification)
-- ~15 ECA action plugins (Digital Post, payment, SMS, PDF, calendar, GIS, MitID, CPR/CVR lookup, audit log, log, parent approval emails, etc.)
+- ~20 ECA action plugins (Digital Post, payment, SMS, PDF, calendar, GIS, MitID, CPR/CVR lookup, audit log, log, parent approval emails, etc.)
 - Modular Danish government integrations: `aabenforms_digital_post` SF1601 (shipped in `fake_db` mode, real SOAP transport coming in Session 2B), MitID OIDC, planned NemLogin OIDC core
 - WireMock + Keycloak mock services bundled in DDEV for zero-config local development
 - Dynamic webforms with JSON:API exposure
@@ -151,7 +151,7 @@ curl -s http://localhost:8080/realms/danish-gov-test/.well-known/openid-configur
 | Module | Status | Description |
 |--------|--------|-------------|
 | `aabenforms_mitid` |  Active | MitID OIDC integration, session management, CPR extraction |
-| `aabenforms_gdpr` |  Partial | Field encryption (), audit logs (), retention policies (planned) |
+| `aabenforms_gdpr` |  Not a separate module | Field-level AES-256 encryption and GDPR audit logging are built directly into `aabenforms_core` (`EncryptionService`, `AuditLogger`). A standalone `aabenforms_gdpr` module with retention policies and right-to-erasure workflows is planned but does not yet exist. |
 
 ### Phase 3: Complete Workflow System  Complete
 | Module | Status | Description |
@@ -177,9 +177,9 @@ curl -s http://localhost:8080/realms/danish-gov-test/.well-known/openid-configur
 | `aabenforms_nemlogin` |  Session 2C | Plug-and-play OIDC core (PKCE S256, ItkOidcClient, ClaimStore). |
 | `aabenforms_nemlogin_keycloak` |  Session 2C | Submodule. Keycloak preset for local dev. |
 | `aabenforms_mitid` |  deprecation track | Shim over `aabenforms_nemlogin` planned in Session 2C; full removal in Session 3. |
-| `aabenforms_cpr` |  Partial | SF1520 person lookup (action plugin, production service planned) |
-| `aabenforms_cvr` |  Partial | SF1530 company lookup (action plugin, production service planned) |
-| `aabenforms_dawa` |  Partial | DAWA address autocomplete (webform element, full API integration planned) |
+| `aabenforms_cpr` |  Not a separate module | SF1520 CPR person lookup is a stub action plugin (`CprLookupAction`) inside `aabenforms_workflows`. A standalone `aabenforms_cpr` module with a production Serviceplatformen client is planned. |
+| `aabenforms_cvr` |  Not a separate module | SF1530 CVR company lookup is a stub action plugin (`CvrLookupAction`) inside `aabenforms_workflows`. A standalone `aabenforms_cvr` module is planned. |
+| `aabenforms_dawa` |  Not a separate module | DAWA address autocomplete is implemented as a `DawaAddressElement` webform element inside `aabenforms_webform`. A standalone `aabenforms_dawa` module with full API integration is planned. |
 | `aabenforms_sbsys` |  Planned | SBSYS case management integration |
 | `aabenforms_get_organized` |  Planned | GetOrganized ESDH document archiving |
 
@@ -194,7 +194,7 @@ The Digital Post + NemLogin rewrite plan is the explicit modular alternative to 
 -  Secure token-based approval pages (HMAC-SHA256, 7-day expiry)
 -  Visual workflow template wizard (no YAML required, modernized 6-step indicator)
 -  13 BPMN templates (see "BPMN Workflow Templates" below)
--  ~15 ECA action plugins including `aabenforms_digital_post_send` and `aabenforms_log` shim
+-  ~20 ECA action plugins including `aabenforms_digital_post_send` and `aabenforms_log` shim
 -  `aabenforms_digital_post` core + ECA bridge (Session 1 + 2A): SF1601 in `fake_db` on prod, write-through to `{aabenforms_digital_post_log}`
 -  `aabenforms_core/admin` design tokens: one CSS-variable file feeding all admin styles
 -  `hook_storage_transform_import` preserves wizard-created configs across `drush cim`
@@ -215,7 +215,7 @@ The Digital Post + NemLogin rewrite plan is the explicit modular alternative to 
 ÅbenForms provides a powerful visual workflow automation system for Danish municipal processes:
 
 ### Key Features
-- **Pre-built Templates**: 7 BPMN templates for common use cases (building permits, parking permits, marriage booking, address changes, FOI requests, company verification, contact form)
+- **Pre-built Templates**: 13 BPMN templates for common use cases (building permits, parking permits, marriage booking, citizen service, address changes, FOI requests, company verification, contact form, HR onboarding, mileage expense, phone declaration, MED election, association booking)
 - **Visual Editor**: Create and modify workflows without programming
 - **Danish Integrations**: MitID authentication, CPR/CVR lookup, Digital Post notifications
 - **GDPR Compliant**: Automatic audit logging, encrypted CPR numbers, data retention policies
@@ -223,7 +223,7 @@ The Digital Post + NemLogin rewrite plan is the explicit modular alternative to 
 ### Quick Start
 1. Access workflow admin: `/admin/config/workflow/eca`
 2. Choose a template (Building Permit, Contact Form, etc.)
-3. Configure with the wizard (8 simple steps)
+3. Configure with the wizard (6 steps)
 4. Test with sample data
 5. Activate for production
 
@@ -333,7 +333,7 @@ For detailed information, see:
 | BPMN.iO | 3.0.4 | Visual workflow modeller |
 | Webform | 6.3.0-beta7 | Forms |
 | Domain | 2.0.0-rc1 | Multi-tenancy |
-| Gin | 3.0.0 | Admin theme |
+| Gin | 5.x | Admin theme |
 
 ## Security
 
