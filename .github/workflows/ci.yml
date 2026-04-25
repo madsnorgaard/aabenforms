@@ -109,12 +109,19 @@ jobs:
 
       - name: Run PHPUnit with Coverage
         run: |
+          # Tee the output so the test/assertion summary line is parseable
+          # later. --log-junit gives us a machine-readable count too.
+          # The aabenforms_workflows exclusion is tracked as a follow-up
+          # (see the README) - those tests have rotted and need a real
+          # fix rather than masking inside the badge number.
+          set -o pipefail
           XDEBUG_MODE=coverage vendor/bin/phpunit \
             --coverage-text \
             --coverage-cobertura=coverage/cobertura.xml \
             --coverage-html=coverage/html \
+            --log-junit=phpunit-junit.xml \
             --exclude-group aabenforms_workflows \
-            --testdox
+            --testdox 2>&1 | tee phpunit-output.log
         env:
           SIMPLETEST_DB: mysql://root:root@127.0.0.1/drupal_test
           SIMPLETEST_BASE_URL: http://localhost
@@ -175,29 +182,56 @@ jobs:
           path: coverage/html
           retention-days: 30
 
-      - name: Coverage Badge
+      - name: Coverage + Tests badges
         run: |
           mkdir -p .github/badges
+
+          # Coverage badge.
           COVERAGE=${{ steps.coverage.outputs.percentage }}
-          COLOR="red"
+          COVERAGE_COLOR="red"
           if (( $(echo "$COVERAGE >= 80" | bc -l) )); then
-            COLOR="brightgreen"
+            COVERAGE_COLOR="brightgreen"
           elif (( $(echo "$COVERAGE >= 60" | bc -l) )); then
-            COLOR="yellow"
+            COVERAGE_COLOR="yellow"
           elif (( $(echo "$COVERAGE >= 40" | bc -l) )); then
-            COLOR="orange"
+            COVERAGE_COLOR="orange"
           fi
+          echo "{\"schemaVersion\": 1, \"label\": \"coverage\", \"message\": \"${COVERAGE}%\", \"color\": \"${COVERAGE_COLOR}\"}" > .github/badges/coverage.json
 
-          # Create badge JSON for shields.io
-          echo "{\"schemaVersion\": 1, \"label\": \"coverage\", \"message\": \"${COVERAGE}%\", \"color\": \"${COLOR}\"}" > .github/badges/coverage.json
+          # Tests badge - parse the test count + failure count from the
+          # JUnit log written by phpunit. Source of truth, not the human-
+          # readable "Tests: N" line which can be missing on early exit.
+          cat > parse_tests.php << 'PHPEOF'
+          <?php
+          $xml = simplexml_load_file('phpunit-junit.xml');
+          $attrs = $xml->testsuite[0]->attributes();
+          $total = (int) $attrs['tests'];
+          $failures = (int) $attrs['failures'] + (int) $attrs['errors'];
+          $passing = $total - $failures;
+          echo $passing . ',' . $total . ',' . $failures;
+          PHPEOF
 
-      - name: Commit Coverage Badge
+          IFS=',' read -r PASSING TOTAL FAILURES <<< "$(php parse_tests.php)"
+          rm parse_tests.php
+          if [ "$FAILURES" -gt 0 ]; then
+            TESTS_MSG="${PASSING}/${TOTAL} passing"
+            TESTS_COLOR="red"
+          else
+            TESTS_MSG="${TOTAL} passing"
+            TESTS_COLOR="brightgreen"
+          fi
+          echo "{\"schemaVersion\": 1, \"label\": \"tests\", \"message\": \"${TESTS_MSG}\", \"color\": \"${TESTS_COLOR}\"}" > .github/badges/tests.json
+
+          # Surface in the run summary too.
+          echo "🧪 **Tests:** ${TESTS_MSG}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Commit badges
         if: github.ref == 'refs/heads/main'
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add .github/badges/coverage.json || true
-          git diff --staged --quiet || git commit -m "Update coverage badge [skip ci]"
+          git add .github/badges/coverage.json .github/badges/tests.json || true
+          git diff --staged --quiet || git commit -m "Update coverage + tests badges [skip ci]"
           git push
 
   summary:
