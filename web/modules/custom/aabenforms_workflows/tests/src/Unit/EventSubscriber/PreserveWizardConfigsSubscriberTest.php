@@ -100,15 +100,20 @@ class PreserveWizardConfigsSubscriberTest extends UnitTestCase {
       'user.role.aabenforms_employee',
     ];
 
-    $active = $this->createMock(StorageInterface::class);
-    $active->method('listAll')->willReturn($names);
-    $active->expects($this->never())->method('read');
+    // Exercise both source-presence states. The pattern-mismatch path
+    // must short-circuit before either branch is reached, so neither
+    // exists()=TRUE nor exists()=FALSE should trigger a read or write.
+    foreach ([FALSE, TRUE] as $exists_in_source) {
+      $active = $this->createMock(StorageInterface::class);
+      $active->method('listAll')->willReturn($names);
+      $active->expects($this->never())->method('read');
 
-    $source = $this->createMock(StorageInterface::class);
-    $source->method('exists')->willReturn(FALSE);
-    $source->expects($this->never())->method('write');
+      $source = $this->createMock(StorageInterface::class);
+      $source->method('exists')->willReturn($exists_in_source);
+      $source->expects($this->never())->method('write');
 
-    $this->dispatchOn($active, $source);
+      $this->dispatchOn($active, $source);
+    }
   }
 
   /**
@@ -160,11 +165,18 @@ class PreserveWizardConfigsSubscriberTest extends UnitTestCase {
 
   /**
    * The subscriber registers exactly one listener on the import transform event.
+   *
+   * Asserts the entire returned array equals the expected single-entry
+   * map so adding a stray subscription (e.g. someone hooks
+   * STORAGE_TRANSFORM_EXPORT later by mistake) breaks this test
+   * deliberately rather than slipping through.
    */
   public function testSubscribedEventsRegistration(): void {
     $events = PreserveWizardConfigsSubscriber::getSubscribedEvents();
-    $this->assertArrayHasKey(ConfigEvents::STORAGE_TRANSFORM_IMPORT, $events);
-    $this->assertSame(['onImportTransform', 0], $events[ConfigEvents::STORAGE_TRANSFORM_IMPORT]);
+    $this->assertSame(
+      [ConfigEvents::STORAGE_TRANSFORM_IMPORT => ['onImportTransform', 0]],
+      $events,
+    );
   }
 
   /**
