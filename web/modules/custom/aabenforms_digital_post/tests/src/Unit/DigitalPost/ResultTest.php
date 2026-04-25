@@ -77,7 +77,7 @@ class ResultTest extends UnitTestCase {
    * stay opt-in for callers; it never appears in audit logs.
    */
   public function testAuditContextExcludesRawResponse(): void {
-    $secret = 'CPR=0101900001 inside the MeMo envelope';
+    $secret = 'CPR=TEST-CPR-0000 inside the MeMo envelope';
     $r = Result::failure('tx-5', Result::REASON_VALIDATION, 'bad', $secret);
     $ctx = $r->auditContext();
     $this->assertArrayNotHasKey('rawResponse', $ctx);
