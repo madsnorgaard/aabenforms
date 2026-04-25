@@ -24,6 +24,9 @@ final class Sf1601ClientFactory {
   ) {
   }
 
+  /**
+   *
+   */
   public function create(): Sf1601ClientInterface {
     $mode = (string) $this->configFactory
       ->get('aabenforms_digital_post.settings')

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Drupal\aabenforms_digital_post\DigitalPost;
 
-use InvalidArgumentException;
-
 /**
  * Immutable attachment. Carries either a file path or raw bytes plus
  * metadata (filename, mime type). Lazy-loads bytes from path only when
@@ -26,32 +24,35 @@ final class Attachment {
     public readonly int $sizeBytes,
   ) {
     if ($filename === '') {
-      throw new InvalidArgumentException('Attachment filename cannot be empty.');
+      throw new \InvalidArgumentException('Attachment filename cannot be empty.');
     }
     if ($mimeType === '') {
-      throw new InvalidArgumentException('Attachment mimeType cannot be empty.');
+      throw new \InvalidArgumentException('Attachment mimeType cannot be empty.');
     }
     if ($path === NULL && $inlineBytes === NULL) {
-      throw new InvalidArgumentException('Attachment must carry either a file path or inline bytes.');
+      throw new \InvalidArgumentException('Attachment must carry either a file path or inline bytes.');
     }
     if ($sizeBytes <= 0) {
-      throw new InvalidArgumentException(sprintf('Attachment size must be positive; got %d.', $sizeBytes));
+      throw new \InvalidArgumentException(sprintf('Attachment size must be positive; got %d.', $sizeBytes));
     }
     if ($sizeBytes > self::DEFAULT_MAX_SIZE_BYTES) {
-      throw new InvalidArgumentException(sprintf(
+      throw new \InvalidArgumentException(sprintf(
         'Attachment "%s" is %d bytes, exceeds default cap of %d. Pass a higher limit via the sender validator if your tenant has negotiated a larger SF1601 envelope.',
         $filename, $sizeBytes, self::DEFAULT_MAX_SIZE_BYTES
       ));
     }
   }
 
+  /**
+   *
+   */
   public static function fromFile(string $path, ?string $filename = NULL, ?string $mimeType = NULL): self {
     if (!is_file($path) || !is_readable($path)) {
-      throw new InvalidArgumentException(sprintf('Attachment path "%s" is not a readable file.', $path));
+      throw new \InvalidArgumentException(sprintf('Attachment path "%s" is not a readable file.', $path));
     }
     $size = filesize($path);
     if ($size === FALSE) {
-      throw new InvalidArgumentException(sprintf('Could not stat "%s".', $path));
+      throw new \InvalidArgumentException(sprintf('Could not stat "%s".', $path));
     }
     return new self(
       filename: $filename ?? basename($path),
@@ -62,6 +63,9 @@ final class Attachment {
     );
   }
 
+  /**
+   *
+   */
   public static function fromBytes(string $bytes, string $filename, string $mimeType): self {
     return new self(
       filename: $filename,
@@ -72,17 +76,23 @@ final class Attachment {
     );
   }
 
+  /**
+   *
+   */
   public function bytes(): string {
     if ($this->inlineBytes !== NULL) {
       return $this->inlineBytes;
     }
     $raw = file_get_contents($this->path);
     if ($raw === FALSE) {
-      throw new InvalidArgumentException(sprintf('Could not read "%s".', $this->path));
+      throw new \InvalidArgumentException(sprintf('Could not read "%s".', $this->path));
     }
     return $raw;
   }
 
+  /**
+   *
+   */
   private static function guessMime(string $path): string {
     $finfo = finfo_open(FILEINFO_MIME_TYPE);
     if ($finfo === FALSE) {

@@ -12,6 +12,9 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/**
+ * {@inheritdoc}
+ */
 #[AabenformsDashboardSection(id: 'audit_log', weight: -10)]
 class AuditLogSection extends AabenformsDashboardSectionBase {
 
@@ -25,6 +28,9 @@ class AuditLogSection extends AabenformsDashboardSectionBase {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $configuration,
@@ -35,10 +41,16 @@ class AuditLogSection extends AabenformsDashboardSectionBase {
     );
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getLabel(): TranslatableMarkup {
     return $this->t('Audit Log');
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getHeroMetric(): ?array {
     $since = $this->time->getRequestTime() - 86400;
     try {
@@ -57,6 +69,9 @@ class AuditLogSection extends AabenformsDashboardSectionBase {
     ];
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getSecondaryMetrics(): array {
     $since = $this->time->getRequestTime() - 86400;
     try {
@@ -75,6 +90,9 @@ class AuditLogSection extends AabenformsDashboardSectionBase {
     ];
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getMainLink(): array {
     return [
       'label' => $this->t('View activity'),
@@ -82,6 +100,9 @@ class AuditLogSection extends AabenformsDashboardSectionBase {
     ];
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getCacheTags(): array {
     return ['aabenforms_dashboard:activity'];
   }

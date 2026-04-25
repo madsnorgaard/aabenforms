@@ -32,6 +32,9 @@ class MockServicesSection extends AabenformsDashboardSectionBase {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $configuration,
@@ -42,10 +45,16 @@ class MockServicesSection extends AabenformsDashboardSectionBase {
     );
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getLabel(): TranslatableMarkup {
     return $this->t('Mock Services');
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function isApplicable(): bool {
     // The mock services live in DDEV - their endpoints are localhost
     // ports unreachable from prod containers. Pinging them from prod
@@ -54,6 +63,9 @@ class MockServicesSection extends AabenformsDashboardSectionBase {
     return (bool) (getenv('DDEV_HOSTNAME') ?: getenv('DDEV_PROJECT'));
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getStatusBadge(): ?array {
     $endpoints = [
       'Keycloak' => 'http://keycloak:8080/realms/master',
@@ -76,6 +88,9 @@ class MockServicesSection extends AabenformsDashboardSectionBase {
     };
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getSecondaryMetrics(): array {
     return [
       ['label' => $this->t('Keycloak'), 'value' => $this->t('localhost:8080')],
@@ -83,6 +98,9 @@ class MockServicesSection extends AabenformsDashboardSectionBase {
     ];
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getMainLink(): array {
     return [
       'label' => $this->t('Open Keycloak admin'),
@@ -90,6 +108,9 @@ class MockServicesSection extends AabenformsDashboardSectionBase {
     ];
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getCacheMaxAge(): int {
     // Health checks should refresh more often than other cards.
     return 30;

@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Drupal\aabenforms_digital_post\Certificate;
 
-use Drupal\aabenforms_digital_post\Exception\CertificateException;
-use DateTimeImmutable;
-
 /**
  * Locates the certificate used to sign SF1601 SOAP requests.
  *
@@ -20,7 +17,7 @@ interface CertificateLocatorInterface {
   /**
    * Locate the certificate. Throws when misconfigured or unreadable.
    *
-   * @throws CertificateException
+   * @throws \Drupal\aabenforms_digital_post\Exception\CertificateException
    */
   public function locate(): Certificate;
 
@@ -33,6 +30,6 @@ interface CertificateLocatorInterface {
   /**
    * Expiry date of the current certificate, or NULL if not computable.
    */
-  public function expiresAt(): ?DateTimeImmutable;
+  public function expiresAt(): ?\DateTimeImmutable;
 
 }

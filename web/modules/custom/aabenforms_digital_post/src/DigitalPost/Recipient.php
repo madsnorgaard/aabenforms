@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Drupal\aabenforms_digital_post\DigitalPost;
 
-use InvalidArgumentException;
-
 /**
  * Immutable Digital Post recipient (CPR or CVR).
  *
@@ -32,7 +30,7 @@ final class Recipient {
   public static function cpr(string $cpr): self {
     $digits = preg_replace('/\D+/', '', $cpr) ?? '';
     if (strlen($digits) !== 10) {
-      throw new InvalidArgumentException(sprintf('CPR must be exactly 10 digits; got %d.', strlen($digits)));
+      throw new \InvalidArgumentException(sprintf('CPR must be exactly 10 digits; got %d.', strlen($digits)));
     }
     return new self(self::TYPE_CPR, $digits);
   }
@@ -43,7 +41,7 @@ final class Recipient {
   public static function cvr(string $cvr): self {
     $digits = preg_replace('/\D+/', '', $cvr) ?? '';
     if (strlen($digits) !== 8) {
-      throw new InvalidArgumentException(sprintf('CVR must be exactly 8 digits; got %d.', strlen($digits)));
+      throw new \InvalidArgumentException(sprintf('CVR must be exactly 8 digits; got %d.', strlen($digits)));
     }
     return new self(self::TYPE_CVR, $digits);
   }

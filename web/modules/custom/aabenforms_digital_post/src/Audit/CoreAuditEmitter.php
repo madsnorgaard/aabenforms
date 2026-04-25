@@ -19,6 +19,9 @@ final class CoreAuditEmitter implements AuditEmitterInterface {
   ) {
   }
 
+  /**
+   *
+   */
   public function emit(string $eventType, string $identifier, string $message, string $status, array $context = []): void {
     $this->auditLogger->log(
       action: $eventType,

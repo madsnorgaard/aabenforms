@@ -18,14 +18,23 @@ use Drupal\Core\Form\FormStateInterface;
  */
 class MitidSettingsForm extends ConfigFormBase {
 
+  /**
+   * {@inheritdoc}
+   */
   protected function getEditableConfigNames(): array {
     return ['aabenforms_mitid.settings'];
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getFormId(): string {
     return 'aabenforms_mitid_settings';
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function buildForm(array $form, FormStateInterface $form_state): array {
     $config = $this->config('aabenforms_mitid.settings');
 
@@ -89,6 +98,9 @@ class MitidSettingsForm extends ConfigFormBase {
     return parent::buildForm($form, $form_state);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function submitForm(array &$form, FormStateInterface $form_state): void {
     $config = $this->config('aabenforms_mitid.settings');
     $config->set('production', (bool) $form_state->getValue('production'));

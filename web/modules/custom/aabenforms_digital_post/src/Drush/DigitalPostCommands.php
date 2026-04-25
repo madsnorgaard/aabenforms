@@ -15,9 +15,9 @@ use Drush\Commands\DrushCommands;
 /**
  * Drush commands for AabenForms Digital Post.
  *
- * af:dp:send      smoke-test a send through the configured transport
+ * Af:dp:send      smoke-test a send through the configured transport
  * af:dp:log:tail  stream the last N log rows
- * af:dp:status    show current test_mode + sender config
+ * af:dp:status    show current test_mode + sender config.
  */
 final class DigitalPostCommands extends DrushCommands {
 
@@ -42,13 +42,15 @@ final class DigitalPostCommands extends DrushCommands {
    * @usage drush af:dp:send --to=0101900000 --subject="Test" --body="Hello"
    *   Send via the configured transport (fake_db by default).
    */
-  public function send(array $options = [
-    'to' => NULL,
-    'to-type' => 'cpr',
-    'subject' => 'Test Digital Post',
-    'body' => '<p>Test message from af:dp:send</p>',
-    'from-cvr' => NULL,
-  ]): int {
+  public function send(
+    array $options = [
+      'to' => NULL,
+      'to-type' => 'cpr',
+      'subject' => 'Test Digital Post',
+      'body' => '<p>Test message from af:dp:send</p>',
+      'from-cvr' => NULL,
+    ],
+  ): int {
     $to = $options['to'];
     if (!is_string($to) || $to === '') {
       $this->logger()->error('--to is required.');

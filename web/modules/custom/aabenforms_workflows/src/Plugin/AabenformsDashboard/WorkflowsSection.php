@@ -12,6 +12,9 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/**
+ * {@inheritdoc}
+ */
 #[AabenformsDashboardSection(id: 'workflows', weight: -50)]
 class WorkflowsSection extends AabenformsDashboardSectionBase {
 
@@ -25,6 +28,9 @@ class WorkflowsSection extends AabenformsDashboardSectionBase {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $configuration,
@@ -35,10 +41,16 @@ class WorkflowsSection extends AabenformsDashboardSectionBase {
     );
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getLabel(): TranslatableMarkup {
     return $this->t('Workflow Templates');
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getHeroMetric(): ?array {
     $instances = $this->instantiator->getInstances();
     return [
@@ -47,6 +59,9 @@ class WorkflowsSection extends AabenformsDashboardSectionBase {
     ];
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getSecondaryMetrics(): array {
     return [
       [
@@ -56,6 +71,9 @@ class WorkflowsSection extends AabenformsDashboardSectionBase {
     ];
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getMainLink(): array {
     return [
       'label' => $this->t('Browse templates'),
@@ -63,6 +81,9 @@ class WorkflowsSection extends AabenformsDashboardSectionBase {
     ];
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getCacheTags(): array {
     return ['config:eca_list', 'aabenforms_workflows:templates'];
   }

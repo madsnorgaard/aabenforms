@@ -31,6 +31,8 @@ class RecentActivityBuilder {
   ) {}
 
   /**
+   * Builds the activity feed payload for the given filter.
+   *
    * @param string $filter
    *   One of self::FILTERS.
    *
@@ -60,6 +62,9 @@ class RecentActivityBuilder {
     ];
   }
 
+  /**
+   * {@inheritdoc}
+   */
   protected function fetchRows(string $filter): array {
     $rows = [];
     $now = $this->time->getRequestTime();

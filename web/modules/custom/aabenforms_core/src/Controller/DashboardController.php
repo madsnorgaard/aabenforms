@@ -8,30 +8,47 @@ use Drupal\aabenforms_core\Dashboard\AabenformsDashboardSectionManager;
 use Drupal\aabenforms_core\Dashboard\RecentActivityBuilder;
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Routing\RouteProviderInterface;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Exception\RouteNotFoundException;
 
 /**
  * Renders the AabenForms admin dashboard at /admin/aabenforms.
  *
- * Phase A: skeleton render array with header + section grid placeholders.
- * Phase B+: composes feature-module section plugins into cards.
+ * Composes feature-module section plugins into cards plus a recent
+ * activity feed. Defensive against transient deploy-window failures:
+ * one bad section never 500s the whole page.
  */
 class DashboardController extends ControllerBase {
 
   public function __construct(
     protected readonly AabenformsDashboardSectionManager $sectionManager,
     protected readonly RecentActivityBuilder $activityBuilder,
+    protected readonly RouteProviderInterface $routeProvider,
   ) {}
 
+  /**
+   * {@inheritdoc}
+   */
   public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('plugin.manager.aabenforms_dashboard_section'),
       $container->get('aabenforms_core.dashboard_activity'),
+      $container->get('router.route_provider'),
     );
   }
 
+  /**
+   * Renders the dashboard at /admin/aabenforms.
+   *
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   *   The current HTTP request, used to read the activity ?filter= chip.
+   *
+   * @return array
+   *   A render array consumed by the aabenforms_dashboard theme hook.
+   */
   public function overview(Request $request): array {
     $sections = $this->sectionManager->getApplicableSections();
 
@@ -56,7 +73,8 @@ class DashboardController extends ControllerBase {
       $activity = $this->activityBuilder->build($filter);
     }
     catch (\Throwable $e) {
-      \Drupal::logger('aabenforms_core')->error('Activity feed failed: @msg', ['@msg' => $e->getMessage()]);
+      $this->getLogger('aabenforms_core')
+        ->error('Activity feed failed: @msg', ['@msg' => $e->getMessage()]);
       $activity = ['rows' => [], 'pivoted' => FALSE, 'filter' => $filter];
     }
     $cache->addCacheTags(['aabenforms_dashboard:activity']);
@@ -137,16 +155,28 @@ class DashboardController extends ControllerBase {
     }
   }
 
+  /**
+   * Logs a section accessor failure.
+   *
+   * @param string $id
+   *   Section plugin id.
+   * @param string $method
+   *   Name of the accessor that threw.
+   * @param \Throwable $e
+   *   The exception or error to log.
+   */
   protected function logSectionFailure(string $id, string $method, \Throwable $e): void {
-    \Drupal::logger('aabenforms_core')->error(
+    $this->getLogger('aabenforms_core')->error(
       'Dashboard section @id::@method failed: @msg',
       ['@id' => $id, '@method' => $method, '@msg' => $e->getMessage()],
     );
   }
 
   /**
-   * Build the filter chips. Each chip is an anchor that re-issues the
-   * dashboard request with a different ?filter=. No JS.
+   * Builds the activity-feed filter chips.
+   *
+   * Each chip is an anchor that re-issues the dashboard request with a
+   * different ?filter=. No JS.
    */
   protected function buildActivityFilters(string $active): array {
     $labels = [
@@ -168,7 +198,10 @@ class DashboardController extends ControllerBase {
   }
 
   /**
+   * Resolves the environment chip shown next to the dashboard wordmark.
+   *
    * @return array{label:string,tone:string}
+   *   Label is one of PROD/STAGING/POC, tone matches the pill palette.
    */
   protected function resolveEnvironment(): array {
     $env = getenv('DRUPAL_ENV') ?: ($_SERVER['DRUPAL_ENV'] ?? '');
@@ -182,10 +215,12 @@ class DashboardController extends ControllerBase {
   }
 
   /**
-   * Quick-action buttons. Routes referenced here are guaranteed by the
-   * modules we hard-depend on (workflows, digital_post via _eca, webform).
-   * Routes that don't exist are skipped silently to keep the dashboard
-   * resilient to module disablement.
+   * Builds the quick-action buttons row.
+   *
+   * Routes referenced here are guaranteed by the modules we hard-depend
+   * on (workflows, digital_post via _eca, webform). Routes that don't
+   * exist are skipped silently to keep the dashboard resilient to
+   * module disablement.
    */
   protected function buildQuickActions(): array {
     $candidates = [
@@ -208,18 +243,17 @@ class DashboardController extends ControllerBase {
       ],
     ];
 
-    $provider = \Drupal::service('router.route_provider');
     $actions = [];
     foreach ($candidates as $candidate) {
       try {
-        $provider->getRouteByName($candidate['route']);
+        $this->routeProvider->getRouteByName($candidate['route']);
         $actions[] = [
           'label' => $candidate['label'],
           'url' => Url::fromRoute($candidate['route']),
           'primary' => $candidate['primary'] ?? FALSE,
         ];
       }
-      catch (\Symfony\Component\Routing\Exception\RouteNotFoundException) {
+      catch (RouteNotFoundException) {
         // Skip — module providing the route isn't enabled.
       }
     }

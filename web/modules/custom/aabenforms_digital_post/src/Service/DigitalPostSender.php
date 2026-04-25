@@ -31,6 +31,9 @@ final class DigitalPostSender {
   ) {
   }
 
+  /**
+   *
+   */
   public function send(DigitalPost $post): Result {
     $transactionId = $post->meta['transaction_id'] ?? $this->transactionIdGenerator->generate();
     if (!is_string($transactionId) || $transactionId === '') {
@@ -62,6 +65,9 @@ final class DigitalPostSender {
     return $result;
   }
 
+  /**
+   *
+   */
   public function testMode(): string {
     return $this->client->modeLabel();
   }

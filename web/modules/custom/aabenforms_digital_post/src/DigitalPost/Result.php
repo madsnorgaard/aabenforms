@@ -31,6 +31,9 @@ final class Result {
   ) {
   }
 
+  /**
+   *
+   */
   public static function success(string $transactionId, string $message = '', ?string $rawResponse = NULL): self {
     return new self(
       status: self::SUCCESS,
@@ -41,6 +44,9 @@ final class Result {
     );
   }
 
+  /**
+   *
+   */
   public static function failure(string $transactionId, string $reasonCode, string $message, ?string $rawResponse = NULL): self {
     return new self(
       status: self::FAILURE,
@@ -51,6 +57,9 @@ final class Result {
     );
   }
 
+  /**
+   *
+   */
   public function isSuccess(): bool {
     return $this->status === self::SUCCESS;
   }
