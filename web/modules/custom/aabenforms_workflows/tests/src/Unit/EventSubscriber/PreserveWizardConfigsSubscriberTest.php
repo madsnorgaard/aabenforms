@@ -100,9 +100,9 @@ class PreserveWizardConfigsSubscriberTest extends UnitTestCase {
       'user.role.aabenforms_employee',
     ];
 
-    // Exercise both source-presence states. The pattern-mismatch path
-    // must short-circuit before either branch is reached, so neither
-    // exists()=TRUE nor exists()=FALSE should trigger a read or write.
+    // Exercise both source-presence states. Non-wizard configs must not
+    // trigger a read from active storage or a write to source storage,
+    // regardless of whether source->exists() returns TRUE or FALSE.
     foreach ([FALSE, TRUE] as $exists_in_source) {
       $active = $this->createMock(StorageInterface::class);
       $active->method('listAll')->willReturn($names);
