@@ -61,6 +61,9 @@ class MitidSection extends AabenformsDashboardSectionBase {
   public function getStatusBadge(): ?array {
     $settings = $this->configFactory->get('aabenforms_mitid.settings');
     $production = (bool) $settings->get('production');
+    // The endpoint lives at the top-level authorization_endpoint key in
+    // the deployed config (not nested under oidc.* like the install
+    // YAML defaults suggested).
     $endpoint = (string) $settings->get('authorization_endpoint');
     $isMock = $endpoint !== '' && (
       str_contains($endpoint, 'localhost')
@@ -100,13 +103,9 @@ class MitidSection extends AabenformsDashboardSectionBase {
   }
 
   public function getMainLink(): array {
-    // aabenforms_mitid currently has no settings UI route; link to the
-    // main admin config page so the card has a useful destination. When
-    // Session 2C ships aabenforms_nemlogin the link target updates to
-    // the new provider entity collection.
     return [
-      'label' => $this->t('Open Drupal admin'),
-      'url' => Url::fromUri('internal:/admin/config'),
+      'label' => $this->t('Configure'),
+      'url' => Url::fromRoute('aabenforms_mitid.settings'),
     ];
   }
 

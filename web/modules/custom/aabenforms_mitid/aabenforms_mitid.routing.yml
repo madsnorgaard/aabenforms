@@ -1,3 +1,11 @@
+aabenforms_mitid.settings:
+  path: '/admin/config/aabenforms/mitid'
+  defaults:
+    _form: '\Drupal\aabenforms_mitid\Form\MitidSettingsForm'
+    _title: 'MitID OIDC settings'
+  requirements:
+    _permission: 'administer site configuration'
+
 aabenforms_mitid.login:
   path: '/mitid/login'
   defaults:
