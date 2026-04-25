@@ -642,7 +642,13 @@ class WorkflowTemplateWizardForm extends FormBase {
     $items = [];
     foreach ($steps as $step_num => $label) {
       $class = $step_num === $current_step ? 'current' : ($step_num < $current_step ? 'completed' : 'pending');
-      $items[] = '<span class="wizard-step ' . $class . '">' . $label . '</span>';
+      // Drop the class on the <li> directly. Putting raw HTML strings in
+      // #items would escape them; use #wrapper_attributes so item_list
+      // renders the class on the list element itself.
+      $items[] = [
+        '#markup' => $label,
+        '#wrapper_attributes' => ['class' => ['wizard-step', $class]],
+      ];
     }
 
     return $items;
