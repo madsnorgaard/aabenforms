@@ -25,7 +25,7 @@ final class Sf1601ClientFactory {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function create(): Sf1601ClientInterface {
     $mode = (string) $this->configFactory

@@ -14,8 +14,19 @@ use Drupal\Core\Config\ConfigFactoryInterface;
  */
 final class Sender {
 
+  /**
+   * Sender CVR, normalised to 8 digits.
+   */
   public readonly string $cvr;
+
+  /**
+   * Optional human-readable sender name shown to recipients.
+   */
   public readonly string $name;
+
+  /**
+   * Optional fjernprint return address for fysisk-post fallback.
+   */
   public readonly ?string $returnAddress;
 
   public function __construct(

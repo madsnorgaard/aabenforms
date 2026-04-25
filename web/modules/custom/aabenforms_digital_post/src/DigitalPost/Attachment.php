@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace Drupal\aabenforms_digital_post\DigitalPost;
 
 /**
- * Immutable attachment. Carries either a file path or raw bytes plus
- * metadata (filename, mime type). Lazy-loads bytes from path only when
- * the transport asks for them via bytes().
+ * Immutable attachment carrying file path or raw bytes plus metadata.
+ *
+ * Lazy-loads bytes from path only when the transport asks for them via
+ * bytes(); metadata (filename, mime type, size) is always available.
  */
 final class Attachment {
 
@@ -44,7 +45,7 @@ final class Attachment {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public static function fromFile(string $path, ?string $filename = NULL, ?string $mimeType = NULL): self {
     if (!is_file($path) || !is_readable($path)) {
@@ -64,7 +65,7 @@ final class Attachment {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public static function fromBytes(string $bytes, string $filename, string $mimeType): self {
     return new self(
@@ -77,7 +78,7 @@ final class Attachment {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function bytes(): string {
     if ($this->inlineBytes !== NULL) {
@@ -91,7 +92,7 @@ final class Attachment {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   private static function guessMime(string $path): string {
     $finfo = finfo_open(FILEINFO_MIME_TYPE);

@@ -12,6 +12,9 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/**
+ * {@inheritdoc}
+ */
 #[AabenformsDashboardSection(id: 'webforms', weight: -20)]
 class WebformsSection extends AabenformsDashboardSectionBase {
 
@@ -25,6 +28,9 @@ class WebformsSection extends AabenformsDashboardSectionBase {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $configuration,
@@ -35,10 +41,16 @@ class WebformsSection extends AabenformsDashboardSectionBase {
     );
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getLabel(): TranslatableMarkup {
     return $this->t('Webforms');
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getHeroMetric(): ?array {
     try {
       $count = $this->entityTypeManager->getStorage('webform')
@@ -56,6 +68,9 @@ class WebformsSection extends AabenformsDashboardSectionBase {
     ];
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getSecondaryMetrics(): array {
     $since = $this->time->getRequestTime() - (7 * 86400);
     try {
@@ -74,6 +89,9 @@ class WebformsSection extends AabenformsDashboardSectionBase {
     ];
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getMainLink(): array {
     return [
       'label' => $this->t('Browse webforms'),
@@ -81,6 +99,9 @@ class WebformsSection extends AabenformsDashboardSectionBase {
     ];
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getCacheTags(): array {
     return ['webform_list', 'webform_submission_list'];
   }

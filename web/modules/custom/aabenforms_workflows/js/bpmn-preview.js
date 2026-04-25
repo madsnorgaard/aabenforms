@@ -15,7 +15,7 @@
       // Full preview page.
       var $previewCanvas = $('#bpmn-preview-canvas', context);
       if ($previewCanvas.length > 0 && !$previewCanvas.data('bpmn-initialized')) {
-        $previewCanvas.data('bpmn-initialized', true);
+        $previewCanvas.data('bpmn-initialized', TRUE);
         var previewSettings = settings.aabenforms_workflows.preview;
         this.renderFullPreview($previewCanvas, previewSettings.xml);
       }
@@ -26,7 +26,7 @@
         if ($thumbnail.data('bpmn-initialized')) {
           return;
         }
-        $thumbnail.data('bpmn-initialized', true);
+        $thumbnail.data('bpmn-initialized', TRUE);
 
         var templateId = $thumbnail.closest('.template-card').data('template-id');
         var $canvas = $thumbnail.find('.bpmn-preview-canvas');

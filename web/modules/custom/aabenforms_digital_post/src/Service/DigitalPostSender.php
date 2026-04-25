@@ -32,7 +32,7 @@ final class DigitalPostSender {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function send(DigitalPost $post): Result {
     $transactionId = $post->meta['transaction_id'] ?? $this->transactionIdGenerator->generate();
@@ -66,7 +66,7 @@ final class DigitalPostSender {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function testMode(): string {
     return $this->client->modeLabel();

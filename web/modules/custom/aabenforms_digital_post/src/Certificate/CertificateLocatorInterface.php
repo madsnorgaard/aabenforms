@@ -22,8 +22,9 @@ interface CertificateLocatorInterface {
   public function locate(): Certificate;
 
   /**
-   * Whether the locator can report an expiry date. File-based locators can
-   * parse the cert; opaque sources may not.
+   * Whether the locator can report an expiry date.
+   *
+   * File-based locators can parse the cert; opaque sources may not.
    */
   public function supportsRenewal(): bool;
 

@@ -100,7 +100,17 @@ final class DigitalPostCommands extends DrushCommands {
    */
   public function logTail(array $options = ['count' => 10]): void {
     $rows = $this->database->select('aabenforms_digital_post_log', 'l')
-      ->fields('l', ['id', 'created', 'mode', 'status', 'reason_code', 'recipient_type', 'sender_cvr', 'subject', 'transaction_id'])
+      ->fields('l', [
+        'id',
+        'created',
+        'mode',
+        'status',
+        'reason_code',
+        'recipient_type',
+        'sender_cvr',
+        'subject',
+        'transaction_id',
+      ])
       ->orderBy('id', 'DESC')
       ->range(0, (int) $options['count'])
       ->execute()

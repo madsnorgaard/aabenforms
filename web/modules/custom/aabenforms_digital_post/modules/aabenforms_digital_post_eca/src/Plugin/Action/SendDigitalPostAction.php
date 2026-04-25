@@ -39,11 +39,22 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 )]
 class SendDigitalPostAction extends AabenFormsActionBase {
 
+  /**
+   * The Digital Post sender service.
+   *
+   * @var \Drupal\aabenforms_digital_post\Service\DigitalPostSender
+   */
   protected DigitalPostSender $sender;
+
+  /**
+   * The config factory used to resolve the default sender CVR.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
   protected ConfigFactoryInterface $configFactory;
 
   /**
-   *
+   * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     $instance = parent::create($container, $configuration, $plugin_id, $plugin_definition);
@@ -53,7 +64,7 @@ class SendDigitalPostAction extends AabenFormsActionBase {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function defaultConfiguration(): array {
     return [
@@ -68,7 +79,7 @@ class SendDigitalPostAction extends AabenFormsActionBase {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
     $form['recipient_token'] = [
@@ -129,17 +140,26 @@ class SendDigitalPostAction extends AabenFormsActionBase {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
-    foreach (['recipient_token', 'recipient_type', 'sender_cvr_token', 'subject_template', 'body_template', 'type', 'result_token'] as $key) {
+    $keys = [
+      'recipient_token',
+      'recipient_type',
+      'sender_cvr_token',
+      'subject_template',
+      'body_template',
+      'type',
+      'result_token',
+    ];
+    foreach ($keys as $key) {
       $this->configuration[$key] = (string) $form_state->getValue($key);
     }
     parent::submitConfigurationForm($form, $form_state);
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function execute(): void {
     $recipientRaw = $this->resolveRecipient();
@@ -267,8 +287,10 @@ class SendDigitalPostAction extends AabenFormsActionBase {
   }
 
   /**
-   * Replace [token] placeholders in a template. Only subject + body templates
-   * go through this; literal strings pass through unchanged.
+   * Replaces [token] placeholders in a template.
+   *
+   * Only subject + body templates go through this; literal strings pass
+   * through unchanged.
    */
   private function renderTemplate(string $template): string {
     if ($template === '' || !str_contains($template, '[')) {
@@ -288,7 +310,9 @@ class SendDigitalPostAction extends AabenFormsActionBase {
   }
 
   /**
+   * Writes the typed Result back into the configured ECA token.
    *
+   * Keys: success (bool), transaction_id, reason_code, message.
    */
   private function setResultToken(bool $success, string $transactionId, ?string $reasonCode, string $message): void {
     $name = (string) $this->configuration['result_token'];

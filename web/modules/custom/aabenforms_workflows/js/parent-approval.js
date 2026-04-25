@@ -16,7 +16,7 @@
         if ($(this).is(':checked')) {
           var confirmReject = confirm(Drupal.t('Are you sure you want to reject this request? This action cannot be undone.'));
           if (!confirmReject) {
-            $('.parent-approval-page input[value="approve"]').prop('checked', true);
+            $('.parent-approval-page input[value="approve"]').prop('checked', TRUE);
           }
         }
       });
@@ -28,7 +28,7 @@
         if (!selectedAction) {
           e.preventDefault();
           alert(Drupal.t('Please select whether you approve or reject this request.'));
-          return false;
+          return FALSE;
         }
 
         // Confirm rejection one more time.
@@ -36,12 +36,12 @@
           var finalConfirm = confirm(Drupal.t('Final confirmation: You are about to reject this request. The case worker will be notified. Continue?'));
           if (!finalConfirm) {
             e.preventDefault();
-            return false;
+            return FALSE;
           }
         }
 
         // Disable submit button to prevent double submission.
-        $(this).find('input[type="submit"]').prop('disabled', true).val(Drupal.t('Submitting...'));
+        $(this).find('input[type="submit"]').prop('disabled', TRUE).val(Drupal.t('Submitting...'));
       });
 
       // Add loading state to MitID login button.

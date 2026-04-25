@@ -13,6 +13,8 @@ namespace Drupal\aabenforms_core\Service;
 class WorkflowExecutionCollector {
 
   /**
+   * Collected workflow steps for the current request.
+   *
    * @var array
    */
   protected array $steps = [];

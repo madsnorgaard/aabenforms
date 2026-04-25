@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace Drupal\aabenforms_digital_post\DigitalPost;
 
 /**
- * Immutable Digital Post DTO. The unit of work accepted by
- * DigitalPostSender::send().
+ * Immutable Digital Post DTO accepted by DigitalPostSender::send().
  *
  * This DTO carries NO reference to webforms, submissions, or any Drupal
  * entity. Callers (webform handlers, ECA actions, custom code) are
@@ -27,21 +26,26 @@ final class DigitalPost {
   ];
 
   /**
-   * @param Recipient $recipient
-   * @param Sender $sender
+   * Constructs the DigitalPost DTO.
+   *
+   * @param \Drupal\aabenforms_digital_post\DigitalPost\Recipient $recipient
+   *   The Digital Post recipient (CPR or CVR).
+   * @param \Drupal\aabenforms_digital_post\DigitalPost\Sender $sender
+   *   The sender identity.
    * @param string $subject
    *   Message subject (1..255 chars).
    * @param string $body
-   *   Message body. HTML allowed for Digital Post; stripped
-   *   for NemSMS by the transport.
-   * @param list<Attachment> $attachments
+   *   Message body. HTML allowed for Digital Post; stripped for NemSMS
+   *   by the transport.
+   * @param list<\Drupal\aabenforms_digital_post\DigitalPost\Attachment> $attachments
+   *   Optional attachment list.
    * @param string $type
    *   One of the TYPE_* constants.
    * @param array<string, string|int|bool> $meta
    *   Additional hints:
-   *   - transaction_id (optional; generated if absent)
-   *   - memo_version (1.1 or 1.2; defaults to 1.2)
-   *   - action_code (MeMo activity code; defaults to INFORMATION)
+   *   - transaction_id (optional; generated if absent).
+   *   - memo_version (1.1 or 1.2; defaults to 1.2).
+   *   - action_code (MeMo activity code; defaults to INFORMATION).
    */
   public function __construct(
     public readonly Recipient $recipient,
@@ -75,7 +79,7 @@ final class DigitalPost {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function totalAttachmentBytes(): int {
     $total = 0;
