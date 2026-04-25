@@ -88,6 +88,72 @@ function aabenforms_workflows_schema(): array {
       'status' => ['status'],
     ],
   ];
+
+  $schema['aabenforms_election'] = [
+    'description' => 'MED elections and similar window-based ballots.',
+    'fields' => [
+      'id' => [
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+        'description' => 'Stable election identifier.',
+      ],
+      'label' => ['type' => 'varchar', 'length' => 255, 'not null' => TRUE],
+      'description' => ['type' => 'text', 'not null' => FALSE],
+      'choices' => [
+        'type' => 'text',
+        'size' => 'medium',
+        'not null' => TRUE,
+        'description' => 'JSON array of {index, label} objects.',
+      ],
+      'opens_at' => ['type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE],
+      'closes_at' => ['type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE],
+      'status' => [
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => 'pending',
+        'description' => 'pending | open | closed | published.',
+      ],
+      'results' => [
+        'type' => 'text',
+        'size' => 'medium',
+        'not null' => FALSE,
+        'description' => 'JSON tally written when status moves to closed.',
+      ],
+      'created' => ['type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE],
+    ],
+    'primary key' => ['id'],
+    'indexes' => [
+      'status' => ['status'],
+      'closes_at' => ['closes_at'],
+    ],
+  ];
+
+  $schema['aabenforms_election_ballot'] = [
+    'description' => 'One row per ballot cast. voter_hash uniqueness rejects duplicates without storing raw CPR.',
+    'fields' => [
+      'id' => ['type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE],
+      'election_id' => ['type' => 'varchar', 'length' => 64, 'not null' => TRUE],
+      'voter_hash' => [
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+        'description' => 'SHA-256(election_id + cpr).',
+      ],
+      'choice_index' => ['type' => 'int', 'not null' => TRUE],
+      'cast_at' => ['type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE],
+    ],
+    'primary key' => ['id'],
+    'unique keys' => [
+      'voter_per_election' => ['election_id', 'voter_hash'],
+    ],
+    'indexes' => [
+      'election_id' => ['election_id'],
+      'cast_at' => ['cast_at'],
+    ],
+  ];
+
   return $schema;
 }
 
@@ -146,4 +212,26 @@ function aabenforms_workflows_update_11001(): string {
   }
 
   return sprintf('Migrated %d ECA config entity/ies away from removed base plugins.', $migrated);
+}
+
+/**
+ * Adds the payroll log + election tables on existing installs.
+ *
+ * Idempotent: hook_schema() now declares all three tables for fresh
+ * installs; this update creates whichever are missing on sites that
+ * had aabenforms_workflows enabled before they shipped.
+ */
+function aabenforms_workflows_update_11002(): string {
+  $schema_db = \Drupal::database()->schema();
+  $schema = aabenforms_workflows_schema();
+  $created = [];
+  foreach ($schema as $name => $def) {
+    if (!$schema_db->tableExists($name)) {
+      $schema_db->createTable($name, $def);
+      $created[] = $name;
+    }
+  }
+  return $created
+    ? 'Created tables: ' . implode(', ', $created)
+    : 'No new tables to create.';
 }

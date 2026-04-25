@@ -1,3 +1,23 @@
+aabenforms_workflows.elections:
+  path: '/admin/aabenforms/elections'
+  defaults:
+    _controller: '\Drupal\aabenforms_workflows\Controller\ElectionResultsController::listElections'
+    _title: 'Elections'
+  requirements:
+    _permission: 'access aabenforms admin'
+
+aabenforms_workflows.election_results:
+  path: '/admin/aabenforms/elections/{id}/results'
+  defaults:
+    _controller: '\Drupal\aabenforms_workflows\Controller\ElectionResultsController::viewResults'
+    _title: 'Election results'
+  requirements:
+    _permission: 'access aabenforms admin'
+  options:
+    parameters:
+      id:
+        type: string
+
 aabenforms_workflows.template_browser:
   path: '/admin/aabenforms/workflow-templates'
   defaults:
