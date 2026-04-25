@@ -11,7 +11,6 @@ module:
   block: 0
   bpmn_io: 0
   breakpoint: 0
-  content_moderation: 0
   dblog: 0
   domain: 0
   eca: 0
@@ -20,7 +19,6 @@ module:
   eca_content: 0
   eca_ui: 0
   eca_user: 0
-  eca_workflow: 0
   encrypt: 0
   field: 0
   file: 0
@@ -46,7 +44,6 @@ module:
   user: 0
   webform: 0
   webform_ui: 0
-  workflows: 0
   eca_form: 1
   externalauth: 10
   views: 10
