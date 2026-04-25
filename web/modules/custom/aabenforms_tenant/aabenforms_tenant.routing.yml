@@ -1,0 +1,7 @@
+aabenforms_tenant.settings:
+  path: '/admin/config/aabenforms/tenant'
+  defaults:
+    _form: '\Drupal\aabenforms_tenant\Form\TenantSettingsForm'
+    _title: 'AabenForms tenant settings'
+  requirements:
+    _permission: 'administer site configuration'

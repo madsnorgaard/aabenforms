@@ -29,6 +29,17 @@ actions:
       message_template: 'Private phone use declaration submitted'
     successors:
       -
+        id: lookup_manager
+        condition: ''
+  lookup_manager:
+    label: 'Resolve manager email from org-chart'
+    plugin: aabenforms_manager_lookup
+    configuration:
+      employee_id_token: '[webform_submission:values:employee_id:raw]'
+      fallback_email_token: '[webform_submission:values:manager_email:raw]'
+      result_token: phone_declaration_manager_email
+    successors:
+      -
         id: log_manager_notified
         condition: ''
   log_manager_notified:
@@ -36,7 +47,7 @@ actions:
     plugin: aabenforms_audit_log
     configuration:
       event_type: phone_declaration_manager_notified
-      additional_data_token: '[webform_submission:values:manager_email:raw]'
+      additional_data_token: '[phone_declaration_manager_email]'
       message_template: 'Stub. Production would send approval email.'
     successors:
       -

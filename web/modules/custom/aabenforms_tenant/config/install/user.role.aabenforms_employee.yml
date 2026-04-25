@@ -1,0 +1,11 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - aabenforms_core
+id: aabenforms_employee
+label: 'AabenForms Employee'
+weight: 5
+is_admin: false
+permissions:
+  - 'access employee webform api'

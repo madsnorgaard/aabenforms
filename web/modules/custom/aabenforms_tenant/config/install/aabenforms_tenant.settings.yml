@@ -1,0 +1,8 @@
+# Default tenant-scoped employee provisioning. The aabenforms_employee
+# role is granted on login when the configured OIDC claim is present
+# AND its value satisfies the comparison rule. Empty employee_claim_field
+# disables provisioning entirely - role must then be assigned manually.
+employee_provisioning:
+  employee_claim_field: ''
+  employee_claim_match: equals
+  employee_claim_value: ''

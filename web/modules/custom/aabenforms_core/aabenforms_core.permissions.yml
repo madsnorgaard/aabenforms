@@ -9,3 +9,8 @@ access aabenforms admin:
   title: 'Access AabenForms admin dashboard'
   description: 'View the unified AabenForms admin dashboard at /admin/aabenforms.'
   restrict access: true
+
+access employee webform api:
+  title: 'Submit AabenForms employee (HR) webforms'
+  description: 'Restricts the HR-bundle webforms (hr_onboarding, mileage_expense, phone_declaration) to authenticated users whose MitID/NemLogin claim matches the configured employee mapping.'
+  restrict access: true

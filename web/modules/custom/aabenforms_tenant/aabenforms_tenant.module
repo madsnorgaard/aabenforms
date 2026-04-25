@@ -4,10 +4,11 @@
  * @file
  * ÅbenForms Tenant module.
  *
- * Provides multi-tenancy support with domain-based routing.
+ * Provides multi-tenancy support and employee role provisioning.
  */
 
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\user\UserInterface;
 
 /**
  * Implements hook_help().
@@ -15,7 +16,83 @@ use Drupal\Core\Routing\RouteMatchInterface;
 function aabenforms_tenant_help(string $route_name, RouteMatchInterface $route_match): ?string {
   switch ($route_name) {
     case 'help.page.aabenforms_tenant':
-      return '<p>' . t('Multi-tenancy support with domain-based routing for ÅbenForms.') . '</p>';
+      return '<p>' . t('Multi-tenancy support and employee role provisioning for ÅbenForms.') . '</p>';
+
+    case 'aabenforms_tenant.settings':
+      return '<p>' . t('Map an OIDC claim from MitID/NemLogin to the AabenForms employee role. When a citizen logs in and the claim is present, the role is granted automatically so they can submit HR webforms.') . '</p>';
   }
   return NULL;
+}
+
+/**
+ * Implements hook_user_login().
+ *
+ * Reads MitID/NemLogin claims from the most recent OIDC session and
+ * grants the aabenforms_employee role when the configured claim
+ * matches. Empty employee_claim_field disables provisioning. The role
+ * persists on the user account; revocation isn't automated yet.
+ */
+function aabenforms_tenant_user_login($account): void {
+  if (!$account instanceof UserInterface) {
+    return;
+  }
+  if ($account->hasRole('aabenforms_employee')) {
+    return;
+  }
+  $config = \Drupal::config('aabenforms_tenant.settings');
+  $field = (string) $config->get('employee_provisioning.employee_claim_field');
+  if ($field === '') {
+    return;
+  }
+  $expected = (string) $config->get('employee_provisioning.employee_claim_value');
+  $rule = (string) ($config->get('employee_provisioning.employee_claim_match') ?: 'equals');
+
+  $claims = _aabenforms_tenant_recent_oidc_claims();
+  if ($claims === NULL) {
+    return;
+  }
+  $actual = $claims[$field] ?? NULL;
+  if (!is_string($actual) && !is_numeric($actual)) {
+    return;
+  }
+  $actual = (string) $actual;
+  $matches = match ($rule) {
+    'equals' => $actual === $expected,
+    'starts_with' => $expected !== '' && str_starts_with($actual, $expected),
+    default => FALSE,
+  };
+  if ($matches) {
+    $account->addRole('aabenforms_employee');
+    $account->save();
+    \Drupal::logger('aabenforms_tenant')->info(
+      'Granted aabenforms_employee to uid @uid via claim @field.',
+      ['@uid' => $account->id(), '@field' => $field],
+    );
+  }
+}
+
+/**
+ * Reads claims from the most recently completed MitID/NemLogin session.
+ *
+ * MitidSessionManager stores per-workflow sessions keyed by workflow_id;
+ * we don't have a direct uid lookup, so fall back to scanning the
+ * private tempstore namespace for the freshest session and pulling its
+ * claims. Returns NULL if no MitID session is associated with the
+ * current request.
+ */
+function _aabenforms_tenant_recent_oidc_claims(): ?array {
+  $request = \Drupal::request();
+  $workflow_id = $request->getSession()?->get('mitid_workflow_id');
+  if (!is_string($workflow_id) || $workflow_id === '') {
+    return NULL;
+  }
+  if (!\Drupal::hasService('aabenforms_mitid.session_manager')) {
+    return NULL;
+  }
+  $manager = \Drupal::service('aabenforms_mitid.session_manager');
+  if (!method_exists($manager, 'getSession')) {
+    return NULL;
+  }
+  $session = $manager->getSession($workflow_id);
+  return is_array($session) ? $session : NULL;
 }
