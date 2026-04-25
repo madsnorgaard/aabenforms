@@ -10,10 +10,12 @@
 use Drupal\Core\Routing\RouteMatchInterface;
 
 /**
- * Wizard-created workflow configs are preserved across `drush cim` by
- * PreserveWizardConfigsSubscriber, which listens to
+ * Wizard-created workflow configs are preserved across drush cim.
+ *
+ * PreserveWizardConfigsSubscriber listens to
  * ConfigEvents::STORAGE_TRANSFORM_IMPORT. There is no
- * hook_storage_transform_import in Drupal 11 - it's an event, not a hook.
+ * hook_storage_transform_import in Drupal 11 - it's an event, not a
+ * hook.
  */
 
 /**

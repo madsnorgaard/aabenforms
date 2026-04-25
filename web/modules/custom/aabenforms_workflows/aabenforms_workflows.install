@@ -8,13 +8,12 @@
 declare(strict_types=1);
 
 /**
- * Migrate ECA configs that reference the removed 'eca_base_log' / 'eca_base_mail'
- * plugins to the custom 'aabenforms_log' shim.
+ * Migrates ECA configs from removed base plugins to the aabenforms_log shim.
  *
- * Upstream ECA removed these base plugins; any existing installed ECA config
- * entity that still references them breaks /admin/config/workflow/eca with
- * PluginNotFoundException. Rewrite the plugin ID in place on both the
- * 'actions' and 'conditions' sub-trees.
+ * Upstream ECA removed eca_base_log and eca_base_mail; any existing
+ * installed ECA config entity that still references them breaks
+ * /admin/config/workflow/eca with PluginNotFoundException. Rewrite the
+ * plugin ID in place on both the 'actions' and 'conditions' sub-trees.
  */
 function aabenforms_workflows_update_11001(): string {
   $config_factory = \Drupal::configFactory();
