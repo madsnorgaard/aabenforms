@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\aabenforms_core\Controller;
 
+use Drupal\Core\Cache\CacheableRedirectResponse;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Url;
 
@@ -17,7 +18,19 @@ use Drupal\Core\Url;
  */
 class LandingController extends ControllerBase {
 
-  public function page(): array {
+  public function page(): array|CacheableRedirectResponse {
+    // Authenticated users with the dashboard permission already know
+    // what AabenForms is - skip the brand landing and send them to the
+    // dashboard directly. The cache context ensures anon and admin see
+    // distinct cached responses for the same URL.
+    if ($this->currentUser()->hasPermission('access aabenforms admin')) {
+      $response = new CacheableRedirectResponse(
+        Url::fromRoute('aabenforms_core.dashboard')->toString()
+      );
+      $response->getCacheableMetadata()->addCacheContexts(['user.permissions']);
+      return $response;
+    }
+
     return [
       '#theme' => 'aabenforms_dashboard_landing',
       '#title' => $this->t('AabenForms'),
@@ -32,7 +45,7 @@ class LandingController extends ControllerBase {
         ],
       ],
       '#cache' => [
-        'contexts' => ['user.roles:anonymous'],
+        'contexts' => ['user.permissions'],
         'max-age' => 3600,
       ],
     ];
