@@ -217,3 +217,94 @@ function aabenforms_core_cron(): void {
     );
   }
 }
+
+/**
+ * Implements hook_page_attachments().
+ *
+ * Attaches AabenForms favicons and OpenGraph/Twitter share metadata to
+ * every Drupal page. Gives api.aabenforms.dk a recognisable identity
+ * when bookmarked, pasted into chat clients, or surfaced in browsers.
+ */
+function aabenforms_core_page_attachments(array &$attachments): void {
+  $module_path = \Drupal::service('extension.list.module')
+    ->getPath('aabenforms_core');
+  $brand_base = '/' . $module_path . '/assets/brand';
+
+  // Slack and a couple of other crawlers ignore relative og:image URLs,
+  // so resolve to an absolute URL using the request scheme + host.
+  $request = \Drupal::request();
+  $absolute = $request->getSchemeAndHttpHost();
+  $og_image = $absolute . $brand_base . '/og-image.png';
+
+  $description = (string) t('Backend admin console for the AabenForms platform.');
+
+  $tags = [
+    [
+      'link',
+      [
+        'rel' => 'icon',
+        'type' => 'image/svg+xml',
+        'href' => $brand_base . '/favicon.svg',
+      ],
+      'aabenforms_icon_svg',
+    ],
+    [
+      'link',
+      [
+        'rel' => 'icon',
+        'type' => 'image/png',
+        'sizes' => '32x32',
+        'href' => $brand_base . '/favicon-32.png',
+      ],
+      'aabenforms_icon_32',
+    ],
+    [
+      'link',
+      [
+        'rel' => 'apple-touch-icon',
+        'sizes' => '180x180',
+        'href' => $brand_base . '/apple-touch-icon-180.png',
+      ],
+      'aabenforms_icon_apple',
+    ],
+    ['meta', ['name' => 'theme-color', 'content' => '#0071b9'], 'aabenforms_theme_color'],
+    ['meta', ['name' => 'description', 'content' => $description], 'aabenforms_description'],
+    ['meta', ['property' => 'og:type', 'content' => 'website'], 'aabenforms_og_type'],
+    ['meta', ['property' => 'og:site_name', 'content' => 'AabenForms'], 'aabenforms_og_site'],
+    ['meta', ['property' => 'og:title', 'content' => 'AabenForms backend'], 'aabenforms_og_title'],
+    [
+      'meta',
+      ['property' => 'og:description', 'content' => $description],
+      'aabenforms_og_description',
+    ],
+    ['meta', ['property' => 'og:image', 'content' => $og_image], 'aabenforms_og_image'],
+    ['meta', ['property' => 'og:image:width', 'content' => '1200'], 'aabenforms_og_image_w'],
+    ['meta', ['property' => 'og:image:height', 'content' => '630'], 'aabenforms_og_image_h'],
+    [
+      'meta',
+      ['name' => 'twitter:card', 'content' => 'summary_large_image'],
+      'aabenforms_twitter_card',
+    ],
+    [
+      'meta',
+      ['name' => 'twitter:title', 'content' => 'AabenForms backend'],
+      'aabenforms_twitter_title',
+    ],
+    [
+      'meta',
+      ['name' => 'twitter:description', 'content' => $description],
+      'aabenforms_twitter_description',
+    ],
+    ['meta', ['name' => 'twitter:image', 'content' => $og_image], 'aabenforms_twitter_image'],
+  ];
+
+  foreach ($tags as [$type, $attrs, $key]) {
+    $attachments['#attached']['html_head'][] = [
+      [
+        '#tag' => $type,
+        '#attributes' => $attrs,
+      ],
+      $key,
+    ];
+  }
+}
