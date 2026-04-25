@@ -228,7 +228,7 @@ class FakeSendDatabaseLoggerTest extends TestCase {
     $this->assertArrayHasKey('attachments', $payload);
     $this->assertArrayHasKey('total_attachment_bytes', $payload);
 
-    // Verify recipient has hash, not raw identifier
+    // Verify recipient has hash, not raw identifier.
     $this->assertArrayHasKey('identifier_hash', $payload['recipient']);
     $this->assertArrayNotHasKey('identifier', $payload['recipient']);
   }

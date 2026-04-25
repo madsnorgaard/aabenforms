@@ -8,7 +8,6 @@ use Drupal\aabenforms_digital_post\DigitalPost\Attachment;
 use Drupal\aabenforms_digital_post\DigitalPost\DigitalPost;
 use Drupal\aabenforms_digital_post\DigitalPost\Recipient;
 use Drupal\aabenforms_digital_post\DigitalPost\Sender;
-use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -39,7 +38,7 @@ class DigitalPostTest extends TestCase {
    * @covers ::__construct
    */
   public function testEmptySubjectThrows(): void {
-    $this->expectException(InvalidArgumentException::class);
+    $this->expectException(\InvalidArgumentException::class);
     $this->expectExceptionMessage('DigitalPost subject cannot be empty.');
 
     new DigitalPost(
@@ -56,7 +55,7 @@ class DigitalPostTest extends TestCase {
    * @covers ::__construct
    */
   public function testWhitespaceOnlySubjectThrows(): void {
-    $this->expectException(InvalidArgumentException::class);
+    $this->expectException(\InvalidArgumentException::class);
     $this->expectExceptionMessage('DigitalPost subject cannot be empty.');
 
     new DigitalPost(
@@ -75,7 +74,7 @@ class DigitalPostTest extends TestCase {
   public function testSubjectOver255CharsThrows(): void {
     $longSubject = str_repeat('a', 256);
 
-    $this->expectException(InvalidArgumentException::class);
+    $this->expectException(\InvalidArgumentException::class);
     $this->expectExceptionMessage('DigitalPost subject is 256 chars, max 255.');
 
     new DigitalPost(
@@ -110,7 +109,7 @@ class DigitalPostTest extends TestCase {
    * @covers ::__construct
    */
   public function testEmptyBodyThrows(): void {
-    $this->expectException(InvalidArgumentException::class);
+    $this->expectException(\InvalidArgumentException::class);
     $this->expectExceptionMessage('DigitalPost body cannot be empty.');
 
     new DigitalPost(
@@ -127,7 +126,7 @@ class DigitalPostTest extends TestCase {
    * @covers ::__construct
    */
   public function testInvalidTypeThrows(): void {
-    $this->expectException(InvalidArgumentException::class);
+    $this->expectException(\InvalidArgumentException::class);
     $this->expectExceptionMessage('DigitalPost type "InvalidType" is invalid. Must be one of: Automatisk Valg, Digital Post, Fysisk Post, NemSMS');
 
     new DigitalPost(
@@ -175,7 +174,7 @@ class DigitalPostTest extends TestCase {
    * @covers ::__construct
    */
   public function testNonAttachmentInArrayThrows(): void {
-    $this->expectException(InvalidArgumentException::class);
+    $this->expectException(\InvalidArgumentException::class);
     $this->expectExceptionMessage('attachments[0] must be an Attachment.');
 
     new DigitalPost(

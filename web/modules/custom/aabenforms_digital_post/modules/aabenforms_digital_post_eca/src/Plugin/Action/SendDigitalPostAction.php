@@ -15,7 +15,6 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\eca\Attribute\EcaAction;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Throwable;
 
 /**
  * ECA Action: Send Digital Post.
@@ -40,9 +39,23 @@ use Throwable;
 )]
 class SendDigitalPostAction extends AabenFormsActionBase {
 
+  /**
+   * The Digital Post sender service.
+   *
+   * @var \Drupal\aabenforms_digital_post\Service\DigitalPostSender
+   */
   protected DigitalPostSender $sender;
+
+  /**
+   * The config factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
   protected ConfigFactoryInterface $configFactory;
 
+  /**
+   * {@inheritdoc}
+   */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     $instance = parent::create($container, $configuration, $plugin_id, $plugin_definition);
     $instance->sender = $container->get('aabenforms_digital_post.sender');
@@ -50,6 +63,9 @@ class SendDigitalPostAction extends AabenFormsActionBase {
     return $instance;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function defaultConfiguration(): array {
     return [
       'recipient_token' => '',
@@ -62,6 +78,9 @@ class SendDigitalPostAction extends AabenFormsActionBase {
     ] + parent::defaultConfiguration();
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
     $form['recipient_token'] = [
       '#type' => 'textfield',
@@ -120,13 +139,27 @@ class SendDigitalPostAction extends AabenFormsActionBase {
     return parent::buildConfigurationForm($form, $form_state);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
-    foreach (['recipient_token', 'recipient_type', 'sender_cvr_token', 'subject_template', 'body_template', 'type', 'result_token'] as $key) {
+    foreach ([
+      'recipient_token',
+      'recipient_type',
+      'sender_cvr_token',
+      'subject_template',
+      'body_template',
+      'type',
+      'result_token',
+    ] as $key) {
       $this->configuration[$key] = (string) $form_state->getValue($key);
     }
     parent::submitConfigurationForm($form, $form_state);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function execute(): void {
     $recipientRaw = $this->resolveRecipient();
     $recipientType = (string) $this->configuration['recipient_type'];
@@ -174,7 +207,7 @@ class SendDigitalPostAction extends AabenFormsActionBase {
         message: $result->message,
       );
     }
-    catch (Throwable $e) {
+    catch (\Throwable $e) {
       $this->handleError($e, 'SendDigitalPostAction');
       $this->setResultToken(
         success: FALSE,
@@ -253,8 +286,10 @@ class SendDigitalPostAction extends AabenFormsActionBase {
   }
 
   /**
-   * Replace [token] placeholders in a template. Only subject + body templates
-   * go through this; literal strings pass through unchanged.
+   * Replace [token] placeholders in a template string.
+   *
+   * Only subject + body templates go through this; literal strings pass
+   * through unchanged.
    */
   private function renderTemplate(string $template): string {
     if ($template === '' || !str_contains($template, '[')) {
@@ -273,6 +308,9 @@ class SendDigitalPostAction extends AabenFormsActionBase {
     );
   }
 
+  /**
+   * Writes the send result into an ECA token for downstream flow inspection.
+   */
   private function setResultToken(bool $success, string $transactionId, ?string $reasonCode, string $message): void {
     $name = (string) $this->configuration['result_token'];
     if ($name === '') {

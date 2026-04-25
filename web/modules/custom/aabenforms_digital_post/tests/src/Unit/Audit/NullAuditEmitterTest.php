@@ -23,7 +23,7 @@ class NullAuditEmitterTest extends TestCase {
   public function testEmitDoesNothingNoException(): void {
     $emitter = new NullAuditEmitter();
 
-    // Should not throw any exception
+    // Should not throw any exception.
     $emitter->emit(
       eventType: 'digital_post_sent',
       identifier: 'hash-abc123',
@@ -32,7 +32,7 @@ class NullAuditEmitterTest extends TestCase {
       context: ['key' => 'value'],
     );
 
-    // If we got here, the test passed - emit() completed without exception
+    // If we got here, the test passed; emit() completed without exception.
     $this->assertTrue(TRUE);
   }
 

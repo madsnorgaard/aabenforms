@@ -144,7 +144,7 @@ MIIBkTCB+wIJAKHBfpEgfM...
     $envVarName = 'TEST_CERT_PASSPHRASE_' . uniqid();
     $passphrase = 'my-secret-passphrase';
 
-    // Set environment variable
+    // Set environment variable.
     putenv("{$envVarName}={$passphrase}");
 
     try {
@@ -161,7 +161,7 @@ MIIBkTCB+wIJAKHBfpEgfM...
       $this->assertEquals($passphrase, $certificate->passphrase);
     }
     finally {
-      // Clean up environment variable
+      // Clean up environment variable.
       putenv($envVarName);
     }
   }
@@ -175,7 +175,7 @@ MIIBkTCB+wIJAKHBfpEgfM...
     $certPath = $this->createTempCertFile();
     $nonExistentEnvVar = 'DEFINITELY_NOT_SET_ENV_VAR_' . uniqid();
 
-    // Make sure the env var is not set
+    // Make sure the env var is not set.
     putenv($nonExistentEnvVar);
 
     $this->config->method('get')

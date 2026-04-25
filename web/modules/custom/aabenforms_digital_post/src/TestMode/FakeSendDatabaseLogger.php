@@ -12,7 +12,6 @@ use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Database\Connection;
 use Psr\Log\LoggerInterface;
-use Throwable;
 
 /**
  * Default Digital Post transport.
@@ -30,6 +29,18 @@ use Throwable;
  */
 final class FakeSendDatabaseLogger implements Sf1601ClientInterface {
 
+  /**
+   * Constructs a FakeSendDatabaseLogger.
+   *
+   * @param \Drupal\Core\Database\Connection $database
+   *   The database connection.
+   * @param \Drupal\aabenforms_digital_post\Service\TransactionIdGenerator $transactionIdGenerator
+   *   The transaction ID generator.
+   * @param \Drupal\Component\Datetime\TimeInterface $time
+   *   The time service.
+   * @param \Psr\Log\LoggerInterface $logger
+   *   The logger.
+   */
   public function __construct(
     private readonly Connection $database,
     private readonly TransactionIdGenerator $transactionIdGenerator,
@@ -38,6 +49,9 @@ final class FakeSendDatabaseLogger implements Sf1601ClientInterface {
   ) {
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function send(DigitalPost $post, string $transactionId): Result {
     $payload = [
       'recipient' => [
@@ -87,7 +101,7 @@ final class FakeSendDatabaseLogger implements Sf1601ClientInterface {
         rawResponse: 'fake_db:synthetic-receipt',
       );
     }
-    catch (Throwable $e) {
+    catch (\Throwable $e) {
       $this->logger->error('Digital Post fake-db send failed: @msg', ['@msg' => $e->getMessage()]);
       return Result::failure(
         transactionId: $transactionId,
@@ -97,6 +111,9 @@ final class FakeSendDatabaseLogger implements Sf1601ClientInterface {
     }
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function modeLabel(): string {
     return 'fake_db';
   }

@@ -117,7 +117,8 @@ class PreserveWizardConfigsSubscriberTest extends TestCase {
     $subscriber = $this->createSubscriber();
 
     $normalConfig = 'system.site';
-    $otherEcaConfig = 'eca.eca.manual_workflow'; // No timestamp.
+    // No timestamp.
+    $otherEcaConfig = 'eca.eca.manual_workflow';
     $otherModuleConfig = 'webform.webform.contact';
 
     $this->activeStorage
@@ -126,7 +127,8 @@ class PreserveWizardConfigsSubscriberTest extends TestCase {
 
     $this->sourceStorage
       ->method('exists')
-      ->willReturn(FALSE); // None exist in source.
+      // None exist in source.
+      ->willReturn(FALSE);
 
     // No configs should be written since none match wizard patterns.
     $this->sourceStorage
@@ -212,8 +214,10 @@ class PreserveWizardConfigsSubscriberTest extends TestCase {
       ['aabenforms_workflows.template_instance.my_workflow', TRUE],
       ['aabenforms_workflows.template_instance.test_123', TRUE],
       // Non-matching.
-      ['eca.eca.manual_workflow', FALSE], // No timestamp.
-      ['eca.eca.workflow_', FALSE], // Empty after underscore.
+      // No timestamp.
+      ['eca.eca.manual_workflow', FALSE],
+      // Empty after underscore.
+      ['eca.eca.workflow_', FALSE],
       ['system.site', FALSE],
       ['webform.webform.contact', FALSE],
       ['aabenforms_workflows.settings', FALSE],

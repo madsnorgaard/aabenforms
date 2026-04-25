@@ -15,6 +15,12 @@ use Symfony\Component\Uid\Uuid;
  */
 final class TransactionIdGenerator {
 
+  /**
+   * Generates a new UUID v7 transaction identifier.
+   *
+   * @return string
+   *   A UUID v7 string in RFC 4122 format.
+   */
   public function generate(): string {
     return Uuid::v7()->toRfc4122();
   }

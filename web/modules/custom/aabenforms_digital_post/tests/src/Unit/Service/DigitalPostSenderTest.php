@@ -158,7 +158,8 @@ class DigitalPostSenderTest extends TestCase {
    */
   public function testTransactionIdFallbackToGenerator(): void {
     $sender = $this->createSender();
-    $post = $this->createDigitalPost(); // No transaction_id in meta
+    // No transaction_id in meta.
+    $post = $this->createDigitalPost();
 
     $this->transactionIdGenerator
       ->expects($this->once())
@@ -226,7 +227,7 @@ class DigitalPostSenderTest extends TestCase {
    */
   public function testNonStringTransactionIdFallbackToGenerator(): void {
     $sender = $this->createSender();
-    // Integer in meta instead of string
+    // Integer in meta instead of string.
     $post = $this->createDigitalPost(['transaction_id' => 12345]);
 
     $this->transactionIdGenerator

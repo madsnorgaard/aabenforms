@@ -142,7 +142,7 @@ class ApprovalTokenServiceTest extends TestCase {
   public function testTokenMissingColonReturnsFalse(): void {
     $service = $this->createService();
 
-    // Valid base64 but no colon separator
+    // Valid base64 but no colon separator.
     $malformedToken = base64_encode('noseparatorhere');
 
     $isValid = $service->validateToken(123, 1, $malformedToken);
@@ -295,7 +295,7 @@ class ApprovalTokenServiceTest extends TestCase {
 
     $token = $service->generateToken(123, 1);
 
-    // Try to validate with different submission ID
+    // Try to validate with different submission ID.
     $isValid = $service->validateToken(456, 1, $token);
 
     $this->assertFalse($isValid);

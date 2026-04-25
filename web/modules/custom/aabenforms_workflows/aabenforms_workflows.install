@@ -8,8 +8,7 @@
 declare(strict_types=1);
 
 /**
- * Migrate ECA configs that reference the removed 'eca_base_log' / 'eca_base_mail'
- * plugins to the custom 'aabenforms_log' shim.
+ * Migrate ECA configs from removed 'eca_base_log'/'eca_base_mail' plugins to the 'aabenforms_log' shim.
  *
  * Upstream ECA removed these base plugins; any existing installed ECA config
  * entity that still references them breaks /admin/config/workflow/eca with

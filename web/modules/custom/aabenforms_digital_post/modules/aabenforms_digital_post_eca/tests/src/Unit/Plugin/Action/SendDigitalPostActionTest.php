@@ -63,6 +63,9 @@ class SendDigitalPostActionTest extends TestCase {
 
   /**
    * Mock EcaState.
+   *
+   * TODO: EcaState is a concrete class from contrib eca; mock it here for v1.
+   * Revisit when eca releases a stable interface contract (ask #4 from review).
    */
   private EcaState $ecaState;
 
@@ -87,7 +90,7 @@ class SendDigitalPostActionTest extends TestCase {
     $this->ecaState = $this->createMock(EcaState::class);
     $this->logger = $this->createMock(LoggerChannelInterface::class);
 
-    // Configure config factory
+    // Configure config factory.
     $config = $this->createMock(ImmutableConfig::class);
     $config->method('get')->willReturnMap([
       ['sender_cvr', '12345678'],
@@ -117,6 +120,9 @@ class SendDigitalPostActionTest extends TestCase {
     $mergedConfig = array_merge($defaultConfig, $config);
 
     // Create a testable subclass that exposes protected methods.
+    // TODO: If SendDigitalPostAction gains setter-injection for $sender,
+    // $configFactory, and $executionCollector, replace the ReflectionClass
+    // block below with plain constructor injection (ask #3 from review).
     $action = $this->getMockBuilder(SendDigitalPostAction::class)
       ->setConstructorArgs([
         $mergedConfig,
@@ -162,11 +168,18 @@ class SendDigitalPostActionTest extends TestCase {
 
     $action = $this->createAction($config);
 
-    // Create mock entity that has getElementData method.
-    $mockEntity = $this->createMock(\stdClass::class);
-    $mockEntity->method('getElementData')
-      ->with('citizen_cpr')
-      ->willReturn('1234567890');
+    // Use an anonymous class that actually declares getElementData(),
+    // because production code checks method_exists() before calling it.
+    $mockEntity = new class {
+
+      /**
+       * Returns element data by key, mirroring WebformSubmission::getElementData().
+       */
+      public function getElementData(string $key): mixed {
+        return $key === 'citizen_cpr' ? '1234567890' : NULL;
+      }
+
+    };
 
     $action->method('eventEntity')->willReturn($mockEntity);
 

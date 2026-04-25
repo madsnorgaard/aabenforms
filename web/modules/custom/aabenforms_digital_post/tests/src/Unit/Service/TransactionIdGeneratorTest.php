@@ -87,7 +87,7 @@ class TransactionIdGeneratorTest extends TestCase {
 
     $uuid = $generator->generate();
 
-    // Remove dashes and check that all characters are lowercase hex
+    // Remove dashes and check that all characters are lowercase hex.
     $hexOnly = str_replace('-', '', $uuid);
 
     $this->assertMatchesRegularExpression(
@@ -107,7 +107,7 @@ class TransactionIdGeneratorTest extends TestCase {
 
     $uuid = $generator->generate();
 
-    // The 13th character (after first dash) should be '7' for UUID v7
+    // The 13th character (after first dash) should be '7' for UUID v7.
     $parts = explode('-', $uuid);
     $version = $parts[2][0];
 
@@ -123,7 +123,8 @@ class TransactionIdGeneratorTest extends TestCase {
     $generator = new TransactionIdGenerator();
 
     $id1 = $generator->generate();
-    usleep(1000); // Wait 1ms to ensure different timestamp.
+    // Wait 1ms to ensure different timestamp.
+    usleep(1000);
     $id2 = $generator->generate();
 
     // For UUID v7, lexicographic sorting should approximate time ordering.

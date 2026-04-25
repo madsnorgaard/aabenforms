@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Drupal\Tests\aabenforms_digital_post\Unit\DigitalPost;
 
 use Drupal\aabenforms_digital_post\DigitalPost\Recipient;
-use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -46,7 +45,7 @@ class RecipientTest extends TestCase {
    * @covers ::cpr
    */
   public function testCprRejects9Digits(): void {
-    $this->expectException(InvalidArgumentException::class);
+    $this->expectException(\InvalidArgumentException::class);
     $this->expectExceptionMessage('CPR must be exactly 10 digits; got 9.');
 
     Recipient::cpr('123456789');
@@ -58,7 +57,7 @@ class RecipientTest extends TestCase {
    * @covers ::cpr
    */
   public function testCprRejects11Digits(): void {
-    $this->expectException(InvalidArgumentException::class);
+    $this->expectException(\InvalidArgumentException::class);
     $this->expectExceptionMessage('CPR must be exactly 10 digits; got 11.');
 
     Recipient::cpr('12345678901');
@@ -105,7 +104,7 @@ class RecipientTest extends TestCase {
    * @covers ::cvr
    */
   public function testCvrRejects7Digits(): void {
-    $this->expectException(InvalidArgumentException::class);
+    $this->expectException(\InvalidArgumentException::class);
     $this->expectExceptionMessage('CVR must be exactly 8 digits; got 7.');
 
     Recipient::cvr('1234567');
@@ -117,7 +116,7 @@ class RecipientTest extends TestCase {
    * @covers ::cvr
    */
   public function testCvrRejects9Digits(): void {
-    $this->expectException(InvalidArgumentException::class);
+    $this->expectException(\InvalidArgumentException::class);
     $this->expectExceptionMessage('CVR must be exactly 8 digits; got 9.');
 
     Recipient::cvr('123456789');

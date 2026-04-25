@@ -28,6 +28,16 @@ use Psr\Log\LoggerInterface;
  */
 final class WireMockSoapClient implements Sf1601ClientInterface {
 
+  /**
+   * Constructs a WireMockSoapClient.
+   *
+   * @param \GuzzleHttp\ClientInterface $httpClient
+   *   The HTTP client.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+   *   The config factory.
+   * @param \Psr\Log\LoggerInterface $logger
+   *   The logger.
+   */
   public function __construct(
     private readonly ClientInterface $httpClient,
     private readonly ConfigFactoryInterface $configFactory,
@@ -35,6 +45,9 @@ final class WireMockSoapClient implements Sf1601ClientInterface {
   ) {
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function send(DigitalPost $post, string $transactionId): Result {
     $base = (string) $this->configFactory
       ->get('aabenforms_digital_post.settings')
@@ -101,6 +114,9 @@ final class WireMockSoapClient implements Sf1601ClientInterface {
     }
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function modeLabel(): string {
     return 'wiremock';
   }
