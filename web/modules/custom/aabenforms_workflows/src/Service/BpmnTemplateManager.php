@@ -70,6 +70,8 @@ class BpmnTemplateManager {
    *   - file: Absolute path to BPMN file.
    *   - description: Template description.
    *   - category: Template category (e.g., 'municipal', 'citizen_service').
+   *
+   * @api
    */
   public function getAvailableTemplates(): array {
     $templates = [];
@@ -82,15 +84,24 @@ class BpmnTemplateManager {
       return $templates;
     }
 
-    foreach (glob($template_dir . '/*.bpmn') as $file) {
-      $template_id = basename($file, '.bpmn');
-      $metadata = $this->extractTemplateMetadata($file);
+    // Routed through FileSystemInterface::scanDirectory so the call is
+    // mockable in unit tests and consistent with the rest of the module
+    // (no direct glob/scandir on the filesystem).
+    $found = $this->fileSystem->scanDirectory(
+      $template_dir,
+      '/\.bpmn$/',
+      ['recurse' => FALSE]
+    );
+
+    foreach ($found as $file_uri => $info) {
+      $template_id = $info->name;
+      $metadata = $this->extractTemplateMetadata($file_uri);
 
       if ($metadata) {
         $templates[$template_id] = [
           'id' => $template_id,
           'name' => $metadata['name'] ?? $template_id,
-          'file' => $file,
+          'file' => $file_uri,
           'description' => $metadata['description'] ?? '',
           'category' => $metadata['category'] ?? 'other',
         ];
@@ -110,6 +121,8 @@ class BpmnTemplateManager {
    *
    * @return \SimpleXMLElement|string|null
    *   The parsed BPMN XML or NULL if not found/invalid.
+   *
+   * @api
    */
   public function loadTemplate(string $template_id, bool $as_string = FALSE): \SimpleXMLElement|string|null {
     $file = $this->getTemplatePath($template_id);
@@ -153,6 +166,8 @@ class BpmnTemplateManager {
    *
    * @return bool
    *   TRUE if valid, FALSE otherwise.
+   *
+   * @api
    */
   public function validateTemplate(string $template_id_or_xml): bool {
     // Determine if input is XML or template ID.
