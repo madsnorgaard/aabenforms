@@ -7,7 +7,48 @@
  * Provides ECA workflow integration and pre-built templates.
  */
 
+use Drupal\Core\Config\StorageInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_storage_transform_import().
+ *
+ * Wizard-created workflow instances live as runtime config entities
+ * (eca.eca.<workflow_id>, aabenforms_workflows.template_instance.<workflow_id>)
+ * but never get exported to config/sync. Without this hook,
+ * `drush cim --yes` would delete them on every deploy because they're
+ * not in the import source.
+ *
+ * Strategy: for every active-config item matching our wizard-instance
+ * patterns that's missing from the import source, copy the active
+ * version into the source so the importer sees no diff and leaves it
+ * alone. Has no effect on configs that ARE in config/sync (those still
+ * import normally).
+ */
+function aabenforms_workflows_storage_transform_import(StorageInterface $storage): void {
+  $patterns = [
+    // ECA entities created from BPMN templates: <template_id>_<timestamp>.
+    '/^eca\.eca\..+_\d+$/',
+    // Custom template-instance metadata config.
+    '/^aabenforms_workflows\.template_instance\..+$/',
+  ];
+
+  $active = \Drupal::service('config.storage');
+  foreach ($active->listAll() as $name) {
+    if ($storage->exists($name)) {
+      continue;
+    }
+    foreach ($patterns as $regex) {
+      if (preg_match($regex, $name)) {
+        $data = $active->read($name);
+        if ($data !== FALSE) {
+          $storage->write($name, $data);
+        }
+        break;
+      }
+    }
+  }
+}
 
 /**
  * Implements hook_help().
