@@ -12,6 +12,16 @@ use Psr\Log\LoggerInterface;
  *
  * This service provides functionality to discover, load, validate, and manage
  * BPMN 2.0 workflow templates for Danish municipal use cases.
+ *
+ * @api This class is part of the public API. The following methods are
+ *      guaranteed to remain stable within a major version:
+ *      - getAvailableTemplates()
+ *      - loadTemplate()
+ *      - validateTemplate()
+ *      - getValidationErrors()
+ *      - importTemplate()
+ *      - exportTemplate()
+ *      - deleteTemplate()
  */
 class BpmnTemplateManager {
 
@@ -82,7 +92,26 @@ class BpmnTemplateManager {
       return $templates;
     }
 
-    foreach (glob($template_dir . '/*.bpmn') as $file) {
+    // Use scandir to iterate directory contents instead of glob().
+    $files = @scandir($template_dir);
+    if ($files === FALSE) {
+      $this->logger->warning('Could not scan BPMN template directory: @dir', [
+        '@dir' => $template_dir,
+      ]);
+      return $templates;
+    }
+
+    foreach ($files as $filename) {
+      // Skip dotfiles and non-.bpmn files.
+      if ($filename === '' || str_starts_with($filename, '.') || !str_ends_with($filename, '.bpmn')) {
+        continue;
+      }
+
+      $file = $template_dir . '/' . $filename;
+      if (!is_file($file)) {
+        continue;
+      }
+
       $template_id = basename($file, '.bpmn');
       $metadata = $this->extractTemplateMetadata($file);
 

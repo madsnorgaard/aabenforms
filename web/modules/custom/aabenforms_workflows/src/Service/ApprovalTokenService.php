@@ -87,14 +87,39 @@ class ApprovalTokenService {
   public function validateToken(int $submission_id, int $parent_number, string $token): bool {
     try {
       $decoded = base64_decode($token, TRUE);
-      if (!$decoded) {
+      if ($decoded === FALSE || $decoded === '') {
         $this->logger->warning('Invalid token format for submission @sid', [
           '@sid' => $submission_id,
         ]);
         return FALSE;
       }
 
-      [$hash, $timestamp] = explode(':', $decoded, 2);
+      $parts = explode(':', $decoded, 2);
+      if (count($parts) !== 2) {
+        $this->logger->warning('Malformed token structure for submission @sid', [
+          '@sid' => $submission_id,
+        ]);
+        return FALSE;
+      }
+      [$hash, $timestampStr] = $parts;
+
+      // Validate timestamp is numeric and within reasonable range.
+      if (!is_numeric($timestampStr)) {
+        $this->logger->warning('Invalid timestamp in token for submission @sid', [
+          '@sid' => $submission_id,
+        ]);
+        return FALSE;
+      }
+      $timestamp = (int) $timestampStr;
+
+      // Sanity check: timestamp should be positive and not in the distant future.
+      // Allow up to 1 hour in the future to handle clock drift.
+      if ($timestamp <= 0 || $timestamp > time() + 3600) {
+        $this->logger->warning('Timestamp out of range in token for submission @sid', [
+          '@sid' => $submission_id,
+        ]);
+        return FALSE;
+      }
 
       // Check expiration.
       if (time() - $timestamp > self::TOKEN_EXPIRATION) {
@@ -158,11 +183,23 @@ class ApprovalTokenService {
   public function getTokenTimestamp(string $token): ?int {
     try {
       $decoded = base64_decode($token, TRUE);
-      if (!$decoded) {
+      if ($decoded === FALSE || $decoded === '') {
         return NULL;
       }
-      [$hash, $timestamp] = explode(':', $decoded, 2);
-      return (int) $timestamp;
+      $parts = explode(':', $decoded, 2);
+      if (count($parts) !== 2) {
+        return NULL;
+      }
+      [$hash, $timestampStr] = $parts;
+      if (!is_numeric($timestampStr)) {
+        return NULL;
+      }
+      $timestamp = (int) $timestampStr;
+      // Sanity check: timestamp should be positive.
+      if ($timestamp <= 0) {
+        return NULL;
+      }
+      return $timestamp;
     }
     catch (\Exception $e) {
       return NULL;

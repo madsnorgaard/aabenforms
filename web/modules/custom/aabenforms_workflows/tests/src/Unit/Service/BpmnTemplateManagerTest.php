@@ -326,56 +326,60 @@ XML;
    * Tests validateTemplate with correct BPMN structure.
    *
    * @covers ::validateTemplate
+   * @covers ::getValidationErrors
    */
   public function testValidateTemplate(): void {
     $result = $this->templateManager->validateTemplate('building_permit');
 
-    $this->assertIsArray($result);
-    $this->assertArrayHasKey('valid', $result);
-    $this->assertArrayHasKey('errors', $result);
-    $this->assertTrue($result['valid'], 'Valid template should pass validation');
-    $this->assertEmpty($result['errors'], 'Valid template should have no errors');
+    $this->assertTrue($result, 'Valid template should pass validation');
+    $this->assertEmpty($this->templateManager->getValidationErrors(), 'Valid template should have no errors');
   }
 
   /**
    * Tests validateTemplate detects missing start event.
    *
    * @covers ::validateTemplate
+   * @covers ::getValidationErrors
    */
   public function testValidateTemplateMissingStartEvent(): void {
     $result = $this->templateManager->validateTemplate('missing_start');
 
-    $this->assertFalse($result['valid']);
-    $this->assertNotEmpty($result['errors']);
-    $this->assertContains('No start event found', $result['errors']);
+    $this->assertFalse($result);
+    $errors = $this->templateManager->getValidationErrors();
+    $this->assertNotEmpty($errors);
+    $this->assertContains('No start event found - every workflow must have a start point', $errors);
   }
 
   /**
    * Tests validateTemplate detects missing end event.
    *
    * @covers ::validateTemplate
+   * @covers ::getValidationErrors
    */
   public function testValidateTemplateMissingEndEvent(): void {
     $result = $this->templateManager->validateTemplate('missing_end');
 
-    $this->assertFalse($result['valid']);
-    $this->assertNotEmpty($result['errors']);
-    $this->assertContains('No end event found', $result['errors']);
+    $this->assertFalse($result);
+    $errors = $this->templateManager->getValidationErrors();
+    $this->assertNotEmpty($errors);
+    $this->assertContains('No end event found - every workflow must have an end point', $errors);
   }
 
   /**
    * Tests validateTemplate handles malformed XML.
    *
    * @covers ::validateTemplate
+   * @covers ::getValidationErrors
    */
   public function testValidateTemplateInvalidXml(): void {
     // Invalid XML should cause loadTemplate to return NULL.
-    // This will trigger a "Failed to load template" error.
+    // This will trigger a "Failed to load or parse template" error.
     $result = $this->templateManager->validateTemplate('invalid_xml');
 
-    $this->assertFalse($result['valid'], 'Invalid XML should fail validation');
-    $this->assertNotEmpty($result['errors'], 'Should have validation errors');
-    $this->assertContains('Failed to load template', $result['errors'], 'Should indicate template load failure');
+    $this->assertFalse($result, 'Invalid XML should fail validation');
+    $errors = $this->templateManager->getValidationErrors();
+    $this->assertNotEmpty($errors, 'Should have validation errors');
+    $this->assertContains('Failed to load or parse template', $errors, 'Should indicate template load failure');
   }
 
   /**

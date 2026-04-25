@@ -71,12 +71,12 @@ abstract class AabenFormsActionBase extends ActionBase implements ContainerFacto
   /**
    * Handles action execution errors.
    *
-   * @param \Exception $e
-   *   The exception.
+   * @param \Throwable $e
+   *   The exception or error.
    * @param string $context_message
    *   Context about what was being attempted.
    */
-  protected function handleError(\Exception $e, string $context_message = ''): void {
+  protected function handleError(\Throwable $e, string $context_message = ''): void {
     $this->log(
       'Action failed: {message}. Context: {context}',
       [
