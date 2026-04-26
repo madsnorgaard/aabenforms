@@ -223,20 +223,50 @@ class ApprovalTokenService {
   }
 
   /**
-   * Checks if token is expired.
+   * Checks if a token is genuinely expired.
+   *
+   * Returns TRUE only when the token's timestamp resolves AND is older
+   * than TOKEN_EXPIRATION. Malformed tokens (no timestamp at all) are
+   * NOT expired - they are malformed; isTokenMalformed() reports that
+   * separately so the controller can render different UX for each case.
    *
    * @param string $token
-   *   The token.
+   *   The token to inspect.
    *
    * @return bool
-   *   TRUE if expired, FALSE otherwise.
+   *   TRUE only if the token has a parseable, in-range timestamp that is
+   *   older than TOKEN_EXPIRATION seconds.
    */
   public function isTokenExpired(string $token): bool {
     $timestamp = $this->getTokenTimestamp($token);
     if ($timestamp === NULL) {
-      return TRUE;
+      return FALSE;
     }
     return (time() - $timestamp) > self::TOKEN_EXPIRATION;
+  }
+
+  /**
+   * Checks if a token is malformed (cannot be parsed).
+   *
+   * Returns TRUE when the token fails any of the structural checks:
+   * non-base64, no separator, non-numeric or out-of-range timestamp.
+   * This is distinct from "expired" (well-formed but past) and from
+   * "tampered" (well-formed, in-date, but HMAC mismatch).
+   *
+   * Lets the controller render a citizen-friendly "this link is invalid,
+   * check the URL or contact us" message instead of the misleading
+   * "expired link" UX, which suggests the citizen just needs a fresher
+   * link when in fact their URL is corrupted.
+   *
+   * @param string $token
+   *   The token to inspect.
+   *
+   * @return bool
+   *   TRUE if the token cannot be parsed into a (hash, timestamp) pair
+   *   with a sensible numeric timestamp.
+   */
+  public function isTokenMalformed(string $token): bool {
+    return $this->getTokenTimestamp($token) === NULL;
   }
 
 }
