@@ -15,6 +15,6 @@ permissions:
   - 'access content'
   - 'access webform api'
   - 'administer workflows'
+  - 'edit any webform submission'
   - 'use text format webform_default'
   - 'view any webform submission'
-  - 'edit any webform submission'

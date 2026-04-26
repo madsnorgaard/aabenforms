@@ -4,6 +4,7 @@ module:
   aabenforms_core: 0
   aabenforms_digital_post: 0
   aabenforms_digital_post_eca: 0
+  aabenforms_digital_post_session_inbox: 0
   aabenforms_mitid: 0
   aabenforms_tenant: 0
   aabenforms_webform: 0
@@ -24,6 +25,7 @@ module:
   file: 0
   filter: 0
   gin_toolbar: 0
+  honeypot: 0
   jsonapi: 0
   jsonapi_extras: 0
   jsonapi_frontend: 0

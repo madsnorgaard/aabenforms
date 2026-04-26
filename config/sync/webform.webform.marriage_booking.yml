@@ -2,9 +2,9 @@ uuid: 8d3c4f1a-1234-4567-89ab-marriage00001
 langcode: en
 status: open
 dependencies: {  }
+weight: 0
 open: null
 close: null
-weight: 0
 uid: 1
 template: false
 archive: false
@@ -13,36 +13,36 @@ title: 'Civil Marriage Booking'
 description: 'Book a civil marriage ceremony at the municipality.'
 categories: {  }
 elements: |
-    partner1_cpr:
-      '#type': textfield
-      '#title': 'Partner 1 CPR (DDMMYY-XXXX)'
-      '#required': true
-      '#pattern': '\d{6}-?\d{4}'
-    partner1_name:
-      '#type': textfield
-      '#title': 'Partner 1 full name'
-      '#required': true
-    partner2_cpr:
-      '#type': textfield
-      '#title': 'Partner 2 CPR (DDMMYY-XXXX)'
-      '#required': true
-      '#pattern': '\d{6}-?\d{4}'
-    partner2_name:
-      '#type': textfield
-      '#title': 'Partner 2 full name'
-      '#required': true
-    ceremony_date:
-      '#type': date
-      '#title': 'Preferred ceremony date'
-      '#required': true
-    witness1_name:
-      '#type': textfield
-      '#title': 'Witness 1 full name'
-      '#required': true
-    witness2_name:
-      '#type': textfield
-      '#title': 'Witness 2 full name'
-      '#required': true
+  partner1_cpr:
+    '#type': textfield
+    '#title': 'Partner 1 CPR (DDMMYY-XXXX)'
+    '#required': true
+    '#pattern': '\d{6}-?\d{4}'
+  partner1_name:
+    '#type': textfield
+    '#title': 'Partner 1 full name'
+    '#required': true
+  partner2_cpr:
+    '#type': textfield
+    '#title': 'Partner 2 CPR (DDMMYY-XXXX)'
+    '#required': true
+    '#pattern': '\d{6}-?\d{4}'
+  partner2_name:
+    '#type': textfield
+    '#title': 'Partner 2 full name'
+    '#required': true
+  ceremony_date:
+    '#type': date
+    '#title': 'Preferred ceremony date'
+    '#required': true
+  witness1_name:
+    '#type': textfield
+    '#title': 'Witness 1 full name'
+    '#required': true
+  witness2_name:
+    '#type': textfield
+    '#title': 'Witness 2 full name'
+    '#required': true
 css: ''
 javascript: ''
 settings:

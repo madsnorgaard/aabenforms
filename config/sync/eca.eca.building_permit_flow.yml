@@ -2,11 +2,19 @@ uuid: e5f6a7b8-c9d0-4567-89ab-buildperm00001
 langcode: en
 status: true
 dependencies:
+  config:
+    - webform.webform.building_permit
   module:
+    - aabenforms_digital_post_eca
     - aabenforms_workflows
     - eca_content
+    - modeler_api
+third_party_settings:
+  modeler_api:
+    modeler_id: fallback
+    label: building_permit_flow
 id: building_permit_flow
-weight: null
+weight: 0
 template: null
 events:
   on_submission:
@@ -25,7 +33,7 @@ actions:
     plugin: aabenforms_cpr_lookup
     configuration:
       cpr_token: '[webform_submission:values:cpr:raw]'
-      result_token: 'citizen_data'
+      result_token: citizen_data
       use_cache: true
     successors:
       -
@@ -35,7 +43,7 @@ actions:
     label: 'Log: building_permit_submitted'
     plugin: aabenforms_audit_log
     configuration:
-      event_type: 'building_permit_submitted'
+      event_type: building_permit_submitted
       additional_data_token: ''
       message_template: 'Building permit application received; CPR resolved against registry.'
     successors:
@@ -47,10 +55,10 @@ actions:
     plugin: aabenforms_digital_post_send
     configuration:
       recipient_token: '[webform_submission:values:cpr:raw]'
-      recipient_type: 'cpr'
+      recipient_type: cpr
       sender_cvr_token: ''
       subject_template: 'Modtaget: ansøgning om byggetilladelse'
       body_template: '<p>Vi har modtaget din ansøgning om byggetilladelse. En sagsbehandler tager kontakt.</p>'
       type: 'Digital Post'
-      result_token: 'digital_post_result'
+      result_token: digital_post_result
     successors: {  }

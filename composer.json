@@ -26,6 +26,7 @@
         "drupal/eca_cm": "^1.0",
         "drupal/encrypt": "^3.2",
         "drupal/gin": "^5.0",
+        "drupal/honeypot": "^2.2",
         "drupal/jsonapi_extras": "^3.0",
         "drupal/jsonapi_frontend_webform": "^1.0",
         "drupal/key": "^1.22",

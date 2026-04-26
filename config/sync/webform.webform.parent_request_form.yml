@@ -1,19 +1,20 @@
+uuid: 157a6c79-b91d-4b66-8d07-dc5ccf7acbbc
 langcode: en
 status: open
 dependencies:
   module:
     - aabenforms_webform
     - aabenforms_workflows
+weight: 0
 open: null
 close: null
-weight: 0
 uid: 1
 template: false
 archive: false
 id: parent_request_form
 title: 'Parent Request Form'
 description: 'Municipal request requiring dual parent approval'
-categories: []
+categories: {  }
 elements: |-
   child_name:
     '#type': textfield
@@ -85,7 +86,7 @@ settings:
   ajax_effect: ''
   ajax_speed: null
   page: true
-  page_submit_path: 'forms/parent-request'
+  page_submit_path: forms/parent-request
   page_confirm_path: ''
   page_theme_name: ''
   form_title: source_entity_webform

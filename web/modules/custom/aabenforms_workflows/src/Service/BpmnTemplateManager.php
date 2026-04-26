@@ -91,7 +91,7 @@ class BpmnTemplateManager {
       $template_dir,
       '/\.bpmn$/',
       ['recurse' => FALSE]
-    );
+    ) ?? [];
 
     foreach ($found as $file_uri => $info) {
       $template_id = $info->name;
@@ -139,7 +139,11 @@ class BpmnTemplateManager {
         return file_get_contents($file);
       }
 
+      $previous = libxml_use_internal_errors(TRUE);
+      libxml_clear_errors();
       $xml = simplexml_load_file($file, 'SimpleXMLElement', LIBXML_NONET | LIBXML_NOENT);
+      libxml_clear_errors();
+      libxml_use_internal_errors($previous);
       return $xml !== FALSE ? $xml : NULL;
     }
     catch (\Exception $e) {
@@ -289,7 +293,11 @@ class BpmnTemplateManager {
   public function importTemplate(string $file_path, string $template_id): bool {
     // Validate the uploaded file is valid XML.
     try {
+      $previous = libxml_use_internal_errors(TRUE);
+      libxml_clear_errors();
       $xml = simplexml_load_file($file_path, 'SimpleXMLElement', LIBXML_NONET | LIBXML_NOENT);
+      libxml_clear_errors();
+      libxml_use_internal_errors($previous);
       if ($xml === FALSE) {
         $this->logger->error('Invalid XML in uploaded BPMN file');
         return FALSE;
@@ -395,7 +403,11 @@ class BpmnTemplateManager {
    */
   protected function extractTemplateMetadata(string $file): ?array {
     try {
+      $previous = libxml_use_internal_errors(TRUE);
+      libxml_clear_errors();
       $xml = simplexml_load_file($file, 'SimpleXMLElement', LIBXML_NONET | LIBXML_NOENT);
+      libxml_clear_errors();
+      libxml_use_internal_errors($previous);
       if ($xml === FALSE) {
         return NULL;
       }
