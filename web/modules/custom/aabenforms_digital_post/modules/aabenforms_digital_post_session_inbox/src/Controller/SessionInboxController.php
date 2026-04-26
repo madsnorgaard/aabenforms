@@ -27,12 +27,23 @@ final class SessionInboxController extends ControllerBase {
   private const DEFAULT_LIMIT = 5;
   private const MAX_LIMIT = 20;
 
+  /**
+   * Constructs a SessionInboxController.
+   *
+   * @param \Drupal\Core\Database\Connection $database
+   *   The active database connection.
+   * @param \Drupal\aabenforms_mitid\Service\MitIdSessionManager $sessionManager
+   *   The MitID session manager - resolves CPR from the workflow_id.
+   */
   public function __construct(
     private readonly Connection $database,
     private readonly MitIdSessionManager $sessionManager,
   ) {
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public static function create(ContainerInterface $container): self {
     return new self(
       $container->get('database'),
