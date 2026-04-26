@@ -91,7 +91,7 @@ class BpmnTemplateManager {
       $template_dir,
       '/\.bpmn$/',
       ['recurse' => FALSE]
-    );
+    ) ?? [];
 
     foreach ($found as $file_uri => $info) {
       $template_id = $info->name;
