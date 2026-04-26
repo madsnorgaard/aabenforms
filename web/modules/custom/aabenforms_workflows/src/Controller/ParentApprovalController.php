@@ -5,6 +5,7 @@ namespace Drupal\aabenforms_workflows\Controller;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Url;
+use Drupal\aabenforms_mitid\Service\MitIdSessionManager;
 use Drupal\aabenforms_workflows\Service\ApprovalTokenService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -40,22 +41,33 @@ class ParentApprovalController extends ControllerBase {
   protected LoggerInterface $logger;
 
   /**
+   * The MitID session manager.
+   *
+   * @var \Drupal\aabenforms_mitid\Service\MitIdSessionManager
+   */
+  protected MitIdSessionManager $mitidSessionManager;
+
+  /**
    * Constructs a ParentApprovalController object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    * @param \Drupal\aabenforms_workflows\Service\ApprovalTokenService $token_service
    *   The approval token service.
+   * @param \Drupal\aabenforms_mitid\Service\MitIdSessionManager $mitid_session_manager
+   *   The MitID session manager (for verifying OIDC handoff).
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger.
    */
   public function __construct(
     EntityTypeManagerInterface $entity_type_manager,
     ApprovalTokenService $token_service,
+    MitIdSessionManager $mitid_session_manager,
     LoggerInterface $logger,
   ) {
     $this->entityTypeManager = $entity_type_manager;
     $this->tokenService = $token_service;
+    $this->mitidSessionManager = $mitid_session_manager;
     $this->logger = $logger;
   }
 
@@ -66,6 +78,7 @@ class ParentApprovalController extends ControllerBase {
     return new static(
       $container->get('entity_type.manager'),
       $container->get('aabenforms_workflows.approval_token'),
+      $container->get('aabenforms_mitid.session_manager'),
       $container->get('logger.factory')->get('aabenforms_workflows')
     );
   }
@@ -267,21 +280,86 @@ class ParentApprovalController extends ControllerBase {
   }
 
   /**
-   * Handles the parent's MitID login handoff.
+   * Initiates the parent's MitID OIDC login.
    *
-   * Demo-mode behaviour: validates the token (same gating as
-   * approvalPage so a tampered/expired/malformed link can't bypass the
-   * MitID requirement by navigating directly to this route), flips the
-   * parent's session flag, then redirects back to the approval page
-   * which now renders the form instead of the login button.
+   * Validates the token (same gating as approvalPage so a tampered or
+   * malformed link can't bypass the MitID requirement by navigating
+   * directly to this route), then redirects to the aabenforms_mitid
+   * OIDC login route with a workflow_id scoped to this parent and a
+   * return_url pointing at our matching `mitid/complete` endpoint.
    *
-   * @todo Replace the session-flag flip with a real OIDC handoff via
-   *   aabenforms_mitid: send the parent through MitId\Service\MitIdOidcClient::getAuthorizationUrl()
-   *   with a return URL of /parent-approval/{p}/{sid}/{token}, and on
-   *   the OIDC callback verify the CPR matches the submission's
-   *   parent{N}_email tied to the consenting parent before flipping the
-   *   session. The current stub is sufficient for the citizen-flow
-   *   smoke; production needs the real handoff.
+   * After the OIDC round-trip the parent lands at mitidComplete()
+   * below, which verifies a real authenticated MitID session is in
+   * tempstore for this workflow_id before flipping the session flag.
+   *
+   * The workflow_id namespace `parent_approval_<sid>_p<N>` keeps each
+   * parent's MitID session isolated so two parents reviewing the same
+   * submission from different browsers don't collide.
+   *
+   * @param int $parent_number
+   *   The parent number (1 or 2).
+   * @param int $submission_id
+   *   The webform submission ID.
+   * @param string $token
+   *   The security token.
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   *   The current request.
+   *
+   * @return \Symfony\Component\HttpFoundation\RedirectResponse
+   *   Redirect to /mitid/login with the parent context attached.
+   *
+   * @throws \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException
+   */
+  public function mitidLogin(int $parent_number, int $submission_id, string $token, Request $request): RedirectResponse {
+    if (!$this->tokenService->validateToken($submission_id, $parent_number, $token)) {
+      $this->logger->warning('Invalid token at MitID handoff for submission @sid, parent @parent', [
+        '@sid' => $submission_id,
+        '@parent' => $parent_number,
+      ]);
+      throw new AccessDeniedHttpException('Invalid approval token.');
+    }
+
+    $workflow_id = sprintf('parent_approval_%d_p%d', $submission_id, $parent_number);
+    $return_url = Url::fromRoute(
+      'aabenforms_workflows.parent_approval_mitid_complete',
+      [
+        'parent_number' => $parent_number,
+        'submission_id' => $submission_id,
+        'token' => $token,
+      ],
+      ['absolute' => TRUE],
+    )->toString();
+
+    $login_url = Url::fromRoute(
+      'aabenforms_mitid.login',
+      [],
+      [
+        'query' => [
+          'workflow_id' => $workflow_id,
+          'return_url' => $return_url,
+        ],
+      ],
+    )->toString();
+
+    return new RedirectResponse($login_url);
+  }
+
+  /**
+   * Handles the post-OIDC return from MitID for the parent flow.
+   *
+   * Re-validates the token (defence in depth: the workflow_id query
+   * arg can be inspected/altered by a malicious return target), then
+   * checks the aabenforms_mitid session manager for a real OIDC
+   * session under our scoped workflow_id. If both pass, flips the
+   * parent's per-session flag and redirects to the approval page
+   * which now renders the form.
+   *
+   * @todo Add CPR-vs-parent verification once the parent_request_form
+   *   schema carries parent CPRs (today it only stores email, which
+   *   isn't a usable identity assertion). Once that lands, compare
+   *   $this->mitidSessionManager->getCprFromSession($workflow_id)
+   *   against the submission's parent{N}_cpr field; on mismatch, log
+   *   warning + 403.
    *
    * @param int $parent_number
    *   The parent number (1 or 2).
@@ -297,17 +375,27 @@ class ParentApprovalController extends ControllerBase {
    *
    * @throws \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException
    */
-  public function mitidLogin(int $parent_number, int $submission_id, string $token, Request $request): RedirectResponse {
+  public function mitidComplete(int $parent_number, int $submission_id, string $token, Request $request): RedirectResponse {
     if (!$this->tokenService->validateToken($submission_id, $parent_number, $token)) {
-      $this->logger->warning('Invalid token at MitID handoff for submission @sid, parent @parent', [
+      $this->logger->warning('Invalid token at MitID complete for submission @sid, parent @parent', [
         '@sid' => $submission_id,
         '@parent' => $parent_number,
       ]);
       throw new AccessDeniedHttpException('Invalid approval token.');
     }
 
+    $workflow_id = sprintf('parent_approval_%d_p%d', $submission_id, $parent_number);
+    if (!$this->mitidSessionManager->hasValidSession($workflow_id)) {
+      $this->logger->warning('No valid MitID session for workflow @wid (parent @parent, submission @sid)', [
+        '@wid' => $workflow_id,
+        '@parent' => $parent_number,
+        '@sid' => $submission_id,
+      ]);
+      throw new AccessDeniedHttpException('MitID authentication did not complete.');
+    }
+
     $request->getSession()->set("mitid_authenticated_parent{$parent_number}", TRUE);
-    $this->logger->info('Parent @parent MitID handoff complete for submission @sid (demo stub)', [
+    $this->logger->info('Parent @parent MitID handoff verified for submission @sid', [
       '@parent' => $parent_number,
       '@sid' => $submission_id,
     ]);
