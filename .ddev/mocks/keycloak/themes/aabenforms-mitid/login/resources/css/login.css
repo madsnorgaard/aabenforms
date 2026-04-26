@@ -1,0 +1,397 @@
+/* AabenForms MitID-style mock theme.
+ *
+ * Visual language: Danish gov-tech credibility - navy + coral, Atkinson
+ * Hyperlegible Next, generous whitespace, soft elevation. The "demo" banner
+ * is a non-negotiable: every interaction screen must surface that this is a
+ * mock IdP and no real CPR is in flight. */
+
+@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;500;600;700&display=swap');
+
+:root {
+    --af-navy: #0a2240;
+    --af-navy-deep: #061830;
+    --af-coral: #ff5a5f;
+    --af-coral-hover: #ff3d44;
+    --af-paper: #ffffff;
+    --af-canvas: #eef1f6;
+    --af-line: #d8dde6;
+    --af-text: #11203a;
+    --af-text-soft: #5b6781;
+    --af-amber: #f4b21a;
+    --af-amber-soft: #fff4d2;
+    --af-radius: 12px;
+    --af-radius-sm: 8px;
+    --af-shadow: 0 24px 60px rgba(10, 34, 64, 0.14), 0 6px 16px rgba(10, 34, 64, 0.08);
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--af-canvas);
+    color: var(--af-text);
+    font-family: 'Atkinson Hyperlegible Next', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Hide Keycloak's default page chrome - the inherited template.ftl wraps
+ * the form with a header section, page title and a dark patterned bg image
+ * we don't want. We hide the lot and re-anchor inside the form section. */
+.aabenforms-hidden-title,
+#kc-page-title,
+.login-pf-header,
+.login-pf-page-header,
+#kc-header,
+#kc-header-wrapper { display: none !important; }
+
+/* Page background gets a subtle navy gradient hairline at the top edge to
+ * frame the login card. */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0 0 auto 0;
+    height: 6px;
+    background: linear-gradient(90deg, var(--af-navy) 0%, var(--af-coral) 100%);
+    z-index: 50;
+}
+
+/* Aggressive backdrop reset - kill the inherited diamond pattern bg image
+ * and the dark gradient the parent theme paints behind everything. The
+ * Keycloak parent CSS sets the diamond pattern via a body background-image
+ * and an injected ::before pseudo - we wipe both. */
+html, html body,
+html.login-pf, body.login-pf, body.login-pf-body,
+.login-pf, .login-pf-page,
+.login-pf-page-header, .login-pf-body {
+    background: var(--af-canvas) !important;
+    background-image: none !important;
+    background-color: var(--af-canvas) !important;
+    color: var(--af-text) !important;
+}
+
+body::after, .login-pf-page::before, .login-pf-page::after,
+.login-pf-body::before, .login-pf-body::after {
+    background: none !important;
+    background-image: none !important;
+    content: none !important;
+    display: none !important;
+}
+
+.login-pf-page {
+    padding-top: 64px;
+    padding-bottom: 64px;
+    min-height: 100vh;
+    box-sizing: border-box;
+    position: relative;
+    z-index: 1;
+}
+
+.card-pf {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+#kc-content,
+#kc-content-wrapper {
+    background: var(--af-paper);
+    border-radius: var(--af-radius);
+    box-shadow: var(--af-shadow);
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid var(--af-line);
+}
+
+#kc-form,
+#kc-form-wrapper {
+    background: transparent;
+    padding: 0 32px 28px;
+}
+
+/* Brand header - navy band with logo + "MitID Demo" tag. */
+.aabenforms-brand-header {
+    background: linear-gradient(140deg, var(--af-navy) 0%, var(--af-navy-deep) 100%);
+    color: var(--af-paper);
+    padding: 28px 32px 24px;
+}
+
+.aabenforms-brand-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.aabenforms-logo {
+    height: 32px;
+    width: auto;
+    display: block;
+}
+
+.aabenforms-brand-mark {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.92);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.aabenforms-brand-tag {
+    margin: 12px 0 0;
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+/* Demo banner - amber, immediately under the brand header. */
+.aabenforms-demo-banner {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    background: var(--af-amber-soft);
+    color: #5a4505;
+    padding: 14px 32px;
+    border-bottom: 1px solid #f0e0a8;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.aabenforms-demo-banner-icon {
+    color: var(--af-amber);
+    font-size: 18px;
+    line-height: 1;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.aabenforms-demo-banner strong {
+    display: block;
+    color: #4a3a04;
+    margin-bottom: 2px;
+    font-weight: 700;
+}
+
+.aabenforms-demo-banner-body {
+    display: block;
+    color: #6a5510;
+}
+
+/* Page title inside the card. */
+.aabenforms-pagetitle {
+    margin: 28px 32px 18px;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--af-text);
+}
+
+/* Form fields. */
+.aabenforms-field {
+    margin-bottom: 18px;
+}
+
+.aabenforms-label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--af-text);
+    letter-spacing: 0.01em;
+}
+
+.aabenforms-input,
+input[type="text"]#username,
+input[type="password"]#password {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 14px;
+    border: 1.5px solid var(--af-line);
+    border-radius: var(--af-radius-sm);
+    background: var(--af-paper);
+    color: var(--af-text);
+    font-family: inherit;
+    font-size: 15px;
+    line-height: 1.4;
+    transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.aabenforms-input:focus,
+input[type="text"]#username:focus,
+input[type="password"]#password:focus {
+    outline: none;
+    border-color: var(--af-navy);
+    box-shadow: 0 0 0 3px rgba(10, 34, 64, 0.12);
+}
+
+.aabenforms-input[aria-invalid="true"] {
+    border-color: var(--af-coral);
+    box-shadow: 0 0 0 3px rgba(255, 90, 95, 0.12);
+}
+
+.aabenforms-error {
+    display: block;
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--af-coral-hover);
+    font-weight: 500;
+}
+
+.aabenforms-helper-row {
+    margin: -8px 0 18px;
+}
+
+.aabenforms-helper {
+    font-size: 12px;
+    color: var(--af-text-soft);
+}
+
+/* Primary CTA - coral with arrow. */
+.aabenforms-actions {
+    margin-top: 24px;
+}
+
+.aabenforms-button-primary,
+button#kc-login {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 14px 20px;
+    border: none;
+    border-radius: var(--af-radius-sm);
+    background: var(--af-coral);
+    color: var(--af-paper);
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition: background 120ms ease, transform 120ms ease;
+}
+
+.aabenforms-button-primary:hover,
+button#kc-login:hover {
+    background: var(--af-coral-hover);
+}
+
+.aabenforms-button-primary:active,
+button#kc-login:active {
+    transform: translateY(1px);
+}
+
+.aabenforms-button-arrow {
+    font-size: 18px;
+    line-height: 1;
+}
+
+/* Footer copy under form. */
+.aabenforms-foot {
+    margin: 22px 32px 28px;
+    padding-top: 18px;
+    border-top: 1px solid var(--af-line);
+    text-align: center;
+}
+
+.aabenforms-foot-line {
+    margin: 4px 0;
+    font-size: 12px;
+    color: var(--af-text-soft);
+    line-height: 1.5;
+}
+
+/* Locale switcher - top-right of the card area. Keycloak renders it as
+ * #kc-locale; we want it visible but minimal. */
+#kc-locale {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    z-index: 60;
+}
+
+#kc-locale ul {
+    display: flex;
+    gap: 6px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+#kc-locale a {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 6px;
+    color: var(--af-text-soft);
+    font-size: 12px;
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid var(--af-line);
+}
+
+#kc-locale a:hover {
+    background: var(--af-paper);
+    color: var(--af-navy);
+}
+
+/* Alert messages from Keycloak - re-skin as our coral/amber/green. */
+.alert {
+    border-radius: var(--af-radius-sm);
+    padding: 12px 14px;
+    margin: 0 32px 16px;
+    font-size: 13px;
+    border: 1px solid transparent;
+}
+
+.alert-error {
+    background: #fde9ea;
+    color: #8a1a1f;
+    border-color: #f5b7ba;
+}
+
+.alert-warning {
+    background: var(--af-amber-soft);
+    color: #6a5510;
+    border-color: #f0e0a8;
+}
+
+.alert-success {
+    background: #e3f4ea;
+    color: #155f3b;
+    border-color: #a7d8bb;
+}
+
+/* Mobile. */
+@media (max-width: 540px) {
+    .login-pf-page,
+    body.login-pf {
+        padding-top: 24px;
+        padding-bottom: 24px;
+    }
+    .card-pf {
+        max-width: 100%;
+        margin: 0 16px;
+    }
+    .aabenforms-brand-header,
+    .aabenforms-demo-banner,
+    .aabenforms-pagetitle,
+    #kc-form-wrapper,
+    .aabenforms-foot {
+        padding-left: 22px;
+        padding-right: 22px;
+    }
+    .aabenforms-foot {
+        margin-left: 0;
+        margin-right: 0;
+    }
+}

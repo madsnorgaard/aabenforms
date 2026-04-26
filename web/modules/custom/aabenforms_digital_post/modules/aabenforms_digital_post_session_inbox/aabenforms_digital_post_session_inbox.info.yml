@@ -1,0 +1,8 @@
+name: 'AabenForms Digital Post - Session Inbox'
+type: module
+description: 'Read-only HTTP endpoint that returns the recent Digital Post log rows for the recipient bound to a MitID workflow session. Bridges aabenforms_digital_post (the log) and aabenforms_mitid (the session-as-capability) without polluting either parent module''s minimal dependency set.'
+package: 'AabenForms'
+core_version_requirement: ^11
+dependencies:
+  - aabenforms_digital_post
+  - aabenforms_mitid

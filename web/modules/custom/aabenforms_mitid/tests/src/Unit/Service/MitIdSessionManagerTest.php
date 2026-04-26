@@ -5,14 +5,18 @@ namespace Drupal\Tests\aabenforms_mitid\Unit\Service;
 use Drupal\aabenforms_core\Service\AuditLogger;
 use Drupal\aabenforms_mitid\Service\MitIdSessionManager;
 use Drupal\Component\Datetime\TimeInterface;
+use Drupal\Core\KeyValueStore\KeyValueExpirableFactoryInterface;
+use Drupal\Core\KeyValueStore\KeyValueStoreExpirableInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
-use Drupal\Core\TempStore\PrivateTempStore;
-use Drupal\Core\TempStore\PrivateTempStoreFactory;
 use Drupal\Tests\UnitTestCase;
 use Psr\Log\LoggerInterface;
 
 /**
  * Tests MitID session management.
+ *
+ * Backed by KeyValueExpirable (not PrivateTempStore) so the workflow_id can
+ * function as a true bearer capability across origins - the demo SPA reads
+ * the session from a different host than the cookie domain.
  *
  * @coversDefaultClass \Drupal\aabenforms_mitid\Service\MitIdSessionManager
  * @group aabenforms_mitid
@@ -27,11 +31,11 @@ class MitIdSessionManagerTest extends UnitTestCase {
   protected MitIdSessionManager $sessionManager;
 
   /**
-   * Mock private tempstore.
+   * Mock keyvalue-expirable store.
    *
-   * @var \Drupal\Core\TempStore\PrivateTempStore|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\Core\KeyValueStore\KeyValueStoreExpirableInterface|\PHPUnit\Framework\MockObject\MockObject
    */
-  protected $tempStore;
+  protected $store;
 
   /**
    * Mock time service.
@@ -62,17 +66,24 @@ class MitIdSessionManagerTest extends UnitTestCase {
   protected int $currentTime = 1706198400;
 
   /**
+   * Session TTL in seconds (mirrors MitIdSessionManager::SESSION_EXPIRATION).
+   *
+   * @var int
+   */
+  protected int $sessionTtl = 900;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
     parent::setUp();
 
-    // Mock dependencies.
-    $this->tempStore = $this->createMock(PrivateTempStore::class);
-    $tempStoreFactory = $this->createMock(PrivateTempStoreFactory::class);
-    $tempStoreFactory->method('get')
-      ->with('aabenforms_mitid')
-      ->willReturn($this->tempStore);
+    // Mock the keyvalue-expirable store + the factory that returns it.
+    $this->store = $this->createMock(KeyValueStoreExpirableInterface::class);
+    $keyValueFactory = $this->createMock(KeyValueExpirableFactoryInterface::class);
+    $keyValueFactory->method('get')
+      ->with('aabenforms_mitid_sessions')
+      ->willReturn($this->store);
 
     $this->time = $this->createMock(TimeInterface::class);
     $this->time->method('getRequestTime')
@@ -86,9 +97,8 @@ class MitIdSessionManagerTest extends UnitTestCase {
 
     $this->auditLogger = $this->createMock(AuditLogger::class);
 
-    // Create session manager with mocks.
     $this->sessionManager = new MitIdSessionManager(
-      $tempStoreFactory,
+      $keyValueFactory,
       $this->time,
       $loggerFactory,
       $this->auditLogger
@@ -112,13 +122,13 @@ class MitIdSessionManagerTest extends UnitTestCase {
     // Expected stored data with metadata.
     $expectedData = $sessionData + [
       'created_at' => $this->currentTime,
-      'expires_at' => $this->currentTime + 900,
+      'expires_at' => $this->currentTime + $this->sessionTtl,
       'workflow_id' => $workflowId,
     ];
 
-    $this->tempStore->expects($this->once())
-      ->method('set')
-      ->with($workflowId, $expectedData);
+    $this->store->expects($this->once())
+      ->method('setWithExpire')
+      ->with($workflowId, $expectedData, $this->sessionTtl);
 
     $this->logger->expects($this->once())
       ->method('info')
@@ -151,8 +161,8 @@ class MitIdSessionManagerTest extends UnitTestCase {
       'temp_data' => 'value',
     ];
 
-    $this->tempStore->expects($this->once())
-      ->method('set');
+    $this->store->expects($this->once())
+      ->method('setWithExpire');
 
     $this->logger->expects($this->once())
       ->method('info');
@@ -174,8 +184,8 @@ class MitIdSessionManagerTest extends UnitTestCase {
     $workflowId = 'workflow-789';
     $sessionData = ['data' => 'value'];
 
-    $this->tempStore->expects($this->once())
-      ->method('set')
+    $this->store->expects($this->once())
+      ->method('setWithExpire')
       ->willThrowException(new \Exception('Storage error'));
 
     $this->logger->expects($this->once())
@@ -207,7 +217,7 @@ class MitIdSessionManagerTest extends UnitTestCase {
       'workflow_id' => $workflowId,
     ];
 
-    $this->tempStore->expects($this->once())
+    $this->store->expects($this->once())
       ->method('get')
       ->with($workflowId)
       ->willReturn($sessionData);
@@ -224,7 +234,7 @@ class MitIdSessionManagerTest extends UnitTestCase {
   public function testGetNonExistentSession(): void {
     $workflowId = 'workflow-missing';
 
-    $this->tempStore->expects($this->once())
+    $this->store->expects($this->once())
       ->method('get')
       ->with($workflowId)
       ->willReturn(NULL);
@@ -247,17 +257,17 @@ class MitIdSessionManagerTest extends UnitTestCase {
       'workflow_id' => $workflowId,
     ];
 
-    $this->tempStore->expects($this->once())
+    $this->store->expects($this->once())
       ->method('get')
       ->with($workflowId)
       ->willReturn($sessionData);
 
-    // Logger will be called twice: once for expiration, once for deletion.
+    // Logger called twice: once for expiration, once for deletion.
     $this->logger->expects($this->exactly(2))
       ->method('info');
 
     // Should delete expired session.
-    $this->tempStore->expects($this->once())
+    $this->store->expects($this->once())
       ->method('delete')
       ->with($workflowId);
 
@@ -273,7 +283,7 @@ class MitIdSessionManagerTest extends UnitTestCase {
   public function testGetSessionWithException(): void {
     $workflowId = 'workflow-error';
 
-    $this->tempStore->expects($this->once())
+    $this->store->expects($this->once())
       ->method('get')
       ->willThrowException(new \Exception('Retrieval error'));
 
@@ -299,7 +309,7 @@ class MitIdSessionManagerTest extends UnitTestCase {
   public function testDeleteSession(): void {
     $workflowId = 'workflow-delete';
 
-    $this->tempStore->expects($this->once())
+    $this->store->expects($this->once())
       ->method('delete')
       ->with($workflowId);
 
@@ -331,7 +341,7 @@ class MitIdSessionManagerTest extends UnitTestCase {
   public function testDeleteSessionWithException(): void {
     $workflowId = 'workflow-delete-fail';
 
-    $this->tempStore->expects($this->once())
+    $this->store->expects($this->once())
       ->method('delete')
       ->willThrowException(new \Exception('Delete error'));
 
@@ -361,7 +371,7 @@ class MitIdSessionManagerTest extends UnitTestCase {
       'expires_at' => $this->currentTime + 600,
     ];
 
-    $this->tempStore->expects($this->once())
+    $this->store->expects($this->once())
       ->method('get')
       ->willReturn($sessionData);
 
@@ -377,7 +387,7 @@ class MitIdSessionManagerTest extends UnitTestCase {
   public function testHasValidSessionFalse(): void {
     $workflowId = 'workflow-no-valid';
 
-    $this->tempStore->expects($this->once())
+    $this->store->expects($this->once())
       ->method('get')
       ->willReturn(NULL);
 
@@ -398,7 +408,7 @@ class MitIdSessionManagerTest extends UnitTestCase {
       'expires_at' => $this->currentTime + 600,
     ];
 
-    $this->tempStore->expects($this->once())
+    $this->store->expects($this->once())
       ->method('get')
       ->willReturn($sessionData);
 
@@ -414,7 +424,7 @@ class MitIdSessionManagerTest extends UnitTestCase {
   public function testGetCprFromMissingSession(): void {
     $workflowId = 'workflow-no-cpr';
 
-    $this->tempStore->expects($this->once())
+    $this->store->expects($this->once())
       ->method('get')
       ->willReturn(NULL);
 
@@ -434,7 +444,7 @@ class MitIdSessionManagerTest extends UnitTestCase {
       'expires_at' => $this->currentTime + 600,
     ];
 
-    $this->tempStore->expects($this->once())
+    $this->store->expects($this->once())
       ->method('get')
       ->willReturn($sessionData);
 
@@ -461,7 +471,7 @@ class MitIdSessionManagerTest extends UnitTestCase {
       'expires_at' => $this->currentTime + 600,
     ];
 
-    $this->tempStore->expects($this->once())
+    $this->store->expects($this->once())
       ->method('get')
       ->willReturn($sessionData);
 
@@ -494,7 +504,7 @@ class MitIdSessionManagerTest extends UnitTestCase {
       'expires_at' => $this->currentTime + 600,
     ];
 
-    $this->tempStore->expects($this->once())
+    $this->store->expects($this->once())
       ->method('get')
       ->willReturn($sessionData);
 
@@ -522,12 +532,65 @@ class MitIdSessionManagerTest extends UnitTestCase {
   public function testGetPersonDataFromMissingSession(): void {
     $workflowId = 'workflow-no-person';
 
-    $this->tempStore->expects($this->once())
+    $this->store->expects($this->once())
       ->method('get')
       ->willReturn(NULL);
 
     $result = $this->sessionManager->getPersonDataFromSession($workflowId);
     $this->assertNull($result);
+  }
+
+  /**
+   * Tests getAddressFromSession returns NULL when no address keys present.
+   *
+   * @covers ::getAddressFromSession
+   */
+  public function testGetAddressFromSessionNoAddress(): void {
+    $workflowId = 'workflow-no-addr';
+    $sessionData = [
+      'cpr' => '0101001234',
+      'name' => 'Test Testesen',
+      'expires_at' => $this->currentTime + 600,
+    ];
+
+    $this->store->expects($this->once())
+      ->method('get')
+      ->willReturn($sessionData);
+
+    $result = $this->sessionManager->getAddressFromSession($workflowId);
+    $this->assertNull($result);
+  }
+
+  /**
+   * Tests getAddressFromSession returns the address block when present.
+   *
+   * @covers ::getAddressFromSession
+   */
+  public function testGetAddressFromSessionWithAddress(): void {
+    $workflowId = 'workflow-addr';
+    $sessionData = [
+      'cpr' => '0101001234',
+      'street' => 'Nørrebrogade 142, 3. tv.',
+      'postal_code' => '2200',
+      'city' => 'København N',
+      'municipality_code' => '0101',
+      'expires_at' => $this->currentTime + 600,
+    ];
+
+    $this->store->expects($this->once())
+      ->method('get')
+      ->willReturn($sessionData);
+
+    $result = $this->sessionManager->getAddressFromSession($workflowId);
+
+    $expected = [
+      'street' => 'Nørrebrogade 142, 3. tv.',
+      'postal_code' => '2200',
+      'city' => 'København N',
+      'municipality_code' => '0101',
+    ];
+
+    $this->assertEquals($expected, $result);
   }
 
 }

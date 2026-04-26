@@ -130,6 +130,14 @@ class MitIdCprExtractor {
       'birthdate' => $claims['birthdate'] ?? NULL,
       'email' => $claims['email'] ?? NULL,
 
+      // Address (mock IdP only - real MitID/NemLog-in does not issue these
+      // claims; absent claims fall through as NULL and the frontend falls
+      // back to manual entry).
+      'street' => $claims['street'] ?? NULL,
+      'postal_code' => $claims['postal_code'] ?? NULL,
+      'city' => $claims['city'] ?? NULL,
+      'municipality_code' => $claims['municipality_code'] ?? NULL,
+
       // Authentication metadata.
     // NSIS level (substantial/high)
       'assurance_level' => $claims['acr'] ?? NULL,

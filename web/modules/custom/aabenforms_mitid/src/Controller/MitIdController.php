@@ -54,8 +54,10 @@ class MitIdController extends ControllerBase {
    *   Redirect to MitID authorization.
    */
   public function login(Request $request): TrustedRedirectResponse {
-    // Get workflow ID from query params or generate.
-    $workflowId = $request->query->get('workflow_id') ?? 'default_' . uniqid();
+    // Get workflow ID from query params or generate. The generated ID is the
+    // bearer capability for the session payload, so it must be unguessable -
+    // bin2hex(random_bytes(...)) gives 32 hex chars (128 bits of entropy).
+    $workflowId = $request->query->get('workflow_id') ?? 'wf_' . bin2hex(random_bytes(16));
 
     // Get redirect URL (where to return after auth).
     // Validate that it's an internal path to prevent open redirect attacks.
@@ -179,6 +181,12 @@ class MitIdController extends ControllerBase {
       $separator = str_contains($returnUrl, '?') ? '&' : '?';
       $redirectUrl = $returnUrl . $separator . 'session=' . urlencode($workflowId);
 
+      // Use TrustedRedirectResponse when the return URL is external - the
+      // open-redirect guard in login() already validated the origin against
+      // CORS_ALLOW_ORIGIN, so this is safe.
+      if (preg_match('#^https?://#i', $redirectUrl)) {
+        return new TrustedRedirectResponse($redirectUrl);
+      }
       return new RedirectResponse($redirectUrl);
 
     }
@@ -233,7 +241,12 @@ class MitIdController extends ControllerBase {
       return new JsonResponse(['error' => 'Session not found or expired'], 404);
     }
 
+    $address = $sessionManager->getAddressFromSession($session_id);
+
     // Return session data in JSON:API-like format for frontend compatibility.
+    // Additive shape: name/cpr/email/expiry have always been here; the demo
+    // route consumes given_name/family_name/birthdate/address/assurance_level
+    // when present. mitid_uuid/auth_time/issuer remain server-side only.
     return new JsonResponse([
       'data' => [
         'type' => 'mitid-session',
@@ -243,6 +256,11 @@ class MitIdController extends ControllerBase {
           'cpr' => $session['cpr'] ?? '',
           'email' => $session['email'] ?? '',
           'expiry' => $session['expires_at'] ?? '',
+          'given_name' => $session['given_name'] ?? '',
+          'family_name' => $session['family_name'] ?? '',
+          'birthdate' => $session['birthdate'] ?? '',
+          'address' => $address,
+          'assurance_level' => $session['assurance_level'] ?? '',
         ],
       ],
     ]);
