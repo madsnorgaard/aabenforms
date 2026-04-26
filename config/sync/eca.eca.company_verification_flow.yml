@@ -1,0 +1,56 @@
+uuid: e5f6a7b8-c9d0-4567-89ab-companyver0001
+langcode: en
+status: true
+dependencies:
+  module:
+    - aabenforms_workflows
+    - eca_content
+id: company_verification_flow
+weight: null
+template: null
+events:
+  on_submission:
+    plugin: 'content_entity:insert'
+    configuration:
+      type: 'webform_submission company_verification'
+    successors:
+      -
+        id: cvr_lookup
+        condition: ''
+conditions: {  }
+gateways: {  }
+actions:
+  cvr_lookup:
+    label: 'CVR registry lookup'
+    plugin: aabenforms_cvr_lookup
+    configuration:
+      cvr_token: '[webform_submission:values:cvr:raw]'
+      result_token: 'company_data'
+      use_cache: true
+    successors:
+      -
+        id: log_received
+        condition: ''
+  log_received:
+    label: 'Log: company_verification_submitted'
+    plugin: aabenforms_audit_log
+    configuration:
+      event_type: 'company_verification_submitted'
+      additional_data_token: ''
+      message_template: 'Company verification request received; CVR resolved.'
+    successors:
+      -
+        id: send_confirmation
+        condition: ''
+  send_confirmation:
+    label: 'Send confirmation via Digital Post'
+    plugin: aabenforms_digital_post_send
+    configuration:
+      recipient_token: '[webform_submission:values:cvr:raw]'
+      recipient_type: 'cvr'
+      sender_cvr_token: ''
+      subject_template: 'Verifikationsresultat'
+      body_template: '<p>Resultatet af jeres CVR-verifikation er klar. Se vedlagte bilag.</p>'
+      type: 'Digital Post'
+      result_token: 'digital_post_result'
+    successors: {  }

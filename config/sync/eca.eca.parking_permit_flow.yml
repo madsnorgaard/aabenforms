@@ -1,0 +1,56 @@
+uuid: e5f6a7b8-c9d0-4567-89ab-parking0000001
+langcode: en
+status: true
+dependencies:
+  module:
+    - aabenforms_workflows
+    - eca_content
+id: parking_permit_flow
+weight: null
+template: null
+events:
+  on_submission:
+    plugin: 'content_entity:insert'
+    configuration:
+      type: 'webform_submission parking_permit'
+    successors:
+      -
+        id: cpr_lookup
+        condition: ''
+conditions: {  }
+gateways: {  }
+actions:
+  cpr_lookup:
+    label: 'CPR registry lookup'
+    plugin: aabenforms_cpr_lookup
+    configuration:
+      cpr_token: '[webform_submission:values:cpr:raw]'
+      result_token: 'citizen_data'
+      use_cache: true
+    successors:
+      -
+        id: log_received
+        condition: ''
+  log_received:
+    label: 'Log: parking_permit_submitted'
+    plugin: aabenforms_audit_log
+    configuration:
+      event_type: 'parking_permit_submitted'
+      additional_data_token: ''
+      message_template: 'Parking permit application received; CPR resolved.'
+    successors:
+      -
+        id: send_confirmation
+        condition: ''
+  send_confirmation:
+    label: 'Send confirmation via Digital Post'
+    plugin: aabenforms_digital_post_send
+    configuration:
+      recipient_token: '[webform_submission:values:cpr:raw]'
+      recipient_type: 'cpr'
+      sender_cvr_token: ''
+      subject_template: 'Behandling af parkeringstilladelse'
+      body_template: '<p>Vi har modtaget din ansøgning om parkeringstilladelse. Afgørelse leveres i Digital Post.</p>'
+      type: 'Digital Post'
+      result_token: 'digital_post_result'
+    successors: {  }

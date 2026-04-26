@@ -1,0 +1,67 @@
+uuid: e5f6a7b8-c9d0-4567-89ab-marriage000001
+langcode: en
+status: true
+dependencies:
+  module:
+    - aabenforms_workflows
+    - eca_content
+id: marriage_booking_flow
+weight: null
+template: null
+events:
+  on_submission:
+    plugin: 'content_entity:insert'
+    configuration:
+      type: 'webform_submission marriage_booking'
+    successors:
+      -
+        id: cpr_lookup_partner1
+        condition: ''
+conditions: {  }
+gateways: {  }
+actions:
+  cpr_lookup_partner1:
+    label: 'CPR registry lookup (partner 1)'
+    plugin: aabenforms_cpr_lookup
+    configuration:
+      cpr_token: '[webform_submission:values:partner1_cpr:raw]'
+      result_token: 'partner1_data'
+      use_cache: true
+    successors:
+      -
+        id: cpr_lookup_partner2
+        condition: ''
+  cpr_lookup_partner2:
+    label: 'CPR registry lookup (partner 2)'
+    plugin: aabenforms_cpr_lookup
+    configuration:
+      cpr_token: '[webform_submission:values:partner2_cpr:raw]'
+      result_token: 'partner2_data'
+      use_cache: true
+    successors:
+      -
+        id: log_received
+        condition: ''
+  log_received:
+    label: 'Log: marriage_booking_submitted'
+    plugin: aabenforms_audit_log
+    configuration:
+      event_type: 'marriage_booking_submitted'
+      additional_data_token: ''
+      message_template: 'Marriage booking received; both partners CPR-verified.'
+    successors:
+      -
+        id: send_confirmation
+        condition: ''
+  send_confirmation:
+    label: 'Send confirmation via Digital Post'
+    plugin: aabenforms_digital_post_send
+    configuration:
+      recipient_token: '[webform_submission:values:partner1_cpr:raw]'
+      recipient_type: 'cpr'
+      sender_cvr_token: ''
+      subject_template: 'Bekræftelse af vielsesbooking'
+      body_template: '<p>Vi har modtaget jeres ansøgning om civil vielse. I modtager bekræftelse på dato i Digital Post.</p>'
+      type: 'Digital Post'
+      result_token: 'digital_post_result'
+    successors: {  }
