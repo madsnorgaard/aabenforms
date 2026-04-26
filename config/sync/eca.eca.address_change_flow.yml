@@ -1,0 +1,56 @@
+uuid: e5f6a7b8-c9d0-4567-89ab-addresschange1
+langcode: en
+status: true
+dependencies:
+  module:
+    - aabenforms_workflows
+    - eca_content
+id: address_change_flow
+weight: null
+template: null
+events:
+  on_submission:
+    plugin: 'content_entity:insert'
+    configuration:
+      type: 'webform_submission address_change'
+    successors:
+      -
+        id: cpr_lookup
+        condition: ''
+conditions: {  }
+gateways: {  }
+actions:
+  cpr_lookup:
+    label: 'CPR registry lookup'
+    plugin: aabenforms_cpr_lookup
+    configuration:
+      cpr_token: '[webform_submission:values:cpr:raw]'
+      result_token: citizen_data
+      use_cache: true
+    successors:
+      -
+        id: log_received
+        condition: ''
+  log_received:
+    label: 'Log: address change received'
+    plugin: aabenforms_audit_log
+    configuration:
+      event_type: address_change_submitted
+      additional_data_token: '[citizen_data:name]'
+      message_template: 'Address change submitted; CPR resolved against registry.'
+    successors:
+      -
+        id: send_confirmation
+        condition: ''
+  send_confirmation:
+    label: 'Send confirmation via Digital Post'
+    plugin: aabenforms_digital_post_send
+    configuration:
+      recipient_token: '[webform_submission:values:cpr:raw]'
+      recipient_type: cpr
+      sender_cvr_token: ''
+      subject_template: 'Bekræftelse på adresseændring'
+      body_template: '<p>Vi har registreret din adresseændring. Den nye adresse er gældende fra den angivne dato.</p>'
+      type: 'Digital Post'
+      result_token: digital_post_result
+    successors: {  }

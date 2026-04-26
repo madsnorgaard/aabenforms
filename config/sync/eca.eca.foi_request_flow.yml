@@ -1,0 +1,30 @@
+uuid: e5f6a7b8-c9d0-4567-89ab-foirequest0001
+langcode: en
+status: true
+dependencies:
+  module:
+    - aabenforms_workflows
+    - eca_content
+id: foi_request_flow
+weight: null
+template: null
+events:
+  on_submission:
+    plugin: 'content_entity:insert'
+    configuration:
+      type: 'webform_submission foi_request'
+    successors:
+      -
+        id: log_received
+        condition: ''
+conditions: {  }
+gateways: {  }
+actions:
+  log_received:
+    label: 'Log: foi_request_submitted'
+    plugin: aabenforms_audit_log
+    configuration:
+      event_type: 'foi_request_submitted'
+      additional_data_token: ''
+      message_template: 'FOI request received; case worker will process within 7 working days.'
+    successors: {  }
