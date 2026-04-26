@@ -14,17 +14,19 @@ events:
     configuration:
       type: 'webform_submission parent_request_form'
     successors:
-      - id: check_parent1_pending
+      -
+        id: check_parent1_pending
         condition: ''
 conditions:
   check_parent1_pending:
     plugin: eca_scalar
     configuration:
-      left_value: '[webform_submission:data:parent1_status]'
       operator: '=='
-      right_value: 'pending'
+      left_value: '[webform_submission:data:parent1_status]'
+      right_value: pending
     successors:
-      - id: parent1_mitid
+      -
+        id: parent1_mitid
         condition: 'true'
 gateways: {  }
 actions:
@@ -36,9 +38,9 @@ actions:
       result_token: parent1_mitid_valid
       session_data_token: parent1_session
     successors:
-      - id: parent1_cpr
+      -
+        id: parent1_cpr
         condition: ''
-
   parent1_cpr:
     label: 'Parent 1: CPR Lookup'
     plugin: aabenforms_cpr_lookup
@@ -47,9 +49,9 @@ actions:
       result_token: parent1_data
       use_cache: true
     successors:
-      - id: parent1_audit
+      -
+        id: parent1_audit
         condition: ''
-
   parent1_audit:
     label: 'Parent 1: Audit Log'
     plugin: aabenforms_audit_log
@@ -58,13 +60,13 @@ actions:
       additional_data_token: '[parent1_data:name]'
       message_template: 'Parent 1 authenticated and approved'
     successors:
-      - id: mark_parent1_complete
+      -
+        id: mark_parent1_complete
         condition: ''
-
   mark_parent1_complete:
     label: 'Mark Parent 1 Complete'
     plugin: eca_token_set_value
     configuration:
       token_name: parent1_status
-      token_value: 'complete'
+      token_value: complete
     successors: {  }

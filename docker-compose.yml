@@ -40,6 +40,7 @@ services:
       - ./web/profiles/custom:/opt/drupal/web/profiles/custom
       - ./web/themes/custom:/opt/drupal/web/themes/custom
       - drupal_files:/opt/drupal/web/sites/default/files
+      - ./data/private:/opt/drupal/private
       - ./backups:/opt/drupal/backups
       - ./settings.php:/opt/drupal/web/sites/default/settings.php
       - ./services.prod.yml:/opt/drupal/web/sites/default/services.yml

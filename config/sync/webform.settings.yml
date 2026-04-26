@@ -328,6 +328,7 @@ libraries:
   excluded_libraries:
     - choices
     - jquery.chosen
+  cdn: true
 requirements:
   cdn: true
   clientside_validation: true

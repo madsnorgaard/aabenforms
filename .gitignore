@@ -72,3 +72,6 @@ Thumbs.db
 
 # OS2Forms reference repositories (for studying patterns, not our code)
 /reference/
+data/*
+!data/private/
+!data/private/.gitkeep

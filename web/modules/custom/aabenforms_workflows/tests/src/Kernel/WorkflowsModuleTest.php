@@ -26,6 +26,7 @@ class WorkflowsModuleTest extends KernelTestBase {
     'real_aes',
     'domain',
     'webform',
+    'modeler_api',
     'eca',
     'eca_base',
     'eca_content',

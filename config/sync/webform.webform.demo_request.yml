@@ -2,9 +2,9 @@ uuid: f7a2c1e3-8b4d-4f6a-9e3c-5d1b7a8f2e4c
 langcode: en
 status: open
 dependencies: {  }
+weight: 0
 open: null
 close: null
-weight: 0
 uid: 1
 template: false
 archive: false
@@ -236,8 +236,8 @@ handlers:
       cc_mail: ''
       cc_options: {  }
       from_mail: '[webform_submission:values:email:raw]'
-      from_name: '[webform_submission:values:name:raw]'
       from_options: {  }
+      from_name: '[webform_submission:values:name:raw]'
       reply_to: '[webform_submission:values:email:raw]'
       return_path: ''
       sender_mail: ''
