@@ -18,6 +18,7 @@
   "internationalizationEnabled": true,
   "supportedLocales": ["da", "en"],
   "defaultLocale": "da",
+  "loginTheme": "aabenforms-mitid",
 
   "clients": [
     {
@@ -47,6 +48,59 @@
         "access.token.lifespan": "3600"
       },
       "protocolMappers": [
+        {
+          "name": "given name",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "firstName",
+            "claim.name": "given_name",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        },
+        {
+          "name": "family name",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "lastName",
+            "claim.name": "family_name",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        },
+        {
+          "name": "full name",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-full-name-mapper",
+          "consentRequired": false,
+          "config": {
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        },
+        {
+          "name": "email",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "email",
+            "claim.name": "email",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        },
         {
           "name": "cpr",
           "protocol": "openid-connect",
@@ -114,6 +168,62 @@
             "id.token.claim": "true",
             "access.token.claim": "true"
           }
+        },
+        {
+          "name": "street",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "street",
+            "claim.name": "street",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        },
+        {
+          "name": "postal_code",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "postal_code",
+            "claim.name": "postal_code",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        },
+        {
+          "name": "city",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "city",
+            "claim.name": "city",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        },
+        {
+          "name": "municipality_code",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "municipality_code",
+            "claim.name": "municipality_code",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
         }
       ]
     },
@@ -160,6 +270,10 @@
         "birthdate": ["1990-01-01"],
         "given_name": ["Freja"],
         "family_name": ["Nielsen"],
+        "street": ["Nørrebrogade 142, 3. tv."],
+        "postal_code": ["2200"],
+        "city": ["København N"],
+        "municipality_code": ["0101"],
         "assurance_level": ["http://eidas.europa.eu/LoA/substantial"],
         "description": ["Typical citizen - Common Danish name, Copenhagen resident"]
       },
@@ -184,6 +298,10 @@
         "birthdate": ["1985-02-15"],
         "given_name": ["Mikkel"],
         "family_name": ["Jensen"],
+        "street": ["Vestergade 27, 2. th."],
+        "postal_code": ["8000"],
+        "city": ["Aarhus C"],
+        "municipality_code": ["0751"],
         "assurance_level": ["http://eidas.europa.eu/LoA/substantial"],
         "description": ["Typical citizen - Most common Danish surname"]
       },
@@ -208,6 +326,10 @@
         "birthdate": ["1992-06-25"],
         "given_name": ["Sofie"],
         "family_name": ["Hansen"],
+        "street": ["Hjallesevej 88"],
+        "postal_code": ["5230"],
+        "city": ["Odense M"],
+        "municipality_code": ["0461"],
         "assurance_level": ["http://eidas.europa.eu/LoA/substantial"],
         "description": ["Young parent with children"]
       },
@@ -282,6 +404,10 @@
         "given_name": ["Karen"],
         "family_name": ["Christensen"],
         "organization_name": ["Test ApS"],
+        "street": ["Nytorv 11"],
+        "postal_code": ["9000"],
+        "city": ["Aalborg"],
+        "municipality_code": ["0851"],
         "assurance_level": ["http://eidas.europa.eu/LoA/high"],
         "description": ["Business owner - MitID Erhverv user with CVR"]
       },

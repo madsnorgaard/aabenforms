@@ -1,0 +1,9 @@
+aabenforms_digital_post_session_inbox.recent:
+  path: '/api/digital-post/recent'
+  defaults:
+    _controller: '\Drupal\aabenforms_digital_post_session_inbox\Controller\SessionInboxController::getRecent'
+  methods: [GET]
+  requirements:
+    _access: 'TRUE'
+  options:
+    no_cache: TRUE
