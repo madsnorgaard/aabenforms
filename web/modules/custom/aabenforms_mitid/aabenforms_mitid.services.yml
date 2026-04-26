@@ -8,7 +8,7 @@ services:
   aabenforms_mitid.session_manager:
     class: Drupal\aabenforms_mitid\Service\MitIdSessionManager
     arguments:
-      - '@tempstore.private'
+      - '@keyvalue.expirable'
       - '@datetime.time'
       - '@logger.factory'
       - '@aabenforms_core.audit_logger'
