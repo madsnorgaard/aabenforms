@@ -19,8 +19,9 @@ RUN mkdir -p /opt/drupal/web/sites/default/files && \
     mkdir -p /opt/drupal/web/sites/default/files/assets/js && \
     mkdir -p /opt/drupal/web/sites/default/files/translations && \
     mkdir -p /opt/drupal/backups && \
-    chown -R www-data:www-data /opt/drupal/web/sites/default/files && \
-    chmod -R 775 /opt/drupal/web/sites/default/files
+    mkdir -p /opt/drupal/private && \
+    chown -R www-data:www-data /opt/drupal/web/sites/default/files /opt/drupal/private && \
+    chmod -R 775 /opt/drupal/web/sites/default/files /opt/drupal/private
 
 # Copy files to /opt/drupal
 COPY composer.json /opt/drupal/
@@ -35,7 +36,7 @@ WORKDIR /opt/drupal
 RUN composer install --no-dev --no-interaction --optimize-autoloader
 
 # Set ownership and permissions for /opt/drupal
-RUN chown -R www-data:www-data /opt/drupal /opt/drupal/backups && \
+RUN chown -R www-data:www-data /opt/drupal /opt/drupal/backups /opt/drupal/private && \
     chmod -R 775 /opt/drupal
 
 # Set the working directory
