@@ -7,6 +7,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Url;
 use Drupal\aabenforms_workflows\Service\ApprovalTokenService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -263,6 +264,60 @@ class ParentApprovalController extends ControllerBase {
       return $text;
     }
     return mb_substr($text, 0, $length) . '...';
+  }
+
+  /**
+   * Handles the parent's MitID login handoff.
+   *
+   * Demo-mode behaviour: validates the token (same gating as
+   * approvalPage so a tampered/expired/malformed link can't bypass the
+   * MitID requirement by navigating directly to this route), flips the
+   * parent's session flag, then redirects back to the approval page
+   * which now renders the form instead of the login button.
+   *
+   * @todo Replace the session-flag flip with a real OIDC handoff via
+   *   aabenforms_mitid: send the parent through MitId\Service\MitIdOidcClient::getAuthorizationUrl()
+   *   with a return URL of /parent-approval/{p}/{sid}/{token}, and on
+   *   the OIDC callback verify the CPR matches the submission's
+   *   parent{N}_email tied to the consenting parent before flipping the
+   *   session. The current stub is sufficient for the citizen-flow
+   *   smoke; production needs the real handoff.
+   *
+   * @param int $parent_number
+   *   The parent number (1 or 2).
+   * @param int $submission_id
+   *   The webform submission ID.
+   * @param string $token
+   *   The security token.
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   *   The current request.
+   *
+   * @return \Symfony\Component\HttpFoundation\RedirectResponse
+   *   Redirect back to the approval page.
+   *
+   * @throws \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException
+   */
+  public function mitidLogin(int $parent_number, int $submission_id, string $token, Request $request): RedirectResponse {
+    if (!$this->tokenService->validateToken($submission_id, $parent_number, $token)) {
+      $this->logger->warning('Invalid token at MitID handoff for submission @sid, parent @parent', [
+        '@sid' => $submission_id,
+        '@parent' => $parent_number,
+      ]);
+      throw new AccessDeniedHttpException('Invalid approval token.');
+    }
+
+    $request->getSession()->set("mitid_authenticated_parent{$parent_number}", TRUE);
+    $this->logger->info('Parent @parent MitID handoff complete for submission @sid (demo stub)', [
+      '@parent' => $parent_number,
+      '@sid' => $submission_id,
+    ]);
+
+    $url = Url::fromRoute('aabenforms_workflows.parent_approval', [
+      'parent_number' => $parent_number,
+      'submission_id' => $submission_id,
+      'token' => $token,
+    ])->toString();
+    return new RedirectResponse($url);
   }
 
   /**
