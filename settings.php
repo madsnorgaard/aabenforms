@@ -43,6 +43,34 @@ if (file_exists($app_root . '/' . $site_path . '/settings.local.php')) {
 $settings['reverse_proxy'] = true;
 $settings['reverse_proxy_addresses'] = array(@$_SERVER['REMOTE_ADDR']);
 
+# MitID OIDC: production overrides for the public mock IdP at
+# https://auth.aabenforms.dk. The browser hits the public hostname for the
+# /auth redirect and Drupal does the server-side token exchange against the
+# internal http://keycloak:8080. Issuer must match what's claimed in the
+# id_token, so it has to be the public URL.
+# Local DDEV leaves these env vars unset and falls back to the YAML config.
+if ($mitid_authz = getenv('MITID_AUTH_ENDPOINT')) {
+  $config['aabenforms_mitid.settings']['authorization_endpoint'] = $mitid_authz;
+}
+if ($mitid_token = getenv('MITID_TOKEN_ENDPOINT')) {
+  $config['aabenforms_mitid.settings']['token_endpoint'] = $mitid_token;
+}
+if ($mitid_userinfo = getenv('MITID_USERINFO_ENDPOINT')) {
+  $config['aabenforms_mitid.settings']['userinfo_endpoint'] = $mitid_userinfo;
+}
+if ($mitid_issuer = getenv('MITID_ISSUER')) {
+  $config['aabenforms_mitid.settings']['issuer'] = $mitid_issuer;
+}
+if ($mitid_redirect = getenv('MITID_REDIRECT_URI')) {
+  $config['aabenforms_mitid.settings']['redirect_uri'] = $mitid_redirect;
+}
+if ($mitid_client_secret = getenv('MITID_CLIENT_SECRET')) {
+  $config['aabenforms_mitid.settings']['client_secret'] = $mitid_client_secret;
+}
+if (getenv('AABENFORMS_PROD_MITID') === 'true') {
+  $config['aabenforms_mitid.settings']['production'] = TRUE;
+}
+
 # SMTP configuration from environment
 if (getenv('SMTP_PASSWORD')) {
   $config['smtp.settings']['smtp_on'] = TRUE;

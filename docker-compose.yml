@@ -92,5 +92,49 @@ services:
       options:
         max-size: "50m"
 
+  # Keycloak hosts the public mock IdP at https://auth.aabenforms.dk for the
+  # interactive Byggetilladelse demo. Browsers hit the public hostname over
+  # TLS via Traefik; Drupal performs the server-side token exchange against
+  # the internal http://keycloak:8080 address on the shared internal network
+  # so the round-trip stays inside the docker bridge. The H2 store is volume-
+  # mounted so the imported realm survives container restarts; on first
+  # boot --import-realm seeds the realm from the JSON below. To force a re-
+  # import after editing the realm: docker compose down keycloak &&
+  # docker volume rm api.aabenforms.dk_keycloak_data && docker compose up -d
+  # keycloak.
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0
+    container_name: aabenforms_keycloak
+    restart: always
+    env_file:
+      - .env
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KC_HOSTNAME: auth.aabenforms.dk
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+      KC_HTTP_ENABLED: "true"
+      KC_PROXY: edge
+      KC_HTTP_PORT: 8080
+    volumes:
+      - ./docker/keycloak/realms/danish-gov-test.json:/opt/keycloak/data/import/danish-gov-test.json:ro
+      - ./docker/keycloak/themes:/opt/keycloak/themes:ro
+      - keycloak_data:/opt/keycloak/data
+    command:
+      - start-dev
+      - --import-realm
+      - --http-relative-path=/
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.aabenforms_keycloak.rule=Host(`auth.aabenforms.dk`)"
+      - "traefik.http.routers.aabenforms_keycloak.entrypoints=websecure"
+      - "traefik.http.routers.aabenforms_keycloak.tls.certresolver=lets-encrypt"
+      - "traefik.http.services.aabenforms_keycloak.loadbalancer.server.port=8080"
+    networks:
+      - internal
+      - web
+
 volumes:
   drupal_files:
+  keycloak_data:
