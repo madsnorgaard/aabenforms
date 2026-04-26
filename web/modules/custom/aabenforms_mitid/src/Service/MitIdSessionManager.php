@@ -286,8 +286,8 @@ class MitIdSessionManager {
    *   The workflow instance ID.
    *
    * @return array|null
-   *   ['street' => ..., 'postal_code' => ..., 'city' => ..., 'municipality_code' => ...]
-   *   when at least one key is present, NULL otherwise.
+   *   Array with keys street, postal_code, city, municipality_code when at
+   *   least one is present in the session; NULL otherwise.
    */
   public function getAddressFromSession(string $workflow_id): ?array {
     $session = $this->getSession($workflow_id);
