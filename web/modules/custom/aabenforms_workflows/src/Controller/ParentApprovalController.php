@@ -87,7 +87,11 @@ class ParentApprovalController extends ControllerBase {
    * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
    */
   public function approvalPage(int $parent_number, int $submission_id, string $token, Request $request): array {
-    // Validate token.
+    // Validate token, then branch on outcome so the citizen sees an
+    // accurate message rather than a generic "denied". Three outcomes:
+    // expired (well-formed, past) → "ask for a new link"; malformed
+    // (URL corrupted) → "check the URL"; tampered (HMAC mismatch) →
+    // 403 (real security signal).
     if (!$this->tokenService->validateToken($submission_id, $parent_number, $token)) {
       $this->logger->warning('Invalid or expired token for submission @sid, parent @parent', [
         '@sid' => $submission_id,
@@ -102,6 +106,20 @@ class ParentApprovalController extends ControllerBase {
           ],
           '#status_headings' => [
             'error' => $this->t('Expired Link'),
+          ],
+        ];
+      }
+
+      if ($this->tokenService->isTokenMalformed($token)) {
+        return [
+          '#theme' => 'status_messages',
+          '#message_list' => [
+            'error' => [
+              $this->t('This approval link is invalid. The URL may have been truncated by your email client - please copy and paste the full link, or contact the case worker for a fresh one.'),
+            ],
+          ],
+          '#status_headings' => [
+            'error' => $this->t('Invalid Link'),
           ],
         ];
       }
