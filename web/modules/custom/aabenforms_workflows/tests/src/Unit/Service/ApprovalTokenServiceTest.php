@@ -162,4 +162,48 @@ class ApprovalTokenServiceTest extends UnitTestCase {
     $this->assertSame($now, $this->service->getTokenTimestamp($token));
   }
 
+  /**
+   * IsTokenExpired only fires for well-formed tokens past the cutoff.
+   *
+   * Malformed tokens have no resolvable timestamp - they are NOT
+   * "expired", they are malformed. isTokenMalformed() reports that
+   * separately so the controller can render distinct UX for each.
+   */
+  public function testIsTokenExpiredSemantics(): void {
+    // Genuinely-past well-formed token → TRUE.
+    $past = $this->service->generateToken(42, 1, time() - 604801);
+    $this->assertTrue($this->service->isTokenExpired($past));
+
+    // Fresh well-formed token → FALSE.
+    $fresh = $this->service->generateToken(42, 1);
+    $this->assertFalse($this->service->isTokenExpired($fresh));
+
+    // Malformed tokens → FALSE (they're not expired, they're malformed).
+    $this->assertFalse($this->service->isTokenExpired(''));
+    $this->assertFalse($this->service->isTokenExpired('!!!not-base64!!!'));
+    $this->assertFalse($this->service->isTokenExpired(base64_encode('no-colon')));
+    $this->assertFalse($this->service->isTokenExpired(base64_encode('hash:not-numeric')));
+  }
+
+  /**
+   * IsTokenMalformed catches every structural failure mode.
+   */
+  public function testIsTokenMalformedSemantics(): void {
+    // Malformed inputs.
+    $this->assertTrue($this->service->isTokenMalformed(''));
+    $this->assertTrue($this->service->isTokenMalformed('!!!not-base64!!!'));
+    $this->assertTrue($this->service->isTokenMalformed(base64_encode('no-colon')));
+    $this->assertTrue($this->service->isTokenMalformed(base64_encode('hash:not-numeric')));
+    $this->assertTrue($this->service->isTokenMalformed(base64_encode('hash:0')));
+    $this->assertTrue($this->service->isTokenMalformed(base64_encode('hash:-12345')));
+
+    // Well-formed tokens (any timestamp) are NOT malformed - even if
+    // they will fail HMAC validation downstream.
+    $fresh = $this->service->generateToken(42, 1);
+    $this->assertFalse($this->service->isTokenMalformed($fresh));
+
+    $tampered = base64_encode('deadbeef:' . time());
+    $this->assertFalse($this->service->isTokenMalformed($tampered));
+  }
+
 }
