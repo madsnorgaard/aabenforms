@@ -10,6 +10,12 @@ $databases['default']['default'] = array(
   'port' => getenv('DB_PORT' ?: '3306'),
   'namespace' => 'Drupal\Core\Database\Driver\mysql',
   'driver' => 'mysql',
+  // Drupal recommends READ COMMITTED. MariaDB defaults to REPEATABLE-READ
+  // which the status report flags. Setting it per-session is cheaper than
+  // restarting the DB server with a config change.
+  'init_commands' => [
+    'isolation_level' => "SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED",
+  ],
 );
 
 $settings['hash_salt'] = getenv('HASH_SALT');
@@ -25,6 +31,13 @@ $settings['file_scan_ignore_directories'] = [
 $settings['entity_update_batch_size'] = 100;
 $settings['entity_update_backup'] = true;
 $settings['config_sync_directory'] = '../config/sync';
+
+// Private file system. Path is OUTSIDE the docroot per Drupal security
+// guidance (DRUPAL-PSA-2016-003). Webform stores submissions and
+// attachments here when configured. The directory is bind-mounted from
+// ./data/private on VPS2 (volume in docker-compose.yml) so contents
+// persist across container rebuilds.
+$settings['file_private_path'] = '/opt/drupal/private';
 
 // Redis cache - enable after `drush en redis`
 // if (extension_loaded('redis')) {

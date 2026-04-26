@@ -2,9 +2,9 @@ uuid: 8d3c4f1a-1234-4567-89ab-buildperm0001
 langcode: en
 status: open
 dependencies: {  }
+weight: 0
 open: null
 close: null
-weight: 0
 uid: 1
 template: false
 archive: false
@@ -13,25 +13,25 @@ title: 'Building Permit Application'
 description: 'Apply for a residential building permit (extensions, garages, sheds).'
 categories: {  }
 elements: |
-    cpr:
-      '#type': textfield
-      '#title': 'CPR number (DDMMYY-XXXX)'
-      '#required': true
-      '#pattern': '\d{6}-?\d{4}'
-    applicant_name:
-      '#type': textfield
-      '#title': 'Applicant name'
-      '#required': true
-    property_address:
-      '#type': textfield
-      '#title': 'Property address'
-      '#required': true
-    project_description:
-      '#type': textarea
-      '#title': 'Project description'
-      '#required': true
-      '#rows': 4
-      '#description': 'Describe what you intend to build, the size in m², and proximity to property lines.'
+  cpr:
+    '#type': textfield
+    '#title': 'CPR number (DDMMYY-XXXX)'
+    '#required': true
+    '#pattern': '\d{6}-?\d{4}'
+  applicant_name:
+    '#type': textfield
+    '#title': 'Applicant name'
+    '#required': true
+  property_address:
+    '#type': textfield
+    '#title': 'Property address'
+    '#required': true
+  project_description:
+    '#type': textarea
+    '#title': 'Project description'
+    '#required': true
+    '#rows': 4
+    '#description': 'Describe what you intend to build, the size in m², and proximity to property lines.'
 css: ''
 javascript: ''
 settings:

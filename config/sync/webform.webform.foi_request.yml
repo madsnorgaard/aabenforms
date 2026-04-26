@@ -2,9 +2,9 @@ uuid: 8d3c4f1a-1234-4567-89ab-foirequest001
 langcode: en
 status: open
 dependencies: {  }
+weight: 0
 open: null
 close: null
-weight: 0
 uid: 1
 template: false
 archive: false
@@ -13,20 +13,20 @@ title: 'Freedom of Information Request'
 description: 'Submit a request for access to municipal records under the Public Information Act.'
 categories: {  }
 elements: |
-    requester_name:
-      '#type': textfield
-      '#title': 'Your name'
-      '#required': true
-    requester_email:
-      '#type': email
-      '#title': 'Email address for response'
-      '#required': true
-    request_text:
-      '#type': textarea
-      '#title': 'What records do you want access to?'
-      '#required': true
-      '#rows': 6
-      '#description': 'Be as specific as possible (case numbers, date ranges, document types).'
+  requester_name:
+    '#type': textfield
+    '#title': 'Your name'
+    '#required': true
+  requester_email:
+    '#type': email
+    '#title': 'Email address for response'
+    '#required': true
+  request_text:
+    '#type': textarea
+    '#title': 'What records do you want access to?'
+    '#required': true
+    '#rows': 6
+    '#description': 'Be as specific as possible (case numbers, date ranges, document types).'
 css: ''
 javascript: ''
 settings:
