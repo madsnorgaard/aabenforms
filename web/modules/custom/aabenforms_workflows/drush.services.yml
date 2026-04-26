@@ -1,0 +1,7 @@
+services:
+  aabenforms_workflows.drush_approval_token:
+    class: Drupal\aabenforms_workflows\Drush\ApprovalTokenCommands
+    arguments:
+      - '@aabenforms_workflows.approval_token'
+    tags:
+      - { name: drush.command }

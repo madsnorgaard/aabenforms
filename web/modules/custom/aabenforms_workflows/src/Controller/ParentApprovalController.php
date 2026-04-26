@@ -4,6 +4,7 @@ namespace Drupal\aabenforms_workflows\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Url;
 use Drupal\aabenforms_workflows\Service\ApprovalTokenService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -197,11 +198,11 @@ class ParentApprovalController extends ControllerBase {
       '#child_name' => $child_name,
       '#parent_number' => $parent_number,
       '#request_summary' => $this->truncateText($request_details, 200),
-      '#mitid_login_url' => \Drupal::url('aabenforms_workflows.parent_approval_mitid', [
+      '#mitid_login_url' => Url::fromRoute('aabenforms_workflows.parent_approval_mitid', [
         'parent_number' => $parent_number,
         'submission_id' => $submission->id(),
         'token' => $token,
-      ]),
+      ])->toString(),
       '#attached' => [
         'library' => [
           'aabenforms_workflows/parent-approval',
