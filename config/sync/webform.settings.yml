@@ -330,7 +330,7 @@ libraries:
     - jquery.chosen
   cdn: true
 requirements:
-  cdn: false
+  cdn: true
   clientside_validation: true
   spam: true
 third_party_settings:

@@ -36,7 +36,8 @@
         "drupal/smtp": "^1.4",
         "drupal/webform": "^6.3@dev",
         "drush/drush": "^13.7",
-        "itk-dev/serviceplatformen": "^1.8"
+        "itk-dev/serviceplatformen": "^1.8",
+        "wikimedia/composer-merge-plugin": "^2.1"
     },
     "conflict": {
         "drupal/drupal": "*"
@@ -52,7 +53,8 @@
             "phpstan/extension-installer": true,
             "dealerdirect/phpcodesniffer-composer-installer": true,
             "php-http/discovery": true,
-            "php-tuf/composer-integration": true
+            "php-tuf/composer-integration": true,
+            "wikimedia/composer-merge-plugin": true
         },
         "sort-packages": true
     },
@@ -93,6 +95,16 @@
             "recipes/{$name}": [
                 "type:drupal-recipe"
             ]
+        },
+        "merge-plugin": {
+            "include": [
+                "web/modules/contrib/webform/composer.libraries.json"
+            ],
+            "merge-extra": false,
+            "merge-extra-deep": false,
+            "merge-scripts": false,
+            "replace": false,
+            "ignore-duplicates": false
         },
         "drupal-core-project-message": {
             "include-keys": [
