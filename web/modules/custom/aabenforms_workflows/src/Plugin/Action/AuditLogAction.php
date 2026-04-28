@@ -186,7 +186,7 @@ class AuditLogAction extends AabenFormsActionBase {
     preg_match_all('/\[([^\]]+)\]/', $string, $matches);
 
     foreach ($matches[1] as $tokenName) {
-      $value = $this->getTokenValue($tokenName, '[' . $tokenName . ']', '');
+      $value = $this->getTokenValue($tokenName, '[' . $tokenName . ']');
       if (!is_string($value) && !is_numeric($value)) {
         $value = is_array($value) ? json_encode($value) : (string) $value;
       }
