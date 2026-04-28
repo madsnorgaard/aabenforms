@@ -183,6 +183,25 @@ jobs:
 
           rm parse_coverage.php parse_module.php
 
+      - name: Enforce minimum coverage threshold
+        run: |
+          # Floor matches the documented coverage target in docs/TESTING.md.
+          # Bump this in lockstep when the team agrees a new floor; never
+          # lower it. A drop below threshold fails the job so PRs that
+          # delete tests or add untested code can't sneak coverage backwards.
+          THRESHOLD=20
+          if [ -z "$COVERAGE" ]; then
+            echo "::error::Coverage value is empty - parse_coverage.php may have failed"
+            exit 1
+          fi
+          if (( $(echo "$COVERAGE < $THRESHOLD" | bc -l) )); then
+            echo "::error::Line coverage ${COVERAGE}% dropped below threshold ${THRESHOLD}%"
+            exit 1
+          fi
+          echo "Coverage ${COVERAGE}% meets threshold ${THRESHOLD}%"
+        env:
+          COVERAGE: ${{ steps.coverage.outputs.percentage }}
+
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v4
         with:
