@@ -168,7 +168,7 @@ class ParentCprVerifierTest extends UnitTestCase {
 
     $this->logger->expects($this->once())->method('warning');
     $this->auditLogger->expects($this->once())
-      ->method('logCprLookup')
+      ->method('logWorkflowAccess')
       ->with('wf-4', 'parent_approval_cpr_missing', 'failure', $this->anything());
 
     $this->assertSame(
@@ -210,7 +210,7 @@ class ParentCprVerifierTest extends UnitTestCase {
     $this->sessionManager->method('getCprFromSession')->willReturn('');
 
     $this->auditLogger->expects($this->once())
-      ->method('logCprLookup')
+      ->method('logWorkflowAccess')
       ->with($this->anything(), 'parent_approval_cpr_missing', $this->anything(), $this->anything());
 
     $this->assertSame(

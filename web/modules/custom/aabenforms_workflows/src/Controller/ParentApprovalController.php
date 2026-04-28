@@ -450,11 +450,27 @@ class ParentApprovalController extends ControllerBase {
         $this->t('MitID returnerede ikke et CPR-nummer; prøv igen eller kontakt kommunen.')
       );
     }
-    if ($result !== ParentCprVerifier::RESULT_MATCH) {
-      // Mismatch OR missing-expected-CPR: both rejected as 403. The
-      // citizen-facing copy is identical and sparse on purpose - we
-      // do not confirm whether the right MitID account would have
-      // worked, only that the case worker has been informed.
+    if ($result === ParentCprVerifier::RESULT_MISSING_EXPECTED_CPR) {
+      // Backwards-compatible fallback: the form submission does not carry a
+      // parent_<N>_cpr field (legacy forms or forms not yet updated with CPR
+      // capture). Log a warning and allow the approval to continue so that
+      // existing deployments are not broken. Once all active forms are
+      // updated to collect the CPR, this branch should be converted to a
+      // hard 403 (same as RESULT_MISMATCH) or removed entirely.
+      $this->logger->warning(
+        'CPR gate skipped: submission @sid has no parent@parent_cpr field; approval allowed without CPR verification (workflow @wid)',
+        [
+          '@sid' => $submission_id,
+          '@parent' => $parent_number,
+          '@wid' => $workflow_id,
+        ]
+      );
+    }
+    elseif ($result !== ParentCprVerifier::RESULT_MATCH) {
+      // Mismatch: both CPRs were present but do not match - hard security
+      // failure. The citizen-facing copy is sparse on purpose - we do not
+      // confirm whether the right MitID account would have worked, only
+      // that the case worker has been informed.
       return $this->renderGateFailure(
         Response::HTTP_FORBIDDEN,
         $this->t('Adgang nægtet'),

@@ -127,16 +127,15 @@ class ParentCprVerifier {
           '@wid' => $workflow_id,
         ]
       );
-      // Audit with a stable identifier (the workflow_id) since we have no
-      // CPR to hash. The audit row records the upstream-IdP failure.
-      $this->auditLogger->logCprLookup(
+      // Use logWorkflowAccess() - there is no CPR to hash here; the event
+      // is an IdP failure attached to the workflow, not a CPR lookup.
+      $this->auditLogger->logWorkflowAccess(
         $workflow_id,
         'parent_approval_cpr_missing',
         'failure',
         [
           'submission_uuid' => $submission_uuid,
           'parent_number' => $parent_number,
-          'workflow_id' => $workflow_id,
         ]
       );
       return self::RESULT_MISSING_MITID_CPR;

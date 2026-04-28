@@ -75,9 +75,8 @@ in the test.
 ### ECA 3.1+ kernel test requirement
 
 ECA 3.1.x added a hard dependency on `modeler_api`. Every kernel test that
-enables `eca` must also enable `modeler_api` in `$modules`. See
-`~/.claude/skills/eca-workflow-expert/SKILL.md` for the full ECA testing
-notes. This is not optional - the container will fail to build without it.
+enables `eca` must also enable `modeler_api` in `$modules`. This is not
+optional - the container will fail to build without it.
 
 ### Setter-injected execution collector
 
@@ -89,13 +88,12 @@ their own injection point.
 
 ## Where to look for help
 
-- `~/.claude/skills/eca-workflow-expert/SKILL.md` - ECA, BPMN, and
-  modeler_api testing patterns.
-- `~/.claude/skills/drupal-playwright-expert/SKILL.md` - Playwright e2e
-  patterns for the Nuxt frontend hitting this backend.
-
-These skills live in the developer's home directory, not the repo. Mention
-them when onboarding a new contributor.
+- `docs/TESTING.md` (this file) - unit and kernel patterns for the custom
+  modules suite.
+- `docs/TESTING_GUIDE.md` - functional tiers, browser tests, and fixture
+  strategy.
+- [ECA module docs](https://www.drupal.org/docs/contributed-modules/eca-event-driven-actions) -
+  canonical ECA, BPMN, and modeler_api documentation.
 
 ## Before-you-skip checklist
 
