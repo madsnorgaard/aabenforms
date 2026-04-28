@@ -198,9 +198,11 @@ class ParentCprVerifierTest extends UnitTestCase {
   }
 
   /**
-   * Empty asserted CPR (empty string from session) routes to missing-MitID,
-   * not to mismatch - the empty value is treated as "no claim", matching
-   * the controller's documented UX path.
+   * Empty asserted CPR routes to missing-MitID, not to mismatch.
+   *
+   * An empty session value is treated as "no claim" rather than a competing
+   * claim that disagrees with the parent CPR, matching the controller's
+   * documented UX path.
    *
    * @covers ::verify
    */

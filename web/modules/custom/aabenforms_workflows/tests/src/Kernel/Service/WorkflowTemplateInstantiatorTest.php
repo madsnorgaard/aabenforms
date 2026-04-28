@@ -277,10 +277,10 @@ class WorkflowTemplateInstantiatorTest extends KernelTestBase {
   /**
    * Tests that a duplicate logical id is auto-suffixed instead of colliding.
    *
-   * generateWorkflowId() defends against id collisions by appending _N until
-   * workflowExists() returns false. This is the workflowExists branch of the
-   * happy path - run instantiate() twice with the same explicit id and verify
-   * the second call lands on a different config name.
+   * The generateWorkflowId() method defends against id collisions by appending
+   * _N until workflowExists() returns false. This is the workflowExists branch
+   * of the happy path - run instantiate() twice with the same explicit id and
+   * verify the second call lands on a different config name.
    *
    * @covers ::generateWorkflowId
    * @covers ::workflowExists
@@ -469,7 +469,7 @@ XML;
           'body' => 'We have received your inquiry.',
           'recipient' => 'submitter@example.test',
         ],
-      // No subject/body here, must be skipped.
+        // No subject/body here, must be skipped.
         'log_only' => [
           'recipient' => 'audit@example.test',
         ],
