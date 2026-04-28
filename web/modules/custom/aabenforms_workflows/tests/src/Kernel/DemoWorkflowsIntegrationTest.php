@@ -31,6 +31,8 @@ class DemoWorkflowsIntegrationTest extends KernelTestBase {
     'eca_base',
     'eca_content',
     'eca_user',
+    // Hard dep declared in aabenforms_workflows.info.yml.
+    'aabenforms_mitid',
     'aabenforms_workflows',
   ];
 

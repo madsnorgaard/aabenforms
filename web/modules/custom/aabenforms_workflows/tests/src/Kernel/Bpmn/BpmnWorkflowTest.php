@@ -24,6 +24,8 @@ class BpmnWorkflowTest extends KernelTestBase {
     'eca_user',
     'bpmn_io',
     'modeler_api',
+    // Hard dep declared in aabenforms_workflows.info.yml.
+    'aabenforms_mitid',
     'aabenforms_workflows',
   ];
 
