@@ -3,6 +3,7 @@
 namespace Drupal\Tests\aabenforms_workflows\Unit\Plugin\Action;
 
 use Drupal\Tests\UnitTestCase;
+use Drupal\aabenforms_core\Service\WorkflowExecutionCollector;
 use Drupal\aabenforms_workflows\Plugin\Action\BookAppointmentAction;
 use Drupal\aabenforms_workflows\Service\CalendarService;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -39,7 +40,7 @@ class BookAppointmentActionTest extends UnitTestCase {
   /**
    * The logger.
    *
-   * @var \Psr\Log\LoggerInterface|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\Core\Logger\LoggerChannelInterface|\PHPUnit\Framework\MockObject\MockObject
    */
   protected $logger;
 
@@ -51,19 +52,23 @@ class BookAppointmentActionTest extends UnitTestCase {
   protected $submission;
 
   /**
+   * Configuration array shared across the suite.
+   *
+   * @var array
+   */
+  protected array $configuration;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
-    $this->markTestSkipped(
-      "Action plugin test relies on removed PHPUnit 9 APIs (withConsecutive) and on stub action methods that no longer exist (getConfiguration). Re-enable when the underlying action plugin ships a real service integration; tracked in #35."
-    );
     parent::setUp();
 
     $this->calendarService = $this->createMock(CalendarService::class);
     $this->logger = $this->createMock(LoggerChannelInterface::class);
     $this->submission = $this->createMock(WebformSubmissionInterface::class);
 
-    $configuration = [
+    $this->configuration = [
       'slot_id_field' => 'selected_slot_id',
       'attendee_name_field' => 'name',
       'attendee_email_field' => 'email',
@@ -73,7 +78,7 @@ class BookAppointmentActionTest extends UnitTestCase {
     ];
 
     $this->action = new BookAppointmentAction(
-      $configuration,
+      $this->configuration,
       'aabenforms_book_appointment',
       ['provider' => 'aabenforms_workflows'],
       $this->createMock(EntityTypeManagerInterface::class),
@@ -83,11 +88,48 @@ class BookAppointmentActionTest extends UnitTestCase {
       $this->createMock(EcaState::class),
       $this->logger
     );
+    $this->action->setExecutionCollector($this->createMock(WorkflowExecutionCollector::class));
 
     $reflection = new \ReflectionClass($this->action);
     $property = $reflection->getProperty('calendarService');
     $property->setAccessible(TRUE);
     $property->setValue($this->action, $this->calendarService);
+  }
+
+  /**
+   * Builds a partial-mock of the action that returns the supplied submission.
+   *
+   * @param \Drupal\webform\WebformSubmissionInterface $submission
+   *   The submission the mock's getSubmission() should return.
+   *
+   * @return \Drupal\aabenforms_workflows\Plugin\Action\BookAppointmentAction
+   *   The configured partial mock.
+   */
+  protected function createActionMock(WebformSubmissionInterface $submission): BookAppointmentAction {
+    $actionMock = $this->getMockBuilder(BookAppointmentAction::class)
+      ->setConstructorArgs([
+        $this->configuration,
+        'aabenforms_book_appointment',
+        ['provider' => 'aabenforms_workflows'],
+        $this->createMock(EntityTypeManagerInterface::class),
+        $this->createMock(TokenInterface::class),
+        $this->createMock(AccountProxyInterface::class),
+        $this->createMock(TimeInterface::class),
+        $this->createMock(EcaState::class),
+        $this->logger,
+      ])
+      ->onlyMethods(['getSubmission'])
+      ->getMock();
+
+    $actionMock->setExecutionCollector($this->createMock(WorkflowExecutionCollector::class));
+    $actionMock->method('getSubmission')->willReturn($submission);
+
+    $reflection = new \ReflectionClass($actionMock);
+    $property = $reflection->getProperty('calendarService');
+    $property->setAccessible(TRUE);
+    $property->setValue($actionMock, $this->calendarService);
+
+    return $actionMock;
   }
 
   /**
@@ -133,41 +175,23 @@ class BookAppointmentActionTest extends UnitTestCase {
       )
       ->willReturn($bookingResult);
 
+    $writes = [];
     $this->submission->expects($this->exactly(4))
       ->method('setElementData')
-      ->withConsecutive(
-        ['booking_id', 'BOOK-ABC-123'],
-        ['booking_slot_id', 'SLOT-20260315-1400'],
-        ['booking_status', 'confirmed'],
-        ['booked_at', $this->anything()]
-      );
+      ->willReturnCallback(function ($key, $value) use (&$writes) {
+        $writes[$key] = $value;
+      });
 
     $this->submission->expects($this->once())
       ->method('save');
 
-    $actionMock = $this->getMockBuilder(BookAppointmentAction::class)
-      ->setConstructorArgs([
-        $this->action->getConfiguration(),
-        'aabenforms_book_appointment',
-        ['provider' => 'aabenforms_workflows'],
-        $this->createMock(EntityTypeManagerInterface::class),
-        $this->createMock(TokenInterface::class),
-        $this->createMock(AccountProxyInterface::class),
-        $this->createMock(TimeInterface::class),
-        $this->createMock(EcaState::class),
-        $this->logger,
-      ])
-      ->onlyMethods(['getSubmission'])
-      ->getMock();
-
-    $actionMock->method('getSubmission')->willReturn($this->submission);
-
-    $reflection = new \ReflectionClass($actionMock);
-    $property = $reflection->getProperty('calendarService');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->calendarService);
-
+    $actionMock = $this->createActionMock($this->submission);
     $actionMock->execute($this->submission);
+
+    $this->assertSame('BOOK-ABC-123', $writes['booking_id']);
+    $this->assertSame('SLOT-20260315-1400', $writes['booking_slot_id']);
+    $this->assertSame('confirmed', $writes['booking_status']);
+    $this->assertArrayHasKey('booked_at', $writes);
   }
 
   /**
@@ -197,12 +221,12 @@ class BookAppointmentActionTest extends UnitTestCase {
       ->method('bookSlot')
       ->willReturn($bookingResult);
 
+    $writes = [];
     $this->submission->expects($this->exactly(2))
       ->method('setElementData')
-      ->withConsecutive(
-        ['booking_status', 'failed'],
-        ['booking_error', 'Slot already booked (double booking prevented)']
-      );
+      ->willReturnCallback(function ($key, $value) use (&$writes) {
+        $writes[$key] = $value;
+      });
 
     $this->submission->expects($this->once())
       ->method('save');
@@ -211,29 +235,11 @@ class BookAppointmentActionTest extends UnitTestCase {
       ->method('warning')
       ->with($this->stringContains('Appointment booking failed'));
 
-    $actionMock = $this->getMockBuilder(BookAppointmentAction::class)
-      ->setConstructorArgs([
-        $this->action->getConfiguration(),
-        'aabenforms_book_appointment',
-        ['provider' => 'aabenforms_workflows'],
-        $this->createMock(EntityTypeManagerInterface::class),
-        $this->createMock(TokenInterface::class),
-        $this->createMock(AccountProxyInterface::class),
-        $this->createMock(TimeInterface::class),
-        $this->createMock(EcaState::class),
-        $this->logger,
-      ])
-      ->onlyMethods(['getSubmission'])
-      ->getMock();
-
-    $actionMock->method('getSubmission')->willReturn($this->submission);
-
-    $reflection = new \ReflectionClass($actionMock);
-    $property = $reflection->getProperty('calendarService');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->calendarService);
-
+    $actionMock = $this->createActionMock($this->submission);
     $actionMock->execute($this->submission);
+
+    $this->assertSame('failed', $writes['booking_status']);
+    $this->assertSame('Slot already booked (double booking prevented)', $writes['booking_error']);
   }
 
   /**
@@ -284,28 +290,7 @@ class BookAppointmentActionTest extends UnitTestCase {
     $this->submission->expects($this->once())
       ->method('save');
 
-    $actionMock = $this->getMockBuilder(BookAppointmentAction::class)
-      ->setConstructorArgs([
-        $this->action->getConfiguration(),
-        'aabenforms_book_appointment',
-        ['provider' => 'aabenforms_workflows'],
-        $this->createMock(EntityTypeManagerInterface::class),
-        $this->createMock(TokenInterface::class),
-        $this->createMock(AccountProxyInterface::class),
-        $this->createMock(TimeInterface::class),
-        $this->createMock(EcaState::class),
-        $this->logger,
-      ])
-      ->onlyMethods(['getSubmission'])
-      ->getMock();
-
-    $actionMock->method('getSubmission')->willReturn($this->submission);
-
-    $reflection = new \ReflectionClass($actionMock);
-    $property = $reflection->getProperty('calendarService');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->calendarService);
-
+    $actionMock = $this->createActionMock($this->submission);
     $actionMock->execute($this->submission);
   }
 
@@ -325,28 +310,7 @@ class BookAppointmentActionTest extends UnitTestCase {
       ->method('error')
       ->with($this->stringContains('Slot ID field'));
 
-    $actionMock = $this->getMockBuilder(BookAppointmentAction::class)
-      ->setConstructorArgs([
-        $this->action->getConfiguration(),
-        'aabenforms_book_appointment',
-        ['provider' => 'aabenforms_workflows'],
-        $this->createMock(EntityTypeManagerInterface::class),
-        $this->createMock(TokenInterface::class),
-        $this->createMock(AccountProxyInterface::class),
-        $this->createMock(TimeInterface::class),
-        $this->createMock(EcaState::class),
-        $this->logger,
-      ])
-      ->onlyMethods(['getSubmission'])
-      ->getMock();
-
-    $actionMock->method('getSubmission')->willReturn($this->submission);
-
-    $reflection = new \ReflectionClass($actionMock);
-    $property = $reflection->getProperty('calendarService');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->calendarService);
-
+    $actionMock = $this->createActionMock($this->submission);
     $actionMock->execute($this->submission);
   }
 
@@ -396,28 +360,7 @@ class BookAppointmentActionTest extends UnitTestCase {
     $this->submission->expects($this->once())
       ->method('save');
 
-    $actionMock = $this->getMockBuilder(BookAppointmentAction::class)
-      ->setConstructorArgs([
-        $this->action->getConfiguration(),
-        'aabenforms_book_appointment',
-        ['provider' => 'aabenforms_workflows'],
-        $this->createMock(EntityTypeManagerInterface::class),
-        $this->createMock(TokenInterface::class),
-        $this->createMock(AccountProxyInterface::class),
-        $this->createMock(TimeInterface::class),
-        $this->createMock(EcaState::class),
-        $this->logger,
-      ])
-      ->onlyMethods(['getSubmission'])
-      ->getMock();
-
-    $actionMock->method('getSubmission')->willReturn($this->submission);
-
-    $reflection = new \ReflectionClass($actionMock);
-    $property = $reflection->getProperty('calendarService');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->calendarService);
-
+    $actionMock = $this->createActionMock($this->submission);
     $actionMock->execute($this->submission);
   }
 

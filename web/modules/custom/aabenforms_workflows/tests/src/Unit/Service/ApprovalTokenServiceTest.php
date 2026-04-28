@@ -34,6 +34,13 @@ class ApprovalTokenServiceTest extends UnitTestCase {
   protected string $key = 'unit-test-key-not-secret';
 
   /**
+   * The mock logger - exposed so individual tests can assert on log calls.
+   *
+   * @var \Psr\Log\LoggerInterface|\PHPUnit\Framework\MockObject\MockObject
+   */
+  protected $logger;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
@@ -42,9 +49,9 @@ class ApprovalTokenServiceTest extends UnitTestCase {
     $private_key = $this->createMock(PrivateKey::class);
     $private_key->method('get')->willReturn($this->key);
 
-    $logger = $this->createMock(LoggerInterface::class);
+    $this->logger = $this->createMock(LoggerInterface::class);
     $logger_factory = $this->createMock(LoggerChannelFactoryInterface::class);
-    $logger_factory->method('get')->willReturn($logger);
+    $logger_factory->method('get')->willReturn($this->logger);
 
     $this->service = new ApprovalTokenService($private_key, $logger_factory);
   }
@@ -183,6 +190,61 @@ class ApprovalTokenServiceTest extends UnitTestCase {
     $this->assertFalse($this->service->isTokenExpired('!!!not-base64!!!'));
     $this->assertFalse($this->service->isTokenExpired(base64_encode('no-colon')));
     $this->assertFalse($this->service->isTokenExpired(base64_encode('hash:not-numeric')));
+  }
+
+  /**
+   * GenerateToken emits an info log naming the submission and parent.
+   */
+  public function testGenerateTokenLogsInfo(): void {
+    $this->logger->expects($this->once())
+      ->method('info')
+      ->with(
+        $this->stringContains('Generated approval token'),
+        $this->callback(function ($context) {
+          return ($context['@sid'] ?? NULL) === 42 && ($context['@parent'] ?? NULL) === 1;
+        })
+      );
+
+    $this->service->generateToken(42, 1);
+  }
+
+  /**
+   * Successful validation emits the success info log.
+   *
+   * Sets the expectation before any service calls so PHPUnit catches both
+   * the generate-time and validate-time info logs.
+   */
+  public function testValidateTokenSuccessLogsInfo(): void {
+    $info_calls = [];
+    $this->logger->method('info')->willReturnCallback(
+      function ($message, $context) use (&$info_calls) {
+        $info_calls[] = $message;
+      }
+    );
+
+    $token = $this->service->generateToken(42, 1);
+    $this->assertTrue($this->service->validateToken(42, 1, $token));
+
+    $this->assertCount(2, $info_calls);
+    $this->assertStringContainsString('Generated approval token', $info_calls[0]);
+    $this->assertStringContainsString('validated successfully', $info_calls[1]);
+  }
+
+  /**
+   * HMAC mismatch (well-formed token, wrong key/payload) emits a warning.
+   */
+  public function testValidateTokenHmacMismatchLogsWarning(): void {
+    // Token is well-formed (parses, in-date) but the hash is bogus.
+    $tampered = base64_encode('deadbeefdeadbeef:' . time());
+
+    $this->logger->expects($this->once())
+      ->method('warning')
+      ->with(
+        $this->stringContains('Token validation failed'),
+        $this->anything()
+      );
+
+    $this->assertFalse($this->service->validateToken(42, 1, $tampered));
   }
 
   /**
