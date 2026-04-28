@@ -3,6 +3,7 @@
 namespace Drupal\Tests\aabenforms_workflows\Unit\Plugin\Action;
 
 use Drupal\Tests\UnitTestCase;
+use Drupal\aabenforms_core\Service\WorkflowExecutionCollector;
 use Drupal\aabenforms_workflows\Plugin\Action\FetchAvailableSlotsAction;
 use Drupal\aabenforms_workflows\Service\CalendarService;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -38,7 +39,7 @@ class FetchAvailableSlotsActionTest extends UnitTestCase {
   /**
    * The logger.
    *
-   * @var \Psr\Log\LoggerInterface|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\Core\Logger\LoggerChannelInterface|\PHPUnit\Framework\MockObject\MockObject
    */
   protected $logger;
 
@@ -50,19 +51,23 @@ class FetchAvailableSlotsActionTest extends UnitTestCase {
   protected $submission;
 
   /**
+   * Configuration array shared across the suite.
+   *
+   * @var array
+   */
+  protected array $configuration;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
-    $this->markTestSkipped(
-      "Action plugin test relies on removed PHPUnit 9 APIs (withConsecutive) and on stub action methods that no longer exist (getConfiguration). Re-enable when the underlying action plugin ships a real service integration; tracked in #35."
-    );
     parent::setUp();
 
     $this->calendarService = $this->createMock(CalendarService::class);
     $this->logger = $this->createMock(LoggerChannelInterface::class);
     $this->submission = $this->createMock(WebformSubmissionInterface::class);
 
-    $configuration = [
+    $this->configuration = [
       'start_date_field' => 'preferred_date',
       'date_range_days' => '30',
       'slot_duration' => '60',
@@ -71,7 +76,7 @@ class FetchAvailableSlotsActionTest extends UnitTestCase {
     ];
 
     $this->action = new FetchAvailableSlotsAction(
-      $configuration,
+      $this->configuration,
       'aabenforms_fetch_available_slots',
       ['provider' => 'aabenforms_workflows'],
       $this->createMock(EntityTypeManagerInterface::class),
@@ -81,11 +86,42 @@ class FetchAvailableSlotsActionTest extends UnitTestCase {
       $this->createMock(EcaState::class),
       $this->logger
     );
+    $this->action->setExecutionCollector($this->createMock(WorkflowExecutionCollector::class));
 
     $reflection = new \ReflectionClass($this->action);
     $property = $reflection->getProperty('calendarService');
     $property->setAccessible(TRUE);
     $property->setValue($this->action, $this->calendarService);
+  }
+
+  /**
+   * Builds a partial-mock of the action that returns the supplied submission.
+   */
+  protected function createActionMock(WebformSubmissionInterface $submission, ?array $configuration = NULL): FetchAvailableSlotsAction {
+    $actionMock = $this->getMockBuilder(FetchAvailableSlotsAction::class)
+      ->setConstructorArgs([
+        $configuration ?? $this->configuration,
+        'aabenforms_fetch_available_slots',
+        ['provider' => 'aabenforms_workflows'],
+        $this->createMock(EntityTypeManagerInterface::class),
+        $this->createMock(TokenInterface::class),
+        $this->createMock(AccountProxyInterface::class),
+        $this->createMock(TimeInterface::class),
+        $this->createMock(EcaState::class),
+        $this->logger,
+      ])
+      ->onlyMethods(['getSubmission'])
+      ->getMock();
+
+    $actionMock->setExecutionCollector($this->createMock(WorkflowExecutionCollector::class));
+    $actionMock->method('getSubmission')->willReturn($submission);
+
+    $reflection = new \ReflectionClass($actionMock);
+    $property = $reflection->getProperty('calendarService');
+    $property->setAccessible(TRUE);
+    $property->setValue($actionMock, $this->calendarService);
+
+    return $actionMock;
   }
 
   /**
@@ -138,41 +174,23 @@ class FetchAvailableSlotsActionTest extends UnitTestCase {
       )
       ->willReturn($slotsResult);
 
+    $writes = [];
     $this->submission->expects($this->exactly(4))
       ->method('setElementData')
-      ->withConsecutive(
-        ['available_slots', $this->isType('string')],
-        ['slots_count', 2],
-        ['slots_start_date', '2026-03-01'],
-        ['slots_end_date', $this->anything()]
-      );
+      ->willReturnCallback(function ($key, $value) use (&$writes) {
+        $writes[$key] = $value;
+      });
 
     $this->submission->expects($this->once())
       ->method('save');
 
-    $actionMock = $this->getMockBuilder(FetchAvailableSlotsAction::class)
-      ->setConstructorArgs([
-        $this->action->getConfiguration(),
-        'aabenforms_fetch_available_slots',
-        ['provider' => 'aabenforms_workflows'],
-        $this->createMock(EntityTypeManagerInterface::class),
-        $this->createMock(TokenInterface::class),
-        $this->createMock(AccountProxyInterface::class),
-        $this->createMock(TimeInterface::class),
-        $this->createMock(EcaState::class),
-        $this->logger,
-      ])
-      ->onlyMethods(['getSubmission'])
-      ->getMock();
-
-    $actionMock->method('getSubmission')->willReturn($this->submission);
-
-    $reflection = new \ReflectionClass($actionMock);
-    $property = $reflection->getProperty('calendarService');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->calendarService);
-
+    $actionMock = $this->createActionMock($this->submission);
     $actionMock->execute($this->submission);
+
+    $this->assertIsString($writes['available_slots']);
+    $this->assertSame(2, $writes['slots_count']);
+    $this->assertSame('2026-03-01', $writes['slots_start_date']);
+    $this->assertArrayHasKey('slots_end_date', $writes);
   }
 
   /**
@@ -206,28 +224,7 @@ class FetchAvailableSlotsActionTest extends UnitTestCase {
     $this->submission->expects($this->once())
       ->method('save');
 
-    $actionMock = $this->getMockBuilder(FetchAvailableSlotsAction::class)
-      ->setConstructorArgs([
-        $this->action->getConfiguration(),
-        'aabenforms_fetch_available_slots',
-        ['provider' => 'aabenforms_workflows'],
-        $this->createMock(EntityTypeManagerInterface::class),
-        $this->createMock(TokenInterface::class),
-        $this->createMock(AccountProxyInterface::class),
-        $this->createMock(TimeInterface::class),
-        $this->createMock(EcaState::class),
-        $this->logger,
-      ])
-      ->onlyMethods(['getSubmission'])
-      ->getMock();
-
-    $actionMock->method('getSubmission')->willReturn($this->submission);
-
-    $reflection = new \ReflectionClass($actionMock);
-    $property = $reflection->getProperty('calendarService');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->calendarService);
-
+    $actionMock = $this->createActionMock($this->submission);
     $actionMock->execute($this->submission);
   }
 
@@ -239,20 +236,8 @@ class FetchAvailableSlotsActionTest extends UnitTestCase {
     $this->submission->method('getData')->willReturn($submissionData);
     $this->submission->method('id')->willReturn('602');
 
-    $configuration = $this->action->getConfiguration();
+    $configuration = $this->configuration;
     $configuration['slot_duration'] = '90';
-
-    $actionWith90Min = new FetchAvailableSlotsAction(
-      $configuration,
-      'aabenforms_fetch_available_slots',
-      ['provider' => 'aabenforms_workflows'],
-      $this->createMock(EntityTypeManagerInterface::class),
-      $this->createMock(TokenInterface::class),
-      $this->createMock(AccountProxyInterface::class),
-      $this->createMock(TimeInterface::class),
-      $this->createMock(EcaState::class),
-      $this->logger
-    );
 
     $this->calendarService->expects($this->once())
       ->method('getAvailableSlots')
@@ -274,28 +259,7 @@ class FetchAvailableSlotsActionTest extends UnitTestCase {
     $this->submission->expects($this->once())
       ->method('save');
 
-    $actionMock = $this->getMockBuilder(FetchAvailableSlotsAction::class)
-      ->setConstructorArgs([
-        $configuration,
-        'aabenforms_fetch_available_slots',
-        ['provider' => 'aabenforms_workflows'],
-        $this->createMock(EntityTypeManagerInterface::class),
-        $this->createMock(TokenInterface::class),
-        $this->createMock(AccountProxyInterface::class),
-        $this->createMock(TimeInterface::class),
-        $this->createMock(EcaState::class),
-        $this->logger,
-      ])
-      ->onlyMethods(['getSubmission'])
-      ->getMock();
-
-    $actionMock->method('getSubmission')->willReturn($this->submission);
-
-    $reflection = new \ReflectionClass($actionMock);
-    $property = $reflection->getProperty('calendarService');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->calendarService);
-
+    $actionMock = $this->createActionMock($this->submission, $configuration);
     $actionMock->execute($this->submission);
   }
 
@@ -315,45 +279,34 @@ class FetchAvailableSlotsActionTest extends UnitTestCase {
         'total_slots' => 0,
       ]);
 
+    $writes = [];
     $this->submission->expects($this->exactly(4))
       ->method('setElementData')
-      ->withConsecutive(
-        ['available_slots', '[]'],
-        ['slots_count', 0],
-        ['slots_start_date', '2026-06-01'],
-        ['slots_end_date', $this->anything()]
-      );
+      ->willReturnCallback(function ($key, $value) use (&$writes) {
+        $writes[$key] = $value;
+      });
 
     $this->submission->expects($this->once())
       ->method('save');
 
+    // Production logs with placeholders; the resolved count lives in
+    // the context array under '@count'.
     $this->logger->expects($this->once())
       ->method('info')
-      ->with($this->stringContains('Fetched 0 available slots'));
+      ->with(
+        $this->stringContains('Fetched @count available slots'),
+        $this->callback(function ($context) {
+          return ($context['@count'] ?? NULL) === 0;
+        })
+      );
 
-    $actionMock = $this->getMockBuilder(FetchAvailableSlotsAction::class)
-      ->setConstructorArgs([
-        $this->action->getConfiguration(),
-        'aabenforms_fetch_available_slots',
-        ['provider' => 'aabenforms_workflows'],
-        $this->createMock(EntityTypeManagerInterface::class),
-        $this->createMock(TokenInterface::class),
-        $this->createMock(AccountProxyInterface::class),
-        $this->createMock(TimeInterface::class),
-        $this->createMock(EcaState::class),
-        $this->logger,
-      ])
-      ->onlyMethods(['getSubmission'])
-      ->getMock();
-
-    $actionMock->method('getSubmission')->willReturn($this->submission);
-
-    $reflection = new \ReflectionClass($actionMock);
-    $property = $reflection->getProperty('calendarService');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->calendarService);
-
+    $actionMock = $this->createActionMock($this->submission);
     $actionMock->execute($this->submission);
+
+    $this->assertSame('[]', $writes['available_slots']);
+    $this->assertSame(0, $writes['slots_count']);
+    $this->assertSame('2026-06-01', $writes['slots_start_date']);
+    $this->assertArrayHasKey('slots_end_date', $writes);
   }
 
   /**
@@ -398,28 +351,7 @@ class FetchAvailableSlotsActionTest extends UnitTestCase {
     $this->submission->expects($this->once())
       ->method('save');
 
-    $actionMock = $this->getMockBuilder(FetchAvailableSlotsAction::class)
-      ->setConstructorArgs([
-        $this->action->getConfiguration(),
-        'aabenforms_fetch_available_slots',
-        ['provider' => 'aabenforms_workflows'],
-        $this->createMock(EntityTypeManagerInterface::class),
-        $this->createMock(TokenInterface::class),
-        $this->createMock(AccountProxyInterface::class),
-        $this->createMock(TimeInterface::class),
-        $this->createMock(EcaState::class),
-        $this->logger,
-      ])
-      ->onlyMethods(['getSubmission'])
-      ->getMock();
-
-    $actionMock->method('getSubmission')->willReturn($this->submission);
-
-    $reflection = new \ReflectionClass($actionMock);
-    $property = $reflection->getProperty('calendarService');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->calendarService);
-
+    $actionMock = $this->createActionMock($this->submission);
     $actionMock->execute($this->submission);
   }
 

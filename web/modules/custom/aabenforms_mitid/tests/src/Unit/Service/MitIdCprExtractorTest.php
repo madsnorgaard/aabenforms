@@ -396,6 +396,122 @@ class MitIdCprExtractorTest extends UnitTestCase {
   }
 
   /**
+   * Tests extractClaim returns the claim when present.
+   *
+   * @covers ::extractClaim
+   */
+  public function testExtractClaimReturnsValueForPresentClaim(): void {
+    $token = $this->createTestJwt([
+      'nonce' => 'random-nonce-abc',
+      'sub' => 'mitid-uuid-123',
+    ]);
+
+    $this->assertSame('random-nonce-abc', $this->cprExtractor->extractClaim($token, 'nonce'));
+    $this->assertSame('mitid-uuid-123', $this->cprExtractor->extractClaim($token, 'sub'));
+  }
+
+  /**
+   * Tests extractClaim returns NULL when the claim is absent.
+   *
+   * @covers ::extractClaim
+   */
+  public function testExtractClaimReturnsNullForAbsentClaim(): void {
+    $token = $this->createTestJwt([
+      'sub' => 'mitid-uuid-123',
+    ]);
+
+    $this->assertNull($this->cprExtractor->extractClaim($token, 'nonce'));
+  }
+
+  /**
+   * Tests extractClaim swallows malformed tokens and returns NULL.
+   *
+   * @covers ::extractClaim
+   */
+  public function testExtractClaimReturnsNullForMalformedToken(): void {
+    // Two-part token (parseJwt throws InvalidArgumentException).
+    $this->assertNull($this->cprExtractor->extractClaim('header.payload', 'sub'));
+  }
+
+  /**
+   * Tests assurance level mapping for SAML PasswordProtectedTransport ACR.
+   *
+   * @covers ::getAssuranceLevel
+   */
+  public function testGetAssuranceLevelMapsPasswordProtectedTransportToLow(): void {
+    $token = $this->createTestJwt([
+      'acr' => 'urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport',
+    ]);
+
+    $this->assertSame('low', $this->cprExtractor->getAssuranceLevel($token));
+  }
+
+  /**
+   * Tests assurance level falls back to 'substantial' for unmapped non-unknown ACR.
+   *
+   * @covers ::getAssuranceLevel
+   */
+  public function testGetAssuranceLevelDefaultsToSubstantialForUnmappedAcr(): void {
+    $token = $this->createTestJwt([
+      'acr' => 'http://example.org/some/custom/loa',
+    ]);
+
+    $this->assertSame('substantial', $this->cprExtractor->getAssuranceLevel($token));
+  }
+
+  /**
+   * Tests assurance level returns 'unknown' when JWT parsing fails.
+   *
+   * @covers ::getAssuranceLevel
+   */
+  public function testGetAssuranceLevelReturnsUnknownForInvalidJwt(): void {
+    // Two-part token (parseJwt throws, caught by getAssuranceLevel).
+    $this->assertSame('unknown', $this->cprExtractor->getAssuranceLevel('header.payload'));
+  }
+
+  /**
+   * Tests validateToken rejects tokens issued in the future (clock-skew guard).
+   *
+   * @covers ::validateToken
+   */
+  public function testValidateTokenWithFutureIat(): void {
+    $now = time();
+    $token = $this->createTestJwt([
+      'iss' => 'http://localhost:8080/realms/danish-gov-test',
+      'sub' => 'mitid-uuid-123',
+      'aud' => 'aabenforms-backend',
+      'exp' => $now + 3600,
+      // Issued 5 minutes in the future, well beyond the 60s skew tolerance.
+      'iat' => $now + 300,
+    ]);
+
+    $this->logger->expects($this->once())
+      ->method('warning')
+      ->with(
+        $this->stringContains('issued in future'),
+        $this->anything(),
+      );
+
+    $this->assertFalse($this->cprExtractor->validateToken($token));
+  }
+
+  /**
+   * Tests validateToken returns FALSE (and logs error) when JWT is malformed.
+   *
+   * @covers ::validateToken
+   */
+  public function testValidateTokenWithInvalidFormatReturnsFalse(): void {
+    $this->logger->expects($this->once())
+      ->method('error')
+      ->with(
+        $this->stringContains('validation failed'),
+        $this->anything(),
+      );
+
+    $this->assertFalse($this->cprExtractor->validateToken('not-a-jwt'));
+  }
+
+  /**
    * Helper method to create a test JWT token.
    *
    * @param array $claims

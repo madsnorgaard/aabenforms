@@ -562,6 +562,93 @@ class MitIdSessionManagerTest extends UnitTestCase {
   }
 
   /**
+   * Tests getAddressFromSession early-returns NULL when the session itself is gone.
+   *
+   * Distinct from the no-address-keys path - this exercises the line that
+   * checks getSession() === NULL before looking at the address keys.
+   *
+   * @covers ::getAddressFromSession
+   */
+  public function testGetAddressFromMissingSession(): void {
+    $workflowId = 'workflow-no-session';
+
+    $this->store->expects($this->once())
+      ->method('get')
+      ->willReturn(NULL);
+
+    $this->assertNull($this->sessionManager->getAddressFromSession($workflowId));
+  }
+
+  /**
+   * Tests getAddressFromSession returns the partial address block.
+   *
+   * Only one of the four address keys is present; the others land as NULL
+   * in the returned array.
+   *
+   * @covers ::getAddressFromSession
+   */
+  public function testGetAddressFromSessionPartialAddress(): void {
+    $workflowId = 'workflow-partial-addr';
+    $sessionData = [
+      'cpr' => '0101001234',
+      'street' => 'Nørrebrogade 142',
+      'expires_at' => $this->currentTime + 600,
+    ];
+
+    $this->store->expects($this->once())
+      ->method('get')
+      ->willReturn($sessionData);
+
+    $this->assertSame([
+      'street' => 'Nørrebrogade 142',
+      'postal_code' => NULL,
+      'city' => NULL,
+      'municipality_code' => NULL,
+    ], $this->sessionManager->getAddressFromSession($workflowId));
+  }
+
+  /**
+   * Tests hasValidSession returns FALSE when stored data is past its expires_at.
+   *
+   * Covers the keyvalue-TTL-drift defense-in-depth branch.
+   *
+   * @covers ::hasValidSession
+   * @covers ::getSession
+   */
+  public function testHasValidSessionFalseForExpired(): void {
+    $workflowId = 'workflow-expired';
+    $expired = [
+      'cpr' => '0101001234',
+      'expires_at' => $this->currentTime - 1,
+      'workflow_id' => $workflowId,
+    ];
+
+    $this->store->expects($this->once())
+      ->method('get')
+      ->willReturn($expired);
+    $this->store->expects($this->once())
+      ->method('delete')
+      ->with($workflowId);
+
+    $this->assertFalse($this->sessionManager->hasValidSession($workflowId));
+  }
+
+  /**
+   * Tests getSession returns NULL when the store returns a non-array value.
+   *
+   * @covers ::getSession
+   */
+  public function testGetSessionReturnsNullWhenStoreReturnsNonArray(): void {
+    $workflowId = 'workflow-corrupt';
+
+    $this->store->expects($this->once())
+      ->method('get')
+      ->willReturn('not-an-array');
+
+    $this->assertNull($this->sessionManager->getSession($workflowId));
+  }
+
+  /**
    * Tests getAddressFromSession returns the address block when present.
    *
    * @covers ::getAddressFromSession

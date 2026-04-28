@@ -3,6 +3,7 @@
 namespace Drupal\Tests\aabenforms_workflows\Unit\Plugin\Action;
 
 use Drupal\Tests\UnitTestCase;
+use Drupal\aabenforms_core\Service\WorkflowExecutionCollector;
 use Drupal\aabenforms_workflows\Plugin\Action\ProcessPaymentAction;
 use Drupal\aabenforms_workflows\Service\PaymentService;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -38,7 +39,7 @@ class ProcessPaymentActionTest extends UnitTestCase {
   /**
    * Mock logger.
    *
-   * @var \Psr\Log\LoggerInterface|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\Core\Logger\LoggerChannelInterface|\PHPUnit\Framework\MockObject\MockObject
    */
   protected $logger;
 
@@ -50,12 +51,16 @@ class ProcessPaymentActionTest extends UnitTestCase {
   protected $submission;
 
   /**
+   * Configuration array shared across the suite.
+   *
+   * @var array
+   */
+  protected array $configuration;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
-    $this->markTestSkipped(
-      "Action plugin test relies on removed PHPUnit 9 APIs (withConsecutive) and on stub action methods that no longer exist (getConfiguration). Re-enable when the underlying action plugin ships a real service integration; tracked in #35."
-    );
     parent::setUp();
 
     // Mock dependencies.
@@ -70,7 +75,7 @@ class ProcessPaymentActionTest extends UnitTestCase {
     $ecaState = $this->createMock(EcaState::class);
 
     // Create action instance.
-    $configuration = [
+    $this->configuration = [
       'amount_field' => 'payment_amount',
       'currency' => 'DKK',
       'payment_method' => 'nets_easy',
@@ -80,7 +85,7 @@ class ProcessPaymentActionTest extends UnitTestCase {
     ];
 
     $this->action = new ProcessPaymentAction(
-      $configuration,
+      $this->configuration,
       'aabenforms_process_payment',
       ['provider' => 'aabenforms_workflows'],
       $entityTypeManager,
@@ -90,12 +95,57 @@ class ProcessPaymentActionTest extends UnitTestCase {
       $ecaState,
       $this->logger
     );
+    $this->action->setExecutionCollector($this->createMock(WorkflowExecutionCollector::class));
 
     // Inject payment service via reflection.
     $reflection = new \ReflectionClass($this->action);
     $property = $reflection->getProperty('paymentService');
     $property->setAccessible(TRUE);
     $property->setValue($this->action, $this->paymentService);
+  }
+
+  /**
+   * Builds a partial-mock of the action that returns the supplied submission.
+   *
+   * Centralises the boilerplate for wiring the payment service into a
+   * mocked-getSubmission instance.
+   *
+   * @param \Drupal\webform\WebformSubmissionInterface $submission
+   *   The submission the mock's getSubmission() should return.
+   * @param array|null $configuration
+   *   Optional configuration override (defaults to $this->configuration).
+   *
+   * @return \Drupal\aabenforms_workflows\Plugin\Action\ProcessPaymentAction
+   *   The configured partial mock.
+   */
+  protected function createActionMock(WebformSubmissionInterface $submission, ?array $configuration = NULL): ProcessPaymentAction {
+    $actionMock = $this->getMockBuilder(ProcessPaymentAction::class)
+      ->setConstructorArgs([
+        $configuration ?? $this->configuration,
+        'aabenforms_process_payment',
+        ['provider' => 'aabenforms_workflows'],
+        $this->createMock(EntityTypeManagerInterface::class),
+        $this->createMock(TokenInterface::class),
+        $this->createMock(AccountProxyInterface::class),
+        $this->createMock(TimeInterface::class),
+        $this->createMock(EcaState::class),
+        $this->logger,
+      ])
+      ->onlyMethods(['getSubmission'])
+      ->getMock();
+
+    $actionMock->setExecutionCollector($this->createMock(WorkflowExecutionCollector::class));
+
+    $actionMock->expects($this->once())
+      ->method('getSubmission')
+      ->willReturn($submission);
+
+    $reflection = new \ReflectionClass($actionMock);
+    $property = $reflection->getProperty('paymentService');
+    $property->setAccessible(TRUE);
+    $property->setValue($actionMock, $this->paymentService);
+
+    return $actionMock;
   }
 
   /**
@@ -114,7 +164,7 @@ class ProcessPaymentActionTest extends UnitTestCase {
       ->method('getData')
       ->willReturn($submissionData);
 
-    $this->submission->expects($this->once())
+    $this->submission->expects($this->atLeastOnce())
       ->method('id')
       ->willReturn('123');
 
@@ -137,55 +187,25 @@ class ProcessPaymentActionTest extends UnitTestCase {
       }))
       ->willReturn($paymentResult);
 
-    // Expect submission data to be updated.
+    // Capture every setElementData call so we can assert on the full set
+    // without depending on PHPUnit 9's withConsecutive().
+    $writes = [];
     $this->submission->expects($this->exactly(4))
       ->method('setElementData')
-      ->withConsecutive(
-        ['payment_id', 'PAY-123-456'],
-        ['payment_status', 'completed'],
-        ['payment_transaction_id', 'TXN-ABC123'],
-        ['payment_timestamp', $this->anything()]
-      );
+      ->willReturnCallback(function ($key, $value) use (&$writes) {
+        $writes[$key] = $value;
+      });
 
     $this->submission->expects($this->once())
       ->method('save');
 
-    // Execute action with mock submission.
-    $reflection = new \ReflectionClass($this->action);
-    $method = $reflection->getMethod('execute');
-    $method->setAccessible(TRUE);
-
-    // Mock getSubmission method.
-    $getSubmissionMethod = $reflection->getMethod('getSubmission');
-    $getSubmissionMethod->setAccessible(TRUE);
-
-    // Use a closure to override getSubmission behavior.
-    $actionMock = $this->getMockBuilder(ProcessPaymentAction::class)
-      ->setConstructorArgs([
-        $this->action->getConfiguration(),
-        'aabenforms_process_payment',
-        ['provider' => 'aabenforms_workflows'],
-        $this->createMock(EntityTypeManagerInterface::class),
-        $this->createMock(TokenInterface::class),
-        $this->createMock(AccountProxyInterface::class),
-        $this->createMock(TimeInterface::class),
-        $this->createMock(EcaState::class),
-        $this->logger,
-      ])
-      ->onlyMethods(['getSubmission'])
-      ->getMock();
-
-    $actionMock->expects($this->once())
-      ->method('getSubmission')
-      ->willReturn($this->submission);
-
-    // Inject payment service.
-    $reflection = new \ReflectionClass($actionMock);
-    $property = $reflection->getProperty('paymentService');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->paymentService);
-
+    $actionMock = $this->createActionMock($this->submission);
     $actionMock->execute($this->submission);
+
+    $this->assertSame('PAY-123-456', $writes['payment_id']);
+    $this->assertSame('completed', $writes['payment_status']);
+    $this->assertSame('TXN-ABC123', $writes['payment_transaction_id']);
+    $this->assertArrayHasKey('payment_timestamp', $writes);
   }
 
   /**
@@ -203,7 +223,7 @@ class ProcessPaymentActionTest extends UnitTestCase {
       ->method('getData')
       ->willReturn($submissionData);
 
-    $this->submission->expects($this->once())
+    $this->submission->expects($this->atLeastOnce())
       ->method('id')
       ->willReturn('124');
 
@@ -217,42 +237,21 @@ class ProcessPaymentActionTest extends UnitTestCase {
       ->method('processPayment')
       ->willReturn($paymentResult);
 
-    // Expect failure data to be stored.
+    $writes = [];
     $this->submission->expects($this->exactly(2))
       ->method('setElementData')
-      ->withConsecutive(
-        ['payment_status', 'failed'],
-        ['payment_error', 'Card declined']
-      );
+      ->willReturnCallback(function ($key, $value) use (&$writes) {
+        $writes[$key] = $value;
+      });
 
     $this->submission->expects($this->once())
       ->method('save');
 
-    $actionMock = $this->getMockBuilder(ProcessPaymentAction::class)
-      ->setConstructorArgs([
-        $this->action->getConfiguration(),
-        'aabenforms_process_payment',
-        ['provider' => 'aabenforms_workflows'],
-        $this->createMock(EntityTypeManagerInterface::class),
-        $this->createMock(TokenInterface::class),
-        $this->createMock(AccountProxyInterface::class),
-        $this->createMock(TimeInterface::class),
-        $this->createMock(EcaState::class),
-        $this->logger,
-      ])
-      ->onlyMethods(['getSubmission'])
-      ->getMock();
-
-    $actionMock->expects($this->once())
-      ->method('getSubmission')
-      ->willReturn($this->submission);
-
-    $reflection = new \ReflectionClass($actionMock);
-    $property = $reflection->getProperty('paymentService');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->paymentService);
-
+    $actionMock = $this->createActionMock($this->submission);
     $actionMock->execute($this->submission);
+
+    $this->assertSame('failed', $writes['payment_status']);
+    $this->assertSame('Card declined', $writes['payment_error']);
   }
 
   /**
@@ -269,7 +268,7 @@ class ProcessPaymentActionTest extends UnitTestCase {
       ->method('getData')
       ->willReturn($submissionData);
 
-    $this->submission->expects($this->once())
+    $this->submission->expects($this->atLeastOnce())
       ->method('id')
       ->willReturn('125');
 
@@ -285,30 +284,7 @@ class ProcessPaymentActionTest extends UnitTestCase {
     $this->submission->expects($this->never())
       ->method('save');
 
-    $actionMock = $this->getMockBuilder(ProcessPaymentAction::class)
-      ->setConstructorArgs([
-        $this->action->getConfiguration(),
-        'aabenforms_process_payment',
-        ['provider' => 'aabenforms_workflows'],
-        $this->createMock(EntityTypeManagerInterface::class),
-        $this->createMock(TokenInterface::class),
-        $this->createMock(AccountProxyInterface::class),
-        $this->createMock(TimeInterface::class),
-        $this->createMock(EcaState::class),
-        $this->logger,
-      ])
-      ->onlyMethods(['getSubmission'])
-      ->getMock();
-
-    $actionMock->expects($this->once())
-      ->method('getSubmission')
-      ->willReturn($this->submission);
-
-    $reflection = new \ReflectionClass($actionMock);
-    $property = $reflection->getProperty('paymentService');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->paymentService);
-
+    $actionMock = $this->createActionMock($this->submission);
     $actionMock->execute($this->submission);
   }
 
@@ -326,7 +302,7 @@ class ProcessPaymentActionTest extends UnitTestCase {
       ->method('getData')
       ->willReturn($submissionData);
 
-    $this->submission->expects($this->once())
+    $this->submission->expects($this->atLeastOnce())
       ->method('id')
       ->willReturn('126');
 
@@ -339,30 +315,7 @@ class ProcessPaymentActionTest extends UnitTestCase {
       ->method('error')
       ->with($this->stringContains('Amount field'));
 
-    $actionMock = $this->getMockBuilder(ProcessPaymentAction::class)
-      ->setConstructorArgs([
-        $this->action->getConfiguration(),
-        'aabenforms_process_payment',
-        ['provider' => 'aabenforms_workflows'],
-        $this->createMock(EntityTypeManagerInterface::class),
-        $this->createMock(TokenInterface::class),
-        $this->createMock(AccountProxyInterface::class),
-        $this->createMock(TimeInterface::class),
-        $this->createMock(EcaState::class),
-        $this->logger,
-      ])
-      ->onlyMethods(['getSubmission'])
-      ->getMock();
-
-    $actionMock->expects($this->once())
-      ->method('getSubmission')
-      ->willReturn($this->submission);
-
-    $reflection = new \ReflectionClass($actionMock);
-    $property = $reflection->getProperty('paymentService');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->paymentService);
-
+    $actionMock = $this->createActionMock($this->submission);
     $actionMock->execute($this->submission);
   }
 
@@ -419,30 +372,7 @@ class ProcessPaymentActionTest extends UnitTestCase {
     $this->submission->expects($this->once())
       ->method('save');
 
-    $actionMock = $this->getMockBuilder(ProcessPaymentAction::class)
-      ->setConstructorArgs([
-        $this->action->getConfiguration(),
-        'aabenforms_process_payment',
-        ['provider' => 'aabenforms_workflows'],
-        $this->createMock(EntityTypeManagerInterface::class),
-        $this->createMock(TokenInterface::class),
-        $this->createMock(AccountProxyInterface::class),
-        $this->createMock(TimeInterface::class),
-        $this->createMock(EcaState::class),
-        $this->logger,
-      ])
-      ->onlyMethods(['getSubmission'])
-      ->getMock();
-
-    $actionMock->expects($this->once())
-      ->method('getSubmission')
-      ->willReturn($this->submission);
-
-    $reflection = new \ReflectionClass($actionMock);
-    $property = $reflection->getProperty('paymentService');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->paymentService);
-
+    $actionMock = $this->createActionMock($this->submission);
     $actionMock->execute($this->submission);
   }
 
