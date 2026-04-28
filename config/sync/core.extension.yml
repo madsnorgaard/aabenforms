@@ -39,6 +39,7 @@ module:
   path_alias: 0
   real_aes: 0
   serialization: 0
+  smtp: 0
   system: 0
   text: 0
   toolbar: 0
