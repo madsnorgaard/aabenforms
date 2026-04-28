@@ -223,12 +223,13 @@ class MitIdValidateActionTest extends UnitTestCase {
   /**
    * Tests validation with missing MitID session.
    *
+   * Production code treats a missing session as "demo mode": logs at INFO,
+   * sets the result token to TRUE, and records a successful step. The earlier
+   * shape (warning + FALSE) was changed when demo-mode fallback was added.
+   *
    * @covers ::execute
    */
   public function testMissingSession(): void {
-    $this->markTestSkipped(
-      'Test asserts MitIdSessionManager validation behavior that has since changed shape. Tracked in #35.'
-    );
     $workflowId = 'workflow-missing';
 
     // Set workflow ID token.
@@ -240,19 +241,17 @@ class MitIdValidateActionTest extends UnitTestCase {
       ->with($workflowId)
       ->willReturn(NULL);
 
-    // Expect warning log for missing session.
+    // Demo-mode fallback: info log, no warning.
     $this->logger->expects($this->once())
-      ->method('warning')
-      ->with(
-              'MitID validation failed: No session found for workflow {workflow_id}',
-              ['workflow_id' => $workflowId, 'action' => 'aabenforms_mitid_validate']
-          );
+      ->method('info');
+    $this->logger->expects($this->never())
+      ->method('warning');
 
     // Execute action.
     $this->action->execute();
 
-    // Verify result is FALSE.
-    $this->assertFalse($this->tokenStorage['mitid_valid']);
+    // Verify result is TRUE (demo mode).
+    $this->assertTrue($this->tokenStorage['mitid_valid']);
   }
 
   /**
@@ -307,9 +306,6 @@ class MitIdValidateActionTest extends UnitTestCase {
    * @covers ::execute
    */
   public function testErrorHandling(): void {
-    $this->markTestSkipped(
-      'Logger error-context assertion shape drifted from the current handleError() signature (now \Throwable). Tracked in #35.'
-    );
     $workflowId = 'workflow-error';
 
     // Set workflow ID token.
@@ -321,7 +317,10 @@ class MitIdValidateActionTest extends UnitTestCase {
       ->with($workflowId)
       ->willThrowException(new \Exception('Database connection error'));
 
-    // Expect error log.
+    // handleError() routes to log('error', ...). The injected channel sees
+    // the call as logger->error(message, context). Context contains
+    // 'message', 'context' (the context_message passed by execute()),
+    // 'exception', and 'action' (added by the base log() helper).
     $this->logger->expects($this->once())
       ->method('error')
       ->with(
@@ -331,7 +330,7 @@ class MitIdValidateActionTest extends UnitTestCase {
                       return isset($context['message']) &&
                        $context['message'] === 'Database connection error' &&
                        isset($context['context']) &&
-                       $context['context'] === 'Validating MitID session';
+                       $context['context'] === 'MitID Identity Validation';
                   }
               )
           );
@@ -346,20 +345,18 @@ class MitIdValidateActionTest extends UnitTestCase {
   /**
    * Tests validation without workflow ID.
    *
+   * Missing workflow ID falls into demo mode: info log, result token TRUE,
+   * and the session manager is never consulted.
+   *
    * @covers ::execute
    */
   public function testMissingWorkflowId(): void {
-    $this->markTestSkipped(
-      'Test asserts MitIdSessionManager workflow-id validation behavior that has since changed shape. Tracked in #35.'
-    );
     // Don't set workflow_id token (simulate missing context).
-    // Expect warning log.
+    // Demo-mode info log, no warning.
     $this->logger->expects($this->once())
-      ->method('warning')
-      ->with(
-              'MitID validation failed: No workflow ID provided',
-              ['action' => 'aabenforms_mitid_validate']
-          );
+      ->method('info');
+    $this->logger->expects($this->never())
+      ->method('warning');
 
     // Session manager should NOT be called.
     $this->sessionManager->expects($this->never())
@@ -368,8 +365,8 @@ class MitIdValidateActionTest extends UnitTestCase {
     // Execute action.
     $this->action->execute();
 
-    // Verify result is FALSE.
-    $this->assertFalse($this->tokenStorage['mitid_valid']);
+    // Verify result is TRUE (demo mode).
+    $this->assertTrue($this->tokenStorage['mitid_valid']);
   }
 
   /**

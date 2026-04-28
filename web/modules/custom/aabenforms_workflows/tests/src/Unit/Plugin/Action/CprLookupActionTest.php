@@ -284,20 +284,18 @@ class CprLookupActionTest extends UnitTestCase {
   /**
    * Tests missing CPR handling.
    *
+   * Empty CPR is treated as demo mode: info log, result NULL, no SOAP call.
+   * The earlier shape (warning) was changed when demo-mode fallback landed.
+   *
    * @covers ::execute
    */
   public function testMissingCpr(): void {
-    $this->markTestSkipped(
-      'Test pre-dates the current handleError + executionCollector flow; assertion shape no longer matches. Tracked in #35.'
-    );
     // Don't set CPR token.
-    // Expect warning log.
+    // Demo-mode info log, never warning.
     $this->logger->expects($this->once())
-      ->method('warning')
-      ->with(
-              'CPR lookup failed: No CPR number provided',
-              ['action' => 'aabenforms_cpr_lookup']
-          );
+      ->method('info');
+    $this->logger->expects($this->never())
+      ->method('warning');
 
     // Serviceplatformen should NOT be called.
     $this->serviceplatformenClient->expects($this->never())

@@ -3,6 +3,7 @@
 namespace Drupal\Tests\aabenforms_workflows\Unit\Plugin\Action;
 
 use Drupal\Tests\UnitTestCase;
+use Drupal\aabenforms_core\Service\WorkflowExecutionCollector;
 use Drupal\aabenforms_workflows\Plugin\Action\GeneratePdfAction;
 use Drupal\aabenforms_workflows\Service\PdfService;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -38,7 +39,7 @@ class GeneratePdfActionTest extends UnitTestCase {
   /**
    * The logger.
    *
-   * @var \Psr\Log\LoggerInterface|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\Core\Logger\LoggerChannelInterface|\PHPUnit\Framework\MockObject\MockObject
    */
   protected $logger;
 
@@ -50,19 +51,23 @@ class GeneratePdfActionTest extends UnitTestCase {
   protected $submission;
 
   /**
+   * Configuration array shared across the suite.
+   *
+   * @var array
+   */
+  protected array $configuration;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
-    $this->markTestSkipped(
-      "Action plugin test relies on removed PHPUnit 9 APIs (withConsecutive) and on stub action methods that no longer exist (getConfiguration). Re-enable when the underlying action plugin ships a real service integration; tracked in #35."
-    );
     parent::setUp();
 
     $this->pdfService = $this->createMock(PdfService::class);
     $this->logger = $this->createMock(LoggerChannelInterface::class);
     $this->submission = $this->createMock(WebformSubmissionInterface::class);
 
-    $configuration = [
+    $this->configuration = [
       'template' => 'parking_permit',
       'filename_pattern' => '{template}_{submission_id}_{timestamp}.pdf',
       'orientation' => 'portrait',
@@ -74,7 +79,7 @@ address:street_address',
     ];
 
     $this->action = new GeneratePdfAction(
-      $configuration,
+      $this->configuration,
       'aabenforms_generate_pdf',
       ['provider' => 'aabenforms_workflows'],
       $this->createMock(EntityTypeManagerInterface::class),
@@ -84,11 +89,42 @@ address:street_address',
       $this->createMock(EcaState::class),
       $this->logger
     );
+    $this->action->setExecutionCollector($this->createMock(WorkflowExecutionCollector::class));
 
     $reflection = new \ReflectionClass($this->action);
     $property = $reflection->getProperty('pdfService');
     $property->setAccessible(TRUE);
     $property->setValue($this->action, $this->pdfService);
+  }
+
+  /**
+   * Builds a partial-mock of the action that returns the supplied submission.
+   */
+  protected function createActionMock(WebformSubmissionInterface $submission, ?array $configuration = NULL): GeneratePdfAction {
+    $actionMock = $this->getMockBuilder(GeneratePdfAction::class)
+      ->setConstructorArgs([
+        $configuration ?? $this->configuration,
+        'aabenforms_generate_pdf',
+        ['provider' => 'aabenforms_workflows'],
+        $this->createMock(EntityTypeManagerInterface::class),
+        $this->createMock(TokenInterface::class),
+        $this->createMock(AccountProxyInterface::class),
+        $this->createMock(TimeInterface::class),
+        $this->createMock(EcaState::class),
+        $this->logger,
+      ])
+      ->onlyMethods(['getSubmission'])
+      ->getMock();
+
+    $actionMock->setExecutionCollector($this->createMock(WorkflowExecutionCollector::class));
+    $actionMock->method('getSubmission')->willReturn($submission);
+
+    $reflection = new \ReflectionClass($actionMock);
+    $property = $reflection->getProperty('pdfService');
+    $property->setAccessible(TRUE);
+    $property->setValue($actionMock, $this->pdfService);
+
+    return $actionMock;
   }
 
   /**
@@ -135,28 +171,7 @@ address:street_address',
     $this->submission->expects($this->once())
       ->method('save');
 
-    $actionMock = $this->getMockBuilder(GeneratePdfAction::class)
-      ->setConstructorArgs([
-        $this->action->getConfiguration(),
-        'aabenforms_generate_pdf',
-        ['provider' => 'aabenforms_workflows'],
-        $this->createMock(EntityTypeManagerInterface::class),
-        $this->createMock(TokenInterface::class),
-        $this->createMock(AccountProxyInterface::class),
-        $this->createMock(TimeInterface::class),
-        $this->createMock(EcaState::class),
-        $this->logger,
-      ])
-      ->onlyMethods(['getSubmission'])
-      ->getMock();
-
-    $actionMock->method('getSubmission')->willReturn($this->submission);
-
-    $reflection = new \ReflectionClass($actionMock);
-    $property = $reflection->getProperty('pdfService');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->pdfService);
-
+    $actionMock = $this->createActionMock($this->submission);
     $actionMock->execute($this->submission);
   }
 
@@ -175,21 +190,9 @@ address:street_address',
     $this->submission->method('id')->willReturn('501');
     $this->submission->method('getCreatedTime')->willReturn(1640000000);
 
-    $configuration = $this->action->getConfiguration();
+    $configuration = $this->configuration;
     $configuration['template'] = 'marriage_certificate';
     $configuration['data_fields'] = '';
-
-    $actionWithConfig = new GeneratePdfAction(
-      $configuration,
-      'aabenforms_generate_pdf',
-      ['provider' => 'aabenforms_workflows'],
-      $this->createMock(EntityTypeManagerInterface::class),
-      $this->createMock(TokenInterface::class),
-      $this->createMock(AccountProxyInterface::class),
-      $this->createMock(TimeInterface::class),
-      $this->createMock(EcaState::class),
-      $this->logger
-    );
 
     $this->pdfService->expects($this->once())
       ->method('generatePdf')
@@ -215,28 +218,7 @@ address:street_address',
     $this->submission->expects($this->once())
       ->method('save');
 
-    $actionMock = $this->getMockBuilder(GeneratePdfAction::class)
-      ->setConstructorArgs([
-        $configuration,
-        'aabenforms_generate_pdf',
-        ['provider' => 'aabenforms_workflows'],
-        $this->createMock(EntityTypeManagerInterface::class),
-        $this->createMock(TokenInterface::class),
-        $this->createMock(AccountProxyInterface::class),
-        $this->createMock(TimeInterface::class),
-        $this->createMock(EcaState::class),
-        $this->logger,
-      ])
-      ->onlyMethods(['getSubmission'])
-      ->getMock();
-
-    $actionMock->method('getSubmission')->willReturn($this->submission);
-
-    $reflection = new \ReflectionClass($actionMock);
-    $property = $reflection->getProperty('pdfService');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->pdfService);
-
+    $actionMock = $this->createActionMock($this->submission, $configuration);
     $actionMock->execute($this->submission);
   }
 
@@ -295,41 +277,23 @@ address:street_address',
       ->method('generatePdf')
       ->willReturn($pdfResult);
 
+    $writes = [];
     $this->submission->expects($this->exactly(4))
       ->method('setElementData')
-      ->withConsecutive(
-        ['pdf_file_id', 10],
-        ['pdf_file_uri', 'public://pdfs/document.pdf'],
-        ['pdf_file_url', 'https://example.com/files/document.pdf'],
-        ['pdf_filename', 'document.pdf']
-      );
+      ->willReturnCallback(function ($key, $value) use (&$writes) {
+        $writes[$key] = $value;
+      });
 
     $this->submission->expects($this->once())
       ->method('save');
 
-    $actionMock = $this->getMockBuilder(GeneratePdfAction::class)
-      ->setConstructorArgs([
-        $this->action->getConfiguration(),
-        'aabenforms_generate_pdf',
-        ['provider' => 'aabenforms_workflows'],
-        $this->createMock(EntityTypeManagerInterface::class),
-        $this->createMock(TokenInterface::class),
-        $this->createMock(AccountProxyInterface::class),
-        $this->createMock(TimeInterface::class),
-        $this->createMock(EcaState::class),
-        $this->logger,
-      ])
-      ->onlyMethods(['getSubmission'])
-      ->getMock();
-
-    $actionMock->method('getSubmission')->willReturn($this->submission);
-
-    $reflection = new \ReflectionClass($actionMock);
-    $property = $reflection->getProperty('pdfService');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->pdfService);
-
+    $actionMock = $this->createActionMock($this->submission);
     $actionMock->execute($this->submission);
+
+    $this->assertSame(10, $writes['pdf_file_id']);
+    $this->assertSame('public://pdfs/document.pdf', $writes['pdf_file_uri']);
+    $this->assertSame('https://example.com/files/document.pdf', $writes['pdf_file_url']);
+    $this->assertSame('document.pdf', $writes['pdf_filename']);
   }
 
   /**
@@ -372,28 +336,7 @@ address:street_address',
     $this->submission->expects($this->once())
       ->method('save');
 
-    $actionMock = $this->getMockBuilder(GeneratePdfAction::class)
-      ->setConstructorArgs([
-        $this->action->getConfiguration(),
-        'aabenforms_generate_pdf',
-        ['provider' => 'aabenforms_workflows'],
-        $this->createMock(EntityTypeManagerInterface::class),
-        $this->createMock(TokenInterface::class),
-        $this->createMock(AccountProxyInterface::class),
-        $this->createMock(TimeInterface::class),
-        $this->createMock(EcaState::class),
-        $this->logger,
-      ])
-      ->onlyMethods(['getSubmission'])
-      ->getMock();
-
-    $actionMock->method('getSubmission')->willReturn($this->submission);
-
-    $reflection = new \ReflectionClass($actionMock);
-    $property = $reflection->getProperty('pdfService');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->pdfService);
-
+    $actionMock = $this->createActionMock($this->submission);
     $actionMock->execute($this->submission);
   }
 

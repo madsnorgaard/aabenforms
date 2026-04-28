@@ -3,6 +3,7 @@
 namespace Drupal\Tests\aabenforms_workflows\Unit\Plugin\Action;
 
 use Drupal\Tests\UnitTestCase;
+use Drupal\aabenforms_core\Service\WorkflowExecutionCollector;
 use Drupal\aabenforms_workflows\Plugin\Action\SendSmsAction;
 use Drupal\aabenforms_workflows\Service\SmsService;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -39,7 +40,7 @@ class SendSmsActionTest extends UnitTestCase {
   /**
    * Mock logger.
    *
-   * @var \Psr\Log\LoggerInterface|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\Core\Logger\LoggerChannelInterface|\PHPUnit\Framework\MockObject\MockObject
    */
   protected $logger;
 
@@ -51,19 +52,23 @@ class SendSmsActionTest extends UnitTestCase {
   protected $submission;
 
   /**
+   * Configuration array shared across the suite.
+   *
+   * @var array
+   */
+  protected array $configuration;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
-    $this->markTestSkipped(
-      "Action plugin test relies on removed PHPUnit 9 APIs (withConsecutive) and on stub action methods that no longer exist (getConfiguration). Re-enable when the underlying action plugin ships a real service integration; tracked in #35."
-    );
     parent::setUp();
 
     $this->smsService = $this->createMock(SmsService::class);
     $this->logger = $this->createMock(LoggerChannelInterface::class);
     $this->submission = $this->createMock(WebformSubmissionInterface::class);
 
-    $configuration = [
+    $this->configuration = [
       'phone_field' => 'phone',
       'message_template' => 'Din ansøgning er modtaget. Sagsnummer: [submission:id]',
       'sender_name' => 'ÅbenForms',
@@ -71,7 +76,7 @@ class SendSmsActionTest extends UnitTestCase {
     ];
 
     $this->action = new SendSmsAction(
-      $configuration,
+      $this->configuration,
       'aabenforms_send_sms',
       ['provider' => 'aabenforms_workflows'],
       $this->createMock(EntityTypeManagerInterface::class),
@@ -81,11 +86,45 @@ class SendSmsActionTest extends UnitTestCase {
       $this->createMock(EcaState::class),
       $this->logger
     );
+    $this->action->setExecutionCollector($this->createMock(WorkflowExecutionCollector::class));
 
     $reflection = new \ReflectionClass($this->action);
     $property = $reflection->getProperty('smsService');
     $property->setAccessible(TRUE);
     $property->setValue($this->action, $this->smsService);
+  }
+
+  /**
+   * Builds a partial-mock of the action that returns the supplied submission.
+   */
+  protected function createActionMock(WebformSubmissionInterface $submission, ?array $configuration = NULL): SendSmsAction {
+    $actionMock = $this->getMockBuilder(SendSmsAction::class)
+      ->setConstructorArgs([
+        $configuration ?? $this->configuration,
+        'aabenforms_send_sms',
+        ['provider' => 'aabenforms_workflows'],
+        $this->createMock(EntityTypeManagerInterface::class),
+        $this->createMock(TokenInterface::class),
+        $this->createMock(AccountProxyInterface::class),
+        $this->createMock(TimeInterface::class),
+        $this->createMock(EcaState::class),
+        $this->logger,
+      ])
+      ->onlyMethods(['getSubmission'])
+      ->getMock();
+
+    $actionMock->setExecutionCollector($this->createMock(WorkflowExecutionCollector::class));
+
+    $actionMock->expects($this->once())
+      ->method('getSubmission')
+      ->willReturn($submission);
+
+    $reflection = new \ReflectionClass($actionMock);
+    $property = $reflection->getProperty('smsService');
+    $property->setAccessible(TRUE);
+    $property->setValue($actionMock, $this->smsService);
+
+    return $actionMock;
   }
 
   /**
@@ -102,7 +141,7 @@ class SendSmsActionTest extends UnitTestCase {
       'name' => 'Test User',
     ];
 
-    $this->submission->expects($this->once())
+    $this->submission->expects($this->atLeastOnce())
       ->method('getData')
       ->willReturn($submissionData);
 
@@ -135,42 +174,22 @@ class SendSmsActionTest extends UnitTestCase {
       )
       ->willReturn($smsResult);
 
+    $writes = [];
     $this->submission->expects($this->exactly(3))
       ->method('setElementData')
-      ->withConsecutive(
-        ['sms_message_id', 'SMS-123-456'],
-        ['sms_status', 'sent'],
-        ['sms_segments', 1]
-      );
+      ->willReturnCallback(function ($key, $value) use (&$writes) {
+        $writes[$key] = $value;
+      });
 
     $this->submission->expects($this->once())
       ->method('save');
 
-    $actionMock = $this->getMockBuilder(SendSmsAction::class)
-      ->setConstructorArgs([
-        $this->action->getConfiguration(),
-        'aabenforms_send_sms',
-        ['provider' => 'aabenforms_workflows'],
-        $this->createMock(EntityTypeManagerInterface::class),
-        $this->createMock(TokenInterface::class),
-        $this->createMock(AccountProxyInterface::class),
-        $this->createMock(TimeInterface::class),
-        $this->createMock(EcaState::class),
-        $this->logger,
-      ])
-      ->onlyMethods(['getSubmission'])
-      ->getMock();
-
-    $actionMock->expects($this->once())
-      ->method('getSubmission')
-      ->willReturn($this->submission);
-
-    $reflection = new \ReflectionClass($actionMock);
-    $property = $reflection->getProperty('smsService');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->smsService);
-
+    $actionMock = $this->createActionMock($this->submission);
     $actionMock->execute($this->submission);
+
+    $this->assertSame('SMS-123-456', $writes['sms_message_id']);
+    $this->assertSame('sent', $writes['sms_status']);
+    $this->assertSame(1, $writes['sms_segments']);
   }
 
   /**
@@ -185,7 +204,7 @@ class SendSmsActionTest extends UnitTestCase {
       ->method('getData')
       ->willReturn($submissionData);
 
-    $this->submission->expects($this->once())
+    $this->submission->expects($this->atLeastOnce())
       ->method('id')
       ->willReturn('201');
 
@@ -196,30 +215,7 @@ class SendSmsActionTest extends UnitTestCase {
       ->method('error')
       ->with($this->stringContains('Phone field'));
 
-    $actionMock = $this->getMockBuilder(SendSmsAction::class)
-      ->setConstructorArgs([
-        $this->action->getConfiguration(),
-        'aabenforms_send_sms',
-        ['provider' => 'aabenforms_workflows'],
-        $this->createMock(EntityTypeManagerInterface::class),
-        $this->createMock(TokenInterface::class),
-        $this->createMock(AccountProxyInterface::class),
-        $this->createMock(TimeInterface::class),
-        $this->createMock(EcaState::class),
-        $this->logger,
-      ])
-      ->onlyMethods(['getSubmission'])
-      ->getMock();
-
-    $actionMock->expects($this->once())
-      ->method('getSubmission')
-      ->willReturn($this->submission);
-
-    $reflection = new \ReflectionClass($actionMock);
-    $property = $reflection->getProperty('smsService');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->smsService);
-
+    $actionMock = $this->createActionMock($this->submission);
     $actionMock->execute($this->submission);
   }
 
@@ -239,7 +235,7 @@ class SendSmsActionTest extends UnitTestCase {
       'amount' => '100',
     ];
 
-    $this->submission->expects($this->once())
+    $this->submission->expects($this->atLeastOnce())
       ->method('getData')
       ->willReturn($submissionData);
 
@@ -255,20 +251,8 @@ class SendSmsActionTest extends UnitTestCase {
       ->method('getWebform')
       ->willReturn($webform);
 
-    $configuration = $this->action->getConfiguration();
+    $configuration = $this->configuration;
     $configuration['message_template'] = 'Application [submission:id] for [submission:license_plate] received. Form: [webform:title]';
-
-    $actionWithTemplate = new SendSmsAction(
-      $configuration,
-      'aabenforms_send_sms',
-      ['provider' => 'aabenforms_workflows'],
-      $this->createMock(EntityTypeManagerInterface::class),
-      $this->createMock(TokenInterface::class),
-      $this->createMock(AccountProxyInterface::class),
-      $this->createMock(TimeInterface::class),
-      $this->createMock(EcaState::class),
-      $this->logger
-    );
 
     $this->smsService->expects($this->once())
       ->method('sendSms')
@@ -289,30 +273,7 @@ class SendSmsActionTest extends UnitTestCase {
     $this->submission->expects($this->once())
       ->method('save');
 
-    $actionMock = $this->getMockBuilder(SendSmsAction::class)
-      ->setConstructorArgs([
-        $configuration,
-        'aabenforms_send_sms',
-        ['provider' => 'aabenforms_workflows'],
-        $this->createMock(EntityTypeManagerInterface::class),
-        $this->createMock(TokenInterface::class),
-        $this->createMock(AccountProxyInterface::class),
-        $this->createMock(TimeInterface::class),
-        $this->createMock(EcaState::class),
-        $this->logger,
-      ])
-      ->onlyMethods(['getSubmission'])
-      ->getMock();
-
-    $actionMock->expects($this->once())
-      ->method('getSubmission')
-      ->willReturn($this->submission);
-
-    $reflection = new \ReflectionClass($actionMock);
-    $property = $reflection->getProperty('smsService');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->smsService);
-
+    $actionMock = $this->createActionMock($this->submission, $configuration);
     $actionMock->execute($this->submission);
   }
 
@@ -326,22 +287,30 @@ class SendSmsActionTest extends UnitTestCase {
     $webform->method('label')->willReturn('Test Form');
 
     $phones = ['+4511111111', '+4522222222', '+4533333333'];
+    $sentPhones = [];
 
-    foreach ($phones as $index => $phone) {
-      $submission = $this->createMock(WebformSubmissionInterface::class);
-      $submission->method('getData')->willReturn(['phone' => $phone]);
-      $submission->method('id')->willReturn((string) (300 + $index));
-      $submission->method('getCreatedTime')->willReturn(time());
-      $submission->method('getWebform')->willReturn($webform);
-
-      $this->smsService->expects($this->at($index))
-        ->method('sendSms')
-        ->with($phone, $this->anything(), $this->anything())
-        ->willReturn([
+    // Each iteration creates a fresh action mock + submission, so each
+    // sendSms() call resolves against its own expectation. Replace the
+    // PHPUnit-9-only $this->at() pattern with a willReturnCallback that
+    // observes the actual phone passed and returns a per-call result.
+    $this->smsService->expects($this->exactly(count($phones)))
+      ->method('sendSms')
+      ->willReturnCallback(function ($phone) use (&$sentPhones) {
+        $sentPhones[] = $phone;
+        $index = count($sentPhones) - 1;
+        return [
           'status' => 'sent',
           'message_id' => 'SMS-' . (300 + $index),
           'segments' => 1,
-        ]);
+        ];
+      });
+
+    foreach ($phones as $phone) {
+      $submission = $this->createMock(WebformSubmissionInterface::class);
+      $submission->method('getData')->willReturn(['phone' => $phone]);
+      $submission->method('id')->willReturn((string) (300 + array_search($phone, $phones, TRUE)));
+      $submission->method('getCreatedTime')->willReturn(time());
+      $submission->method('getWebform')->willReturn($webform);
 
       $submission->expects($this->atLeastOnce())
         ->method('setElementData');
@@ -349,35 +318,12 @@ class SendSmsActionTest extends UnitTestCase {
       $submission->expects($this->once())
         ->method('save');
 
-      $actionMock = $this->getMockBuilder(SendSmsAction::class)
-        ->setConstructorArgs([
-          $this->action->getConfiguration(),
-          'aabenforms_send_sms',
-          ['provider' => 'aabenforms_workflows'],
-          $this->createMock(EntityTypeManagerInterface::class),
-          $this->createMock(TokenInterface::class),
-          $this->createMock(AccountProxyInterface::class),
-          $this->createMock(TimeInterface::class),
-          $this->createMock(EcaState::class),
-          $this->logger,
-        ])
-        ->onlyMethods(['getSubmission'])
-        ->getMock();
-
-      $actionMock->expects($this->once())
-        ->method('getSubmission')
-        ->willReturn($submission);
-
-      $reflection = new \ReflectionClass($actionMock);
-      $property = $reflection->getProperty('smsService');
-      $property->setAccessible(TRUE);
-      $property->setValue($actionMock, $this->smsService);
-
+      $actionMock = $this->createActionMock($submission);
       $actionMock->execute($submission);
     }
 
-    // All three should be processed.
-    $this->assertEquals(3, count($phones));
+    // Confirm every phone was sent in order.
+    $this->assertSame($phones, $sentPhones);
   }
 
   /**
@@ -393,7 +339,7 @@ class SendSmsActionTest extends UnitTestCase {
       'phone' => '+4512345678',
     ];
 
-    $this->submission->expects($this->once())
+    $this->submission->expects($this->atLeastOnce())
       ->method('getData')
       ->willReturn($submissionData);
 
@@ -433,30 +379,7 @@ class SendSmsActionTest extends UnitTestCase {
     $this->submission->expects($this->once())
       ->method('save');
 
-    $actionMock = $this->getMockBuilder(SendSmsAction::class)
-      ->setConstructorArgs([
-        $this->action->getConfiguration(),
-        'aabenforms_send_sms',
-        ['provider' => 'aabenforms_workflows'],
-        $this->createMock(EntityTypeManagerInterface::class),
-        $this->createMock(TokenInterface::class),
-        $this->createMock(AccountProxyInterface::class),
-        $this->createMock(TimeInterface::class),
-        $this->createMock(EcaState::class),
-        $this->logger,
-      ])
-      ->onlyMethods(['getSubmission'])
-      ->getMock();
-
-    $actionMock->expects($this->once())
-      ->method('getSubmission')
-      ->willReturn($this->submission);
-
-    $reflection = new \ReflectionClass($actionMock);
-    $property = $reflection->getProperty('smsService');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->smsService);
-
+    $actionMock = $this->createActionMock($this->submission);
     $actionMock->execute($this->submission);
   }
 

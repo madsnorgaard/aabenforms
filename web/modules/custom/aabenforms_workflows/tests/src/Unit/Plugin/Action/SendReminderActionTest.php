@@ -3,6 +3,7 @@
 namespace Drupal\Tests\aabenforms_workflows\Unit\Plugin\Action;
 
 use Drupal\Tests\UnitTestCase;
+use Drupal\aabenforms_core\Service\WorkflowExecutionCollector;
 use Drupal\aabenforms_workflows\Plugin\Action\SendReminderAction;
 use Drupal\aabenforms_workflows\Service\SmsService;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -54,7 +55,7 @@ class SendReminderActionTest extends UnitTestCase {
   /**
    * The logger.
    *
-   * @var \Psr\Log\LoggerInterface|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\Core\Logger\LoggerChannelInterface|\PHPUnit\Framework\MockObject\MockObject
    */
   protected $logger;
 
@@ -66,12 +67,16 @@ class SendReminderActionTest extends UnitTestCase {
   protected $submission;
 
   /**
+   * Configuration array shared across the suite.
+   *
+   * @var array
+   */
+  protected array $configuration;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
-    $this->markTestSkipped(
-      "Action plugin test relies on removed PHPUnit 9 APIs (withConsecutive) and on stub action methods that no longer exist (getConfiguration). Re-enable when the underlying action plugin ships a real service integration; tracked in #35."
-    );
     parent::setUp();
 
     $this->smsService = $this->createMock(SmsService::class);
@@ -80,7 +85,7 @@ class SendReminderActionTest extends UnitTestCase {
     $this->logger = $this->createMock(LoggerChannelInterface::class);
     $this->submission = $this->createMock(WebformSubmissionInterface::class);
 
-    $configuration = [
+    $this->configuration = [
       'reminder_type' => 'email',
       'delay_days' => '7',
       'event_date_field' => 'ceremony_date',
@@ -91,7 +96,7 @@ class SendReminderActionTest extends UnitTestCase {
     ];
 
     $this->action = new SendReminderAction(
-      $configuration,
+      $this->configuration,
       'aabenforms_send_reminder',
       ['provider' => 'aabenforms_workflows'],
       $this->createMock(EntityTypeManagerInterface::class),
@@ -101,19 +106,54 @@ class SendReminderActionTest extends UnitTestCase {
       $this->createMock(EcaState::class),
       $this->logger
     );
+    $this->action->setExecutionCollector($this->createMock(WorkflowExecutionCollector::class));
 
-    $reflection = new \ReflectionClass($this->action);
-    $property = $reflection->getProperty('smsService');
-    $property->setAccessible(TRUE);
-    $property->setValue($this->action, $this->smsService);
+    $this->injectServices($this->action);
+  }
 
-    $property = $reflection->getProperty('mailManager');
-    $property->setAccessible(TRUE);
-    $property->setValue($this->action, $this->mailManager);
+  /**
+   * Injects the SMS service, mail manager and queue factory via reflection.
+   */
+  protected function injectServices(SendReminderAction $action): void {
+    $reflection = new \ReflectionClass($action);
 
-    $property = $reflection->getProperty('queueFactory');
-    $property->setAccessible(TRUE);
-    $property->setValue($this->action, $this->queueFactory);
+    $smsServiceProperty = $reflection->getProperty('smsService');
+    $smsServiceProperty->setAccessible(TRUE);
+    $smsServiceProperty->setValue($action, $this->smsService);
+
+    $mailManagerProperty = $reflection->getProperty('mailManager');
+    $mailManagerProperty->setAccessible(TRUE);
+    $mailManagerProperty->setValue($action, $this->mailManager);
+
+    $queueFactoryProperty = $reflection->getProperty('queueFactory');
+    $queueFactoryProperty->setAccessible(TRUE);
+    $queueFactoryProperty->setValue($action, $this->queueFactory);
+  }
+
+  /**
+   * Builds a partial-mock of the action that returns the supplied submission.
+   */
+  protected function createActionMock(WebformSubmissionInterface $submission, ?array $configuration = NULL): SendReminderAction {
+    $actionMock = $this->getMockBuilder(SendReminderAction::class)
+      ->setConstructorArgs([
+        $configuration ?? $this->configuration,
+        'aabenforms_send_reminder',
+        ['provider' => 'aabenforms_workflows'],
+        $this->createMock(EntityTypeManagerInterface::class),
+        $this->createMock(TokenInterface::class),
+        $this->createMock(AccountProxyInterface::class),
+        $this->createMock(TimeInterface::class),
+        $this->createMock(EcaState::class),
+        $this->logger,
+      ])
+      ->onlyMethods(['getSubmission'])
+      ->getMock();
+
+    $actionMock->setExecutionCollector($this->createMock(WorkflowExecutionCollector::class));
+    $actionMock->method('getSubmission')->willReturn($submission);
+    $this->injectServices($actionMock);
+
+    return $actionMock;
   }
 
   /**
@@ -130,13 +170,12 @@ class SendReminderActionTest extends UnitTestCase {
     $this->submission->method('getData')->willReturn($submissionData);
     $this->submission->method('id')->willReturn('800');
 
+    $writes = [];
     $this->submission->expects($this->exactly(3))
       ->method('setElementData')
-      ->withConsecutive(
-        ['reminder_scheduled', TRUE],
-        ['reminder_send_date', $this->anything()],
-        ['reminder_type', 'email']
-      );
+      ->willReturnCallback(function ($key, $value) use (&$writes) {
+        $writes[$key] = $value;
+      });
 
     $this->submission->expects($this->once())
       ->method('save');
@@ -145,37 +184,12 @@ class SendReminderActionTest extends UnitTestCase {
       ->method('info')
       ->with($this->stringContains('Reminder scheduled'));
 
-    $actionMock = $this->getMockBuilder(SendReminderAction::class)
-      ->setConstructorArgs([
-        $this->action->getConfiguration(),
-        'aabenforms_send_reminder',
-        ['provider' => 'aabenforms_workflows'],
-        $this->createMock(EntityTypeManagerInterface::class),
-        $this->createMock(TokenInterface::class),
-        $this->createMock(AccountProxyInterface::class),
-        $this->createMock(TimeInterface::class),
-        $this->createMock(EcaState::class),
-        $this->logger,
-      ])
-      ->onlyMethods(['getSubmission'])
-      ->getMock();
-
-    $actionMock->method('getSubmission')->willReturn($this->submission);
-
-    $reflection = new \ReflectionClass($actionMock);
-    $property = $reflection->getProperty('smsService');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->smsService);
-
-    $property = $reflection->getProperty('mailManager');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->mailManager);
-
-    $property = $reflection->getProperty('queueFactory');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->queueFactory);
-
+    $actionMock = $this->createActionMock($this->submission);
     $actionMock->execute($this->submission);
+
+    $this->assertTrue($writes['reminder_scheduled']);
+    $this->assertArrayHasKey('reminder_send_date', $writes);
+    $this->assertSame('email', $writes['reminder_type']);
   }
 
   /**
@@ -193,12 +207,12 @@ class SendReminderActionTest extends UnitTestCase {
     $this->submission->method('getData')->willReturn($submissionData);
     $this->submission->method('id')->willReturn('801');
 
+    $writes = [];
     $this->submission->expects($this->exactly(2))
       ->method('setElementData')
-      ->withConsecutive(
-        ['reminder_sent', TRUE],
-        ['reminder_sent_at', $this->anything()]
-      );
+      ->willReturnCallback(function ($key, $value) use (&$writes) {
+        $writes[$key] = $value;
+      });
 
     $this->submission->expects($this->once())
       ->method('save');
@@ -207,37 +221,11 @@ class SendReminderActionTest extends UnitTestCase {
       ->method('info')
       ->with($this->stringContains('Email reminder sent'));
 
-    $actionMock = $this->getMockBuilder(SendReminderAction::class)
-      ->setConstructorArgs([
-        $this->action->getConfiguration(),
-        'aabenforms_send_reminder',
-        ['provider' => 'aabenforms_workflows'],
-        $this->createMock(EntityTypeManagerInterface::class),
-        $this->createMock(TokenInterface::class),
-        $this->createMock(AccountProxyInterface::class),
-        $this->createMock(TimeInterface::class),
-        $this->createMock(EcaState::class),
-        $this->logger,
-      ])
-      ->onlyMethods(['getSubmission'])
-      ->getMock();
-
-    $actionMock->method('getSubmission')->willReturn($this->submission);
-
-    $reflection = new \ReflectionClass($actionMock);
-    $property = $reflection->getProperty('smsService');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->smsService);
-
-    $property = $reflection->getProperty('mailManager');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->mailManager);
-
-    $property = $reflection->getProperty('queueFactory');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->queueFactory);
-
+    $actionMock = $this->createActionMock($this->submission);
     $actionMock->execute($this->submission);
+
+    $this->assertTrue($writes['reminder_sent']);
+    $this->assertArrayHasKey('reminder_sent_at', $writes);
   }
 
   /**
@@ -255,20 +243,8 @@ class SendReminderActionTest extends UnitTestCase {
     $this->submission->method('getData')->willReturn($submissionData);
     $this->submission->method('id')->willReturn('802');
 
-    $configuration = $this->action->getConfiguration();
+    $configuration = $this->configuration;
     $configuration['reminder_type'] = 'sms';
-
-    $actionWithSms = new SendReminderAction(
-      $configuration,
-      'aabenforms_send_reminder',
-      ['provider' => 'aabenforms_workflows'],
-      $this->createMock(EntityTypeManagerInterface::class),
-      $this->createMock(TokenInterface::class),
-      $this->createMock(AccountProxyInterface::class),
-      $this->createMock(TimeInterface::class),
-      $this->createMock(EcaState::class),
-      $this->logger
-    );
 
     $this->smsService->expects($this->once())
       ->method('sendSms')
@@ -283,36 +259,7 @@ class SendReminderActionTest extends UnitTestCase {
     $this->submission->expects($this->once())
       ->method('save');
 
-    $actionMock = $this->getMockBuilder(SendReminderAction::class)
-      ->setConstructorArgs([
-        $configuration,
-        'aabenforms_send_reminder',
-        ['provider' => 'aabenforms_workflows'],
-        $this->createMock(EntityTypeManagerInterface::class),
-        $this->createMock(TokenInterface::class),
-        $this->createMock(AccountProxyInterface::class),
-        $this->createMock(TimeInterface::class),
-        $this->createMock(EcaState::class),
-        $this->logger,
-      ])
-      ->onlyMethods(['getSubmission'])
-      ->getMock();
-
-    $actionMock->method('getSubmission')->willReturn($this->submission);
-
-    $reflection = new \ReflectionClass($actionMock);
-    $property = $reflection->getProperty('smsService');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->smsService);
-
-    $property = $reflection->getProperty('mailManager');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->mailManager);
-
-    $property = $reflection->getProperty('queueFactory');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->queueFactory);
-
+    $actionMock = $this->createActionMock($this->submission, $configuration);
     $actionMock->execute($this->submission);
   }
 
@@ -330,7 +277,7 @@ class SendReminderActionTest extends UnitTestCase {
     $this->submission->method('getData')->willReturn($submissionData);
     $this->submission->method('id')->willReturn('803');
 
-    $configuration = $this->action->getConfiguration();
+    $configuration = $this->configuration;
     $configuration['delay_days'] = '3';
 
     $this->submission->expects($this->atLeastOnce())
@@ -339,36 +286,7 @@ class SendReminderActionTest extends UnitTestCase {
     $this->submission->expects($this->once())
       ->method('save');
 
-    $actionMock = $this->getMockBuilder(SendReminderAction::class)
-      ->setConstructorArgs([
-        $configuration,
-        'aabenforms_send_reminder',
-        ['provider' => 'aabenforms_workflows'],
-        $this->createMock(EntityTypeManagerInterface::class),
-        $this->createMock(TokenInterface::class),
-        $this->createMock(AccountProxyInterface::class),
-        $this->createMock(TimeInterface::class),
-        $this->createMock(EcaState::class),
-        $this->logger,
-      ])
-      ->onlyMethods(['getSubmission'])
-      ->getMock();
-
-    $actionMock->method('getSubmission')->willReturn($this->submission);
-
-    $reflection = new \ReflectionClass($actionMock);
-    $property = $reflection->getProperty('smsService');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->smsService);
-
-    $property = $reflection->getProperty('mailManager');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->mailManager);
-
-    $property = $reflection->getProperty('queueFactory');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->queueFactory);
-
+    $actionMock = $this->createActionMock($this->submission, $configuration);
     $actionMock->execute($this->submission);
   }
 
@@ -392,36 +310,7 @@ class SendReminderActionTest extends UnitTestCase {
     $this->submission->expects($this->once())
       ->method('save');
 
-    $actionMock = $this->getMockBuilder(SendReminderAction::class)
-      ->setConstructorArgs([
-        $this->action->getConfiguration(),
-        'aabenforms_send_reminder',
-        ['provider' => 'aabenforms_workflows'],
-        $this->createMock(EntityTypeManagerInterface::class),
-        $this->createMock(TokenInterface::class),
-        $this->createMock(AccountProxyInterface::class),
-        $this->createMock(TimeInterface::class),
-        $this->createMock(EcaState::class),
-        $this->logger,
-      ])
-      ->onlyMethods(['getSubmission'])
-      ->getMock();
-
-    $actionMock->method('getSubmission')->willReturn($this->submission);
-
-    $reflection = new \ReflectionClass($actionMock);
-    $property = $reflection->getProperty('smsService');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->smsService);
-
-    $property = $reflection->getProperty('mailManager');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->mailManager);
-
-    $property = $reflection->getProperty('queueFactory');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->queueFactory);
-
+    $actionMock = $this->createActionMock($this->submission);
     $actionMock->execute($this->submission);
   }
 

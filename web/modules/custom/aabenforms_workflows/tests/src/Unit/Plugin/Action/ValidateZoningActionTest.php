@@ -3,6 +3,7 @@
 namespace Drupal\Tests\aabenforms_workflows\Unit\Plugin\Action;
 
 use Drupal\Tests\UnitTestCase;
+use Drupal\aabenforms_core\Service\WorkflowExecutionCollector;
 use Drupal\aabenforms_workflows\Plugin\Action\ValidateZoningAction;
 use Drupal\aabenforms_workflows\Service\GisService;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -38,7 +39,7 @@ class ValidateZoningActionTest extends UnitTestCase {
   /**
    * The logger.
    *
-   * @var \Psr\Log\LoggerInterface|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\Core\Logger\LoggerChannelInterface|\PHPUnit\Framework\MockObject\MockObject
    */
   protected $logger;
 
@@ -50,26 +51,30 @@ class ValidateZoningActionTest extends UnitTestCase {
   protected $submission;
 
   /**
+   * Configuration array shared across the suite.
+   *
+   * @var array
+   */
+  protected array $configuration;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
-    $this->markTestSkipped(
-      "Action plugin test relies on removed PHPUnit 9 APIs (withConsecutive) and on stub action methods that no longer exist (getConfiguration). Re-enable when the underlying action plugin ships a real service integration; tracked in #35."
-    );
     parent::setUp();
 
     $this->gisService = $this->createMock(GisService::class);
     $this->logger = $this->createMock(LoggerChannelInterface::class);
     $this->submission = $this->createMock(WebformSubmissionInterface::class);
 
-    $configuration = [
+    $this->configuration = [
       'address_field' => 'property_address',
       'construction_type_field' => 'construction_type',
       'store_result_in' => 'zoning_validation',
     ];
 
     $this->action = new ValidateZoningAction(
-      $configuration,
+      $this->configuration,
       'aabenforms_validate_zoning',
       ['provider' => 'aabenforms_workflows'],
       $this->createMock(EntityTypeManagerInterface::class),
@@ -79,11 +84,42 @@ class ValidateZoningActionTest extends UnitTestCase {
       $this->createMock(EcaState::class),
       $this->logger
     );
+    $this->action->setExecutionCollector($this->createMock(WorkflowExecutionCollector::class));
 
     $reflection = new \ReflectionClass($this->action);
     $property = $reflection->getProperty('gisService');
     $property->setAccessible(TRUE);
     $property->setValue($this->action, $this->gisService);
+  }
+
+  /**
+   * Builds a partial-mock of the action that returns the supplied submission.
+   */
+  protected function createActionMock(WebformSubmissionInterface $submission): ValidateZoningAction {
+    $actionMock = $this->getMockBuilder(ValidateZoningAction::class)
+      ->setConstructorArgs([
+        $this->configuration,
+        'aabenforms_validate_zoning',
+        ['provider' => 'aabenforms_workflows'],
+        $this->createMock(EntityTypeManagerInterface::class),
+        $this->createMock(TokenInterface::class),
+        $this->createMock(AccountProxyInterface::class),
+        $this->createMock(TimeInterface::class),
+        $this->createMock(EcaState::class),
+        $this->logger,
+      ])
+      ->onlyMethods(['getSubmission'])
+      ->getMock();
+
+    $actionMock->setExecutionCollector($this->createMock(WorkflowExecutionCollector::class));
+    $actionMock->method('getSubmission')->willReturn($submission);
+
+    $reflection = new \ReflectionClass($actionMock);
+    $property = $reflection->getProperty('gisService');
+    $property->setAccessible(TRUE);
+    $property->setValue($actionMock, $this->gisService);
+
+    return $actionMock;
   }
 
   /**
@@ -108,40 +144,22 @@ class ValidateZoningActionTest extends UnitTestCase {
       ->with('Hovedgaden 1, 8000 Aarhus C', 'garage')
       ->willReturn($validationResult);
 
+    $writes = [];
     $this->submission->expects($this->exactly(3))
       ->method('setElementData')
-      ->withConsecutive(
-        ['zoning_allowed', TRUE],
-        ['zoning_zone_type', 'residential'],
-        ['zoning_reason', 'Garages are permitted in residential zones']
-      );
+      ->willReturnCallback(function ($key, $value) use (&$writes) {
+        $writes[$key] = $value;
+      });
 
     $this->submission->expects($this->once())
       ->method('save');
 
-    $actionMock = $this->getMockBuilder(ValidateZoningAction::class)
-      ->setConstructorArgs([
-        $this->action->getConfiguration(),
-        'aabenforms_validate_zoning',
-        ['provider' => 'aabenforms_workflows'],
-        $this->createMock(EntityTypeManagerInterface::class),
-        $this->createMock(TokenInterface::class),
-        $this->createMock(AccountProxyInterface::class),
-        $this->createMock(TimeInterface::class),
-        $this->createMock(EcaState::class),
-        $this->logger,
-      ])
-      ->onlyMethods(['getSubmission'])
-      ->getMock();
-
-    $actionMock->method('getSubmission')->willReturn($this->submission);
-
-    $reflection = new \ReflectionClass($actionMock);
-    $property = $reflection->getProperty('gisService');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->gisService);
-
+    $actionMock = $this->createActionMock($this->submission);
     $actionMock->execute($this->submission);
+
+    $this->assertTrue($writes['zoning_allowed']);
+    $this->assertSame('residential', $writes['zoning_zone_type']);
+    $this->assertSame('Garages are permitted in residential zones', $writes['zoning_reason']);
   }
 
   /**
@@ -171,32 +189,19 @@ class ValidateZoningActionTest extends UnitTestCase {
     $this->submission->expects($this->once())
       ->method('save');
 
+    // The production logger call uses placeholder substitution; the
+    // resolved string ("ALLOWED" or "NOT ALLOWED") lives in the context
+    // array under '@result', not in the message template.
     $this->logger->expects($this->once())
       ->method('info')
-      ->with($this->stringContains('ALLOWED'));
+      ->with(
+        $this->stringContains('Zoning validation'),
+        $this->callback(function ($context) {
+          return ($context['@result'] ?? '') === 'ALLOWED';
+        })
+      );
 
-    $actionMock = $this->getMockBuilder(ValidateZoningAction::class)
-      ->setConstructorArgs([
-        $this->action->getConfiguration(),
-        'aabenforms_validate_zoning',
-        ['provider' => 'aabenforms_workflows'],
-        $this->createMock(EntityTypeManagerInterface::class),
-        $this->createMock(TokenInterface::class),
-        $this->createMock(AccountProxyInterface::class),
-        $this->createMock(TimeInterface::class),
-        $this->createMock(EcaState::class),
-        $this->logger,
-      ])
-      ->onlyMethods(['getSubmission'])
-      ->getMock();
-
-    $actionMock->method('getSubmission')->willReturn($this->submission);
-
-    $reflection = new \ReflectionClass($actionMock);
-    $property = $reflection->getProperty('gisService');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->gisService);
-
+    $actionMock = $this->createActionMock($this->submission);
     $actionMock->execute($this->submission);
   }
 
@@ -221,44 +226,33 @@ class ValidateZoningActionTest extends UnitTestCase {
       ->method('validateConstructionType')
       ->willReturn($validationResult);
 
+    $writes = [];
     $this->submission->expects($this->exactly(3))
       ->method('setElementData')
-      ->withConsecutive(
-        ['zoning_allowed', FALSE],
-        ['zoning_zone_type', 'residential'],
-        ['zoning_reason', 'Factories are not permitted in residential zones']
-      );
+      ->willReturnCallback(function ($key, $value) use (&$writes) {
+        $writes[$key] = $value;
+      });
 
     $this->submission->expects($this->once())
       ->method('save');
 
+    // The placeholder-resolved value lives in the context array, not the
+    // message template.
     $this->logger->expects($this->once())
       ->method('info')
-      ->with($this->stringContains('NOT ALLOWED'));
+      ->with(
+        $this->stringContains('Zoning validation'),
+        $this->callback(function ($context) {
+          return ($context['@result'] ?? '') === 'NOT ALLOWED';
+        })
+      );
 
-    $actionMock = $this->getMockBuilder(ValidateZoningAction::class)
-      ->setConstructorArgs([
-        $this->action->getConfiguration(),
-        'aabenforms_validate_zoning',
-        ['provider' => 'aabenforms_workflows'],
-        $this->createMock(EntityTypeManagerInterface::class),
-        $this->createMock(TokenInterface::class),
-        $this->createMock(AccountProxyInterface::class),
-        $this->createMock(TimeInterface::class),
-        $this->createMock(EcaState::class),
-        $this->logger,
-      ])
-      ->onlyMethods(['getSubmission'])
-      ->getMock();
-
-    $actionMock->method('getSubmission')->willReturn($this->submission);
-
-    $reflection = new \ReflectionClass($actionMock);
-    $property = $reflection->getProperty('gisService');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->gisService);
-
+    $actionMock = $this->createActionMock($this->submission);
     $actionMock->execute($this->submission);
+
+    $this->assertFalse($writes['zoning_allowed']);
+    $this->assertSame('residential', $writes['zoning_zone_type']);
+    $this->assertSame('Factories are not permitted in residential zones', $writes['zoning_reason']);
   }
 
   /**
@@ -279,28 +273,7 @@ class ValidateZoningActionTest extends UnitTestCase {
       ->method('error')
       ->with($this->stringContains('Missing address'));
 
-    $actionMock = $this->getMockBuilder(ValidateZoningAction::class)
-      ->setConstructorArgs([
-        $this->action->getConfiguration(),
-        'aabenforms_validate_zoning',
-        ['provider' => 'aabenforms_workflows'],
-        $this->createMock(EntityTypeManagerInterface::class),
-        $this->createMock(TokenInterface::class),
-        $this->createMock(AccountProxyInterface::class),
-        $this->createMock(TimeInterface::class),
-        $this->createMock(EcaState::class),
-        $this->logger,
-      ])
-      ->onlyMethods(['getSubmission'])
-      ->getMock();
-
-    $actionMock->method('getSubmission')->willReturn($this->submission);
-
-    $reflection = new \ReflectionClass($actionMock);
-    $property = $reflection->getProperty('gisService');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->gisService);
-
+    $actionMock = $this->createActionMock($this->submission);
     $actionMock->execute($this->submission);
   }
 
@@ -333,28 +306,7 @@ class ValidateZoningActionTest extends UnitTestCase {
     $this->submission->expects($this->once())
       ->method('save');
 
-    $actionMock = $this->getMockBuilder(ValidateZoningAction::class)
-      ->setConstructorArgs([
-        $this->action->getConfiguration(),
-        'aabenforms_validate_zoning',
-        ['provider' => 'aabenforms_workflows'],
-        $this->createMock(EntityTypeManagerInterface::class),
-        $this->createMock(TokenInterface::class),
-        $this->createMock(AccountProxyInterface::class),
-        $this->createMock(TimeInterface::class),
-        $this->createMock(EcaState::class),
-        $this->logger,
-      ])
-      ->onlyMethods(['getSubmission'])
-      ->getMock();
-
-    $actionMock->method('getSubmission')->willReturn($this->submission);
-
-    $reflection = new \ReflectionClass($actionMock);
-    $property = $reflection->getProperty('gisService');
-    $property->setAccessible(TRUE);
-    $property->setValue($actionMock, $this->gisService);
-
+    $actionMock = $this->createActionMock($this->submission);
     $actionMock->execute($this->submission);
   }
 
