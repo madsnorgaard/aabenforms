@@ -4,12 +4,15 @@ namespace Drupal\aabenforms_workflows\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Url;
 use Drupal\aabenforms_mitid\Service\MitIdSessionManager;
 use Drupal\aabenforms_workflows\Service\ApprovalTokenService;
+use Drupal\aabenforms_workflows\Service\ParentCprVerifier;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Psr\Log\LoggerInterface;
@@ -48,6 +51,20 @@ class ParentApprovalController extends ControllerBase {
   protected MitIdSessionManager $mitidSessionManager;
 
   /**
+   * The parent-approval CPR verifier.
+   *
+   * @var \Drupal\aabenforms_workflows\Service\ParentCprVerifier
+   */
+  protected ParentCprVerifier $cprVerifier;
+
+  /**
+   * The renderer.
+   *
+   * @var \Drupal\Core\Render\RendererInterface
+   */
+  protected RendererInterface $renderer;
+
+  /**
    * Constructs a ParentApprovalController object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
@@ -56,6 +73,10 @@ class ParentApprovalController extends ControllerBase {
    *   The approval token service.
    * @param \Drupal\aabenforms_mitid\Service\MitIdSessionManager $mitid_session_manager
    *   The MitID session manager (for verifying OIDC handoff).
+   * @param \Drupal\aabenforms_workflows\Service\ParentCprVerifier $cpr_verifier
+   *   The parent-approval CPR verifier (security gate).
+   * @param \Drupal\Core\Render\RendererInterface $renderer
+   *   The renderer (for returning HTML responses with non-200 status codes).
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger.
    */
@@ -63,11 +84,15 @@ class ParentApprovalController extends ControllerBase {
     EntityTypeManagerInterface $entity_type_manager,
     ApprovalTokenService $token_service,
     MitIdSessionManager $mitid_session_manager,
+    ParentCprVerifier $cpr_verifier,
+    RendererInterface $renderer,
     LoggerInterface $logger,
   ) {
     $this->entityTypeManager = $entity_type_manager;
     $this->tokenService = $token_service;
     $this->mitidSessionManager = $mitid_session_manager;
+    $this->cprVerifier = $cpr_verifier;
+    $this->renderer = $renderer;
     $this->logger = $logger;
   }
 
@@ -79,6 +104,8 @@ class ParentApprovalController extends ControllerBase {
       $container->get('entity_type.manager'),
       $container->get('aabenforms_workflows.approval_token'),
       $container->get('aabenforms_mitid.session_manager'),
+      $container->get('aabenforms_workflows.parent_cpr_verifier'),
+      $container->get('renderer'),
       $container->get('logger.factory')->get('aabenforms_workflows')
     );
   }
@@ -350,16 +377,18 @@ class ParentApprovalController extends ControllerBase {
    * Re-validates the token (defence in depth: the workflow_id query
    * arg can be inspected/altered by a malicious return target), then
    * checks the aabenforms_mitid session manager for a real OIDC
-   * session under our scoped workflow_id. If both pass, flips the
-   * parent's per-session flag and redirects to the approval page
-   * which now renders the form.
+   * session under our scoped workflow_id, then enforces the CPR gate
+   * - the MitID-asserted CPR must match the parent_<N>_cpr captured
+   * on the original submission. Without this check any holder of the
+   * approval-token URL can authenticate with any MitID account and
+   * approve another family's submission (issue #54).
    *
-   * @todo Add CPR-vs-parent verification once the parent_request_form
-   *   schema carries parent CPRs (today it only stores email, which
-   *   isn't a usable identity assertion). Once that lands, compare
-   *   $this->mitidSessionManager->getCprFromSession($workflow_id)
-   *   against the submission's parent{N}_cpr field; on mismatch, log
-   *   warning + 403.
+   * Three failure paths render distinct citizen-meaningful UX:
+   * - Token invalid / tampered: handled by validateToken above (403).
+   * - MitID session lacks CPR claim: 502 with "try again" UX.
+   * - MitID CPR mismatch: 403 with sparse "wrong parent" UX. Audit
+   *   row records both CPR hashes; moderation_state is left untouched
+   *   so the case worker can see the failure and re-issue if needed.
    *
    * @param int $parent_number
    *   The parent number (1 or 2).
@@ -370,12 +399,13 @@ class ParentApprovalController extends ControllerBase {
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   The current request.
    *
-   * @return \Symfony\Component\HttpFoundation\RedirectResponse
-   *   Redirect back to the approval page.
+   * @return \Symfony\Component\HttpFoundation\Response
+   *   Redirect back to the approval page on success; rendered
+   *   403/502 page on a CPR-gate failure.
    *
    * @throws \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException
    */
-  public function mitidComplete(int $parent_number, int $submission_id, string $token, Request $request): RedirectResponse {
+  public function mitidComplete(int $parent_number, int $submission_id, string $token, Request $request): Response {
     if (!$this->tokenService->validateToken($submission_id, $parent_number, $token)) {
       $this->logger->warning('Invalid token at MitID complete for submission @sid, parent @parent', [
         '@sid' => $submission_id,
@@ -394,6 +424,44 @@ class ParentApprovalController extends ControllerBase {
       throw new AccessDeniedHttpException('MitID authentication did not complete.');
     }
 
+    // Load submission for CPR comparison. NotFound is the right answer
+    // here too - a missing submission shouldn't reveal whether the token
+    // ever bound a valid id.
+    $submission = $this->entityTypeManager
+      ->getStorage('webform_submission')
+      ->load($submission_id);
+    if (!$submission) {
+      $this->logger->error('Submission @sid not found at MitID complete', [
+        '@sid' => $submission_id,
+      ]);
+      throw new NotFoundHttpException('Submission not found.');
+    }
+
+    // Security gate: MitID-asserted CPR must equal parent_<N>_cpr.
+    // The verifier handles audit logging on every outcome.
+    $result = $this->cprVerifier->verify($submission, $parent_number, $workflow_id);
+    if ($result === ParentCprVerifier::RESULT_MISSING_MITID_CPR) {
+      // Upstream IdP failure - return 502 so the citizen sees a
+      // "try again or contact us" message rather than a 403 that
+      // implies they did something wrong.
+      return $this->renderGateFailure(
+        Response::HTTP_BAD_GATEWAY,
+        $this->t('MitID-fejl'),
+        $this->t('MitID returnerede ikke et CPR-nummer; prøv igen eller kontakt kommunen.')
+      );
+    }
+    if ($result !== ParentCprVerifier::RESULT_MATCH) {
+      // Mismatch OR missing-expected-CPR: both rejected as 403. The
+      // citizen-facing copy is identical and sparse on purpose - we
+      // do not confirm whether the right MitID account would have
+      // worked, only that the case worker has been informed.
+      return $this->renderGateFailure(
+        Response::HTTP_FORBIDDEN,
+        $this->t('Adgang nægtet'),
+        $this->t('Du er ikke den ventede forælder. Sagsbehandleren er informeret.')
+      );
+    }
+
     $request->getSession()->set("mitid_authenticated_parent{$parent_number}", TRUE);
     $this->logger->info('Parent @parent MitID handoff verified for submission @sid', [
       '@parent' => $parent_number,
@@ -406,6 +474,39 @@ class ParentApprovalController extends ControllerBase {
       'token' => $token,
     ])->toString();
     return new RedirectResponse($url);
+  }
+
+  /**
+   * Renders a sparse failure page for the parent-approval CPR gate.
+   *
+   * Returns a Response with the requested status code and a minimal
+   * HTML body. The body is rendered through the renderer service so
+   * the translation system + escape rules apply, but the response
+   * stays a plain Response (not a render array) so the caller can
+   * set a non-200 status code.
+   *
+   * @param int $status
+   *   HTTP status code (403 or 502).
+   * @param \Drupal\Core\StringTranslation\TranslatableMarkup $heading
+   *   Page heading - shown to the citizen.
+   * @param \Drupal\Core\StringTranslation\TranslatableMarkup $message
+   *   Body message - shown to the citizen.
+   *
+   * @return \Symfony\Component\HttpFoundation\Response
+   *   The HTML response.
+   */
+  protected function renderGateFailure(int $status, $heading, $message): Response {
+    $build = [
+      '#theme' => 'status_messages',
+      '#message_list' => [
+        'error' => [$message],
+      ],
+      '#status_headings' => [
+        'error' => $heading,
+      ],
+    ];
+    $html = (string) $this->renderer->renderRoot($build);
+    return new Response($html, $status, ['Content-Type' => 'text/html; charset=UTF-8']);
   }
 
   /**

@@ -32,6 +32,9 @@ class WorkflowsModuleTest extends KernelTestBase {
     'eca_content',
     'eca_user',
     'aabenforms_core',
+    // Hard dep declared in aabenforms_workflows.info.yml; needed since the
+    // parent_cpr_verifier service injects aabenforms_mitid.session_manager.
+    'aabenforms_mitid',
     'aabenforms_workflows',
   ];
 

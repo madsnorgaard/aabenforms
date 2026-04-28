@@ -1,0 +1,264 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Drupal\Tests\aabenforms_workflows\Unit\Service;
+
+use Drupal\aabenforms_core\Service\AuditLogger;
+use Drupal\aabenforms_mitid\Service\MitIdSessionManager;
+use Drupal\aabenforms_workflows\Service\ParentCprVerifier;
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
+use Drupal\webform\WebformSubmissionInterface;
+use Drupal\Tests\UnitTestCase;
+use Psr\Log\LoggerInterface;
+
+/**
+ * Unit tests for the parent-approval CPR-match security gate.
+ *
+ * Locks in the four-way result protocol (match / mismatch / missing MitID CPR
+ * / missing expected CPR), the digit-only normalisation that lets a hyphenated
+ * input compare equal to a raw input, and the audit-log shape that hashes
+ * both CPRs on mismatch so an investigator can detect "same wrong CPR being
+ * retried" without the raw values ever landing in the audit table.
+ *
+ * Issue #54.
+ *
+ * @coversDefaultClass \Drupal\aabenforms_workflows\Service\ParentCprVerifier
+ * @group aabenforms_workflows
+ */
+class ParentCprVerifierTest extends UnitTestCase {
+
+  /**
+   * The verifier under test.
+   */
+  protected ParentCprVerifier $verifier;
+
+  /**
+   * Mock MitID session manager.
+   *
+   * @var \Drupal\aabenforms_mitid\Service\MitIdSessionManager|\PHPUnit\Framework\MockObject\MockObject
+   */
+  protected $sessionManager;
+
+  /**
+   * Mock audit logger.
+   *
+   * @var \Drupal\aabenforms_core\Service\AuditLogger|\PHPUnit\Framework\MockObject\MockObject
+   */
+  protected $auditLogger;
+
+  /**
+   * Mock logger.
+   *
+   * @var \Psr\Log\LoggerInterface|\PHPUnit\Framework\MockObject\MockObject
+   */
+  protected $logger;
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp(): void {
+    parent::setUp();
+
+    $this->sessionManager = $this->createMock(MitIdSessionManager::class);
+    $this->auditLogger = $this->createMock(AuditLogger::class);
+    $this->logger = $this->createMock(LoggerInterface::class);
+
+    $logger_factory = $this->createMock(LoggerChannelFactoryInterface::class);
+    $logger_factory->method('get')->willReturn($this->logger);
+
+    $this->verifier = new ParentCprVerifier(
+      $this->sessionManager,
+      $this->auditLogger,
+      $logger_factory,
+    );
+  }
+
+  /**
+   * Builds a webform submission mock returning the given parent_<N>_cpr.
+   */
+  protected function submission(int $parent_number, ?string $cpr, int $sid = 42, string $uuid = 'sub-uuid-x'): WebformSubmissionInterface {
+    $submission = $this->createMock(WebformSubmissionInterface::class);
+    $submission->method('getElementData')
+      ->willReturnCallback(function (string $field) use ($parent_number, $cpr) {
+        return $field === "parent{$parent_number}_cpr" ? $cpr : NULL;
+      });
+    $submission->method('id')->willReturn($sid);
+    $submission->method('uuid')->willReturn($uuid);
+    return $submission;
+  }
+
+  /**
+   * @covers ::verify
+   */
+  public function testVerifyReturnsMatchOnEqualDigits(): void {
+    $this->sessionManager->method('getCprFromSession')
+      ->with('wf-1')
+      ->willReturn('0101001234');
+
+    $this->logger->expects($this->once())->method('info');
+    $this->auditLogger->expects($this->once())
+      ->method('logCprLookup')
+      ->with('0101001234', 'parent_approval_cpr_match', 'success', $this->anything());
+
+    $this->assertSame(
+      ParentCprVerifier::RESULT_MATCH,
+      $this->verifier->verify($this->submission(1, '0101001234'), 1, 'wf-1'),
+    );
+  }
+
+  /**
+   * Hyphenated input on one side and digits-only on the other still match.
+   *
+   * @covers ::verify
+   * @covers ::normaliseCpr
+   */
+  public function testVerifyReturnsMatchAfterNormalisation(): void {
+    $this->sessionManager->method('getCprFromSession')->willReturn('010100-1234');
+
+    $this->auditLogger->expects($this->once())
+      ->method('logCprLookup')
+      ->with('0101001234', 'parent_approval_cpr_match', 'success', $this->anything());
+
+    $this->assertSame(
+      ParentCprVerifier::RESULT_MATCH,
+      $this->verifier->verify($this->submission(2, '0101001234'), 2, 'wf-2'),
+    );
+  }
+
+  /**
+   * Mismatch: both CPRs present but different - audit log records hashes only.
+   *
+   * @covers ::verify
+   */
+  public function testVerifyReturnsMismatchAndLogsHashedAudit(): void {
+    $this->sessionManager->method('getCprFromSession')->willReturn('1212129999');
+
+    $captured_context = NULL;
+    $this->auditLogger->expects($this->once())
+      ->method('logCprLookup')
+      ->willReturnCallback(
+        function ($cpr, $purpose, $status, $context) use (&$captured_context) {
+          $captured_context = ['cpr' => $cpr, 'purpose' => $purpose, 'status' => $status, 'context' => $context];
+        }
+      );
+    $this->logger->expects($this->once())->method('warning');
+
+    $this->assertSame(
+      ParentCprVerifier::RESULT_MISMATCH,
+      $this->verifier->verify($this->submission(1, '0101001234'), 1, 'wf-3'),
+    );
+
+    $this->assertSame('parent_approval_cpr_mismatch', $captured_context['purpose']);
+    $this->assertSame('failure', $captured_context['status']);
+    // Hashed values land in the context; raw CPRs must NEVER appear there.
+    $this->assertSame(hash('sha256', '0101001234'), $captured_context['context']['expected_hash']);
+    $this->assertSame(hash('sha256', '1212129999'), $captured_context['context']['asserted_hash']);
+    $this->assertArrayNotHasKey('expected', $captured_context['context']);
+    $this->assertArrayNotHasKey('asserted', $captured_context['context']);
+  }
+
+  /**
+   * MitID session has no CPR claim - upstream IdP failure.
+   *
+   * @covers ::verify
+   */
+  public function testVerifyReturnsMissingMitidCprWhenSessionEmpty(): void {
+    $this->sessionManager->method('getCprFromSession')->willReturn(NULL);
+
+    $this->logger->expects($this->once())->method('warning');
+    $this->auditLogger->expects($this->once())
+      ->method('logCprLookup')
+      ->with('wf-4', 'parent_approval_cpr_missing', 'failure', $this->anything());
+
+    $this->assertSame(
+      ParentCprVerifier::RESULT_MISSING_MITID_CPR,
+      $this->verifier->verify($this->submission(1, '0101001234'), 1, 'wf-4'),
+    );
+  }
+
+  /**
+   * Submission lacks parent_<N>_cpr - configuration error.
+   *
+   * @covers ::verify
+   */
+  public function testVerifyReturnsMissingExpectedCprWhenSubmissionLacksField(): void {
+    $this->sessionManager->method('getCprFromSession')->willReturn('0101001234');
+
+    $this->logger->expects($this->once())->method('error');
+    $this->auditLogger->expects($this->once())
+      ->method('logCprLookup')
+      ->with('0101001234', 'parent_approval_cpr_missing_expected', 'failure', $this->anything());
+
+    // submission(1, NULL) returns NULL for parent1_cpr.
+    $this->assertSame(
+      ParentCprVerifier::RESULT_MISSING_EXPECTED_CPR,
+      $this->verifier->verify($this->submission(1, NULL), 1, 'wf-5'),
+    );
+  }
+
+  /**
+   * Empty asserted CPR (empty string from session) routes to missing-MitID,
+   * not to mismatch - the empty value is treated as "no claim", matching
+   * the controller's documented UX path.
+   *
+   * @covers ::verify
+   */
+  public function testVerifyTreatsEmptyAssertedAsMissing(): void {
+    $this->sessionManager->method('getCprFromSession')->willReturn('');
+
+    $this->auditLogger->expects($this->once())
+      ->method('logCprLookup')
+      ->with($this->anything(), 'parent_approval_cpr_missing', $this->anything(), $this->anything());
+
+    $this->assertSame(
+      ParentCprVerifier::RESULT_MISSING_MITID_CPR,
+      $this->verifier->verify($this->submission(1, '0101001234'), 1, 'wf-6'),
+    );
+  }
+
+  /**
+   * @covers ::normaliseCpr
+   */
+  public function testNormaliseCprStripsHyphens(): void {
+    $this->assertSame('0101001234', $this->verifier->normaliseCpr('010100-1234'));
+  }
+
+  /**
+   * @covers ::normaliseCpr
+   */
+  public function testNormaliseCprStripsWhitespace(): void {
+    $this->assertSame('0101001234', $this->verifier->normaliseCpr(' 0101 00 1234 '));
+  }
+
+  /**
+   * Leading zeros are preserved - CPRs starting with '0101' are valid.
+   *
+   * @covers ::normaliseCpr
+   */
+  public function testNormaliseCprPreservesLeadingZeros(): void {
+    $cpr = '0101501234';
+    $normalised = $this->verifier->normaliseCpr($cpr);
+    $this->assertSame($cpr, $normalised);
+    $this->assertSame('0', $normalised[0]);
+  }
+
+  /**
+   * @covers ::normaliseCpr
+   */
+  public function testNormaliseCprReturnsEmptyForOnlyNonDigits(): void {
+    $this->assertSame('', $this->verifier->normaliseCpr('---'));
+    $this->assertSame('', $this->verifier->normaliseCpr(''));
+  }
+
+  /**
+   * Result constants are stable strings; the controller switches on them.
+   */
+  public function testResultConstantsAreStable(): void {
+    $this->assertSame('match', ParentCprVerifier::RESULT_MATCH);
+    $this->assertSame('mismatch', ParentCprVerifier::RESULT_MISMATCH);
+    $this->assertSame('missing_mitid_cpr', ParentCprVerifier::RESULT_MISSING_MITID_CPR);
+    $this->assertSame('missing_expected_cpr', ParentCprVerifier::RESULT_MISSING_EXPECTED_CPR);
+  }
+
+}
