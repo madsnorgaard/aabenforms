@@ -130,10 +130,12 @@ class AuditLogAction extends AabenFormsActionBase {
       $message = $this->configuration['message_template'] ?? 'Workflow action executed';
       $message = $this->replaceTokensInString($message);
 
-      // Get additional data.
+      // Get additional data. Read the raw token (mixed) instead of going through
+      // getTokenValue(), which coerces to string and silently drops arrays - the
+      // exact case the form field 'Additional data token' is meant to handle.
       $additionalData = [];
       if (!empty($this->configuration['additional_data_token'])) {
-        $data = $this->getTokenValue($this->configuration['additional_data_token'], '');
+        $data = $this->tokenService->getTokenData($this->configuration['additional_data_token']);
         if (is_array($data)) {
           $additionalData = $data;
         }
