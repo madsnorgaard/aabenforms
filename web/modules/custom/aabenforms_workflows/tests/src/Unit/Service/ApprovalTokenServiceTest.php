@@ -193,7 +193,7 @@ class ApprovalTokenServiceTest extends UnitTestCase {
   }
 
   /**
-   * generateToken emits an info log naming the submission and parent.
+   * GenerateToken emits an info log naming the submission and parent.
    */
   public function testGenerateTokenLogsInfo(): void {
     $this->logger->expects($this->once())

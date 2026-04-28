@@ -291,9 +291,10 @@ XML;
   }
 
   /**
-   * Service + user tasks of every recognised type are returned; non-matching
-   * tasks ('process data') are dropped because determineActionType returns
-   * 'none'.
+   * Service + user tasks of every recognised type are returned.
+   *
+   * Non-matching tasks ('process data') are dropped because
+   * determineActionType returns 'none'.
    *
    * @covers ::getConfigurableActions
    * @covers ::determineActionType
