@@ -19,6 +19,28 @@
         </div>
         <h2 class="aabenforms-pagetitle">${msg("loginAccountTitle")}</h2>
 
+        <div class="aabenforms-personas" role="group" aria-label="${msg('aabenformsPersonaSwitcherLabel')}">
+            <p class="aabenforms-personas-title">${msg('aabenformsPersonaSwitcherTitle')}</p>
+            <div class="aabenforms-personas-grid">
+                <button type="button" class="aabenforms-persona" data-username="freja.nielsen" data-default="true">
+                    <span class="aabenforms-persona-name">Freja Nielsen</span>
+                    <span class="aabenforms-persona-meta">København</span>
+                </button>
+                <button type="button" class="aabenforms-persona" data-username="mikkel.jensen">
+                    <span class="aabenforms-persona-name">Mikkel Jensen</span>
+                    <span class="aabenforms-persona-meta">Aarhus</span>
+                </button>
+                <button type="button" class="aabenforms-persona" data-username="sofie.hansen">
+                    <span class="aabenforms-persona-name">Sofie Hansen</span>
+                    <span class="aabenforms-persona-meta">Odense</span>
+                </button>
+                <button type="button" class="aabenforms-persona" data-username="karen.christensen">
+                    <span class="aabenforms-persona-name">Karen Christensen</span>
+                    <span class="aabenforms-persona-meta">Aalborg</span>
+                </button>
+            </div>
+        </div>
+
         <div id="kc-form">
             <div id="kc-form-wrapper">
                 <#if realm.password>
@@ -87,5 +109,42 @@
             <p class="aabenforms-foot-line">${msg("aabenformsFooterLicense")}</p>
             <p class="aabenforms-foot-line">${msg("aabenformsFooterReturn")}</p>
         </div>
+
+        <script>
+            (function () {
+                var DEMO_PASSWORD = 'test1234';
+                var KNOWN = ['freja.nielsen', 'mikkel.jensen', 'sofie.hansen', 'karen.christensen'];
+                var u = document.getElementById('username');
+                var p = document.getElementById('password');
+                var personas = document.querySelectorAll('.aabenforms-persona');
+                if (!u || !p || !personas.length) return;
+
+                function setPersona(name, focusPassword) {
+                    u.value = name;
+                    p.value = DEMO_PASSWORD;
+                    personas.forEach(function (b) {
+                        b.classList.toggle('is-active', b.getAttribute('data-username') === name);
+                    });
+                    if (focusPassword) p.focus();
+                }
+
+                personas.forEach(function (b) {
+                    b.addEventListener('click', function () {
+                        setPersona(b.getAttribute('data-username'), true);
+                    });
+                });
+
+                // Initial state: if Keycloak already echoed back a known persona
+                // (e.g. after a failed login retry), keep it active and refill
+                // the cleared password. Otherwise default to Freja so the demo
+                // is one click away.
+                var hasError = !!document.querySelector('#input-error, .alert-error');
+                if (KNOWN.indexOf(u.value) !== -1) {
+                    setPersona(u.value, false);
+                } else if (!u.value && !hasError) {
+                    setPersona('freja.nielsen', false);
+                }
+            })();
+        </script>
     </#if>
 </@layout.registrationLayout>
