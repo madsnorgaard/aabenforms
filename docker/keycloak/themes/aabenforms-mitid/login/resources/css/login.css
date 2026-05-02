@@ -195,6 +195,81 @@ body::after, .login-pf-page::before, .login-pf-page::after,
     color: var(--af-text);
 }
 
+/* Persona switcher - one-click demo login row. Sits above the form so the
+ * keyboard order is preserved: persona buttons come first, then username,
+ * then password, then submit (tab indices 2/3/4 on the form inputs). */
+.aabenforms-personas {
+    margin: 0 32px 20px;
+    padding: 14px 16px 16px;
+    background: #f5f7fb;
+    border: 1px solid var(--af-line);
+    border-radius: var(--af-radius-sm);
+}
+
+.aabenforms-personas-title {
+    margin: 0 0 10px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--af-text-soft);
+}
+
+.aabenforms-personas-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.aabenforms-persona {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    padding: 9px 12px;
+    border: 1.5px solid var(--af-line);
+    border-radius: var(--af-radius-sm);
+    background: var(--af-paper);
+    color: var(--af-text);
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 120ms ease, background 120ms ease, transform 120ms ease;
+}
+
+.aabenforms-persona:hover {
+    border-color: var(--af-navy);
+    background: #fbfcfe;
+}
+
+.aabenforms-persona:active {
+    transform: translateY(1px);
+}
+
+.aabenforms-persona.is-active {
+    border-color: var(--af-coral);
+    background: #fff4f4;
+    box-shadow: 0 0 0 2px rgba(255, 90, 95, 0.12);
+}
+
+.aabenforms-persona-name {
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.aabenforms-persona-meta {
+    font-size: 11px;
+    color: var(--af-text-soft);
+    line-height: 1.2;
+}
+
+@media (max-width: 380px) {
+    .aabenforms-personas-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 /* Form fields. */
 .aabenforms-field {
     margin-bottom: 18px;
