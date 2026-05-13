@@ -18,7 +18,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: 8.3
-          tools: composer:v2
+          tools: composer:2.9.8
 
       - name: Run Composer Audit
         run: composer audit
@@ -35,7 +35,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: 8.3
-          tools: composer:v2
+          tools: composer:2.9.8
 
       - name: Check for outdated Drupal packages
         run: composer outdated 'drupal/*' --direct
