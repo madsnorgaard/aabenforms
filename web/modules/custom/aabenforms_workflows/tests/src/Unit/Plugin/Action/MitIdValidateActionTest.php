@@ -6,6 +6,8 @@ use Drupal\aabenforms_mitid\Service\MitIdSessionManager;
 use Drupal\aabenforms_core\Service\WorkflowExecutionCollector;
 use Drupal\aabenforms_workflows\Plugin\Action\MitIdValidateAction;
 use Drupal\Component\Datetime\TimeInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\Session\AccountProxyInterface;
@@ -148,6 +150,15 @@ class MitIdValidateActionTest extends UnitTestCase {
     $sessionManagerProperty = $reflectionClass->getProperty('sessionManager');
     $sessionManagerProperty->setAccessible(TRUE);
     $sessionManagerProperty->setValue($this->action, $this->sessionManager);
+
+    // Inject a config factory with MitID demo mode OFF (fail-closed default).
+    $config = $this->createMock(ImmutableConfig::class);
+    $config->method('get')->willReturn(FALSE);
+    $configFactory = $this->createMock(ConfigFactoryInterface::class);
+    $configFactory->method('get')->willReturn($config);
+    $configFactoryProperty = $reflectionClass->getProperty('configFactory');
+    $configFactoryProperty->setAccessible(TRUE);
+    $configFactoryProperty->setValue($this->action, $configFactory);
   }
 
   /**
@@ -223,9 +234,8 @@ class MitIdValidateActionTest extends UnitTestCase {
   /**
    * Tests validation with missing MitID session.
    *
-   * Production code treats a missing session as "demo mode": logs at INFO,
-   * sets the result token to TRUE, and records a successful step. The earlier
-   * shape (warning + FALSE) was changed when demo-mode fallback was added.
+   * With demo mode OFF (the default), a missing session fails CLOSED: warning
+   * log, result token FALSE, and a failed step - never a false "verified".
    *
    * @covers ::execute
    */
@@ -241,17 +251,15 @@ class MitIdValidateActionTest extends UnitTestCase {
       ->with($workflowId)
       ->willReturn(NULL);
 
-    // Demo-mode fallback: info log, no warning.
+    // Fail-closed: warning log, never a false-success info.
     $this->logger->expects($this->once())
-      ->method('info');
-    $this->logger->expects($this->never())
       ->method('warning');
 
     // Execute action.
     $this->action->execute();
 
-    // Verify result is TRUE (demo mode).
-    $this->assertTrue($this->tokenStorage['mitid_valid']);
+    // Verify result is FALSE (fail closed).
+    $this->assertFalse($this->tokenStorage['mitid_valid']);
   }
 
   /**
@@ -345,17 +353,16 @@ class MitIdValidateActionTest extends UnitTestCase {
   /**
    * Tests validation without workflow ID.
    *
-   * Missing workflow ID falls into demo mode: info log, result token TRUE,
-   * and the session manager is never consulted.
+   * With demo mode OFF (the default), a missing workflow id fails CLOSED:
+   * warning log, result token FALSE, and the session manager is never
+   * consulted.
    *
    * @covers ::execute
    */
   public function testMissingWorkflowId(): void {
     // Don't set workflow_id token (simulate missing context).
-    // Demo-mode info log, no warning.
+    // Fail-closed: warning, no false-success info.
     $this->logger->expects($this->once())
-      ->method('info');
-    $this->logger->expects($this->never())
       ->method('warning');
 
     // Session manager should NOT be called.
@@ -365,8 +372,8 @@ class MitIdValidateActionTest extends UnitTestCase {
     // Execute action.
     $this->action->execute();
 
-    // Verify result is TRUE (demo mode).
-    $this->assertTrue($this->tokenStorage['mitid_valid']);
+    // Verify result is FALSE (fail closed).
+    $this->assertFalse($this->tokenStorage['mitid_valid']);
   }
 
   /**

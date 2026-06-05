@@ -291,10 +291,9 @@ class CprLookupActionTest extends UnitTestCase {
    */
   public function testMissingCpr(): void {
     // Don't set CPR token.
-    // Demo-mode info log, never warning.
+    // Honest "skipped" outcome: warning log, no false-success info, and the
+    // step is recorded as skipped rather than "retrieved from the registry".
     $this->logger->expects($this->once())
-      ->method('info');
-    $this->logger->expects($this->never())
       ->method('warning');
 
     // Serviceplatformen should NOT be called.
