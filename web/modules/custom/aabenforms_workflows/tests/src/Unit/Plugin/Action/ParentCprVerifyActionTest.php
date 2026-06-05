@@ -143,8 +143,9 @@ class ParentCprVerifyActionTest extends UnitTestCase {
   }
 
   /**
-   * With no token override, the deterministic workflow id is derived and the
-   * parent number is passed through to the verifier.
+   * The deterministic workflow id and parent number reach the verifier.
+   *
+   * With no token override, the action derives parent_approval_<sid>_p<N>.
    *
    * @covers ::execute
    */
