@@ -31,6 +31,7 @@ module:
   jsonapi_frontend: 0
   jsonapi_frontend_webform: 0
   key: 0
+  modeler: 0
   modeler_api: 0
   mysql: 0
   node: 0

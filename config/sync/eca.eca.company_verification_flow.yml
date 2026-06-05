@@ -11,7 +11,7 @@ dependencies:
     - modeler_api
 third_party_settings:
   modeler_api:
-    modeler_id: fallback
+    modeler_id: workflow_modeler
     label: company_verification_flow
 id: company_verification_flow
 weight: 0
