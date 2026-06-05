@@ -1,3 +1,5 @@
+> The live backlog is in GitHub issues (grouped by label) and summarised in the README "Roadmap & backlog" section. This file is historical session planning.
+
 # ÅbenForms - Next Steps & Priorities
 
 **Updated**: 2026-04-25 UTC
