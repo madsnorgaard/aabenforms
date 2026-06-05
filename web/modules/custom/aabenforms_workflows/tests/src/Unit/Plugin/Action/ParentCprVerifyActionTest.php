@@ -143,6 +143,25 @@ class ParentCprVerifyActionTest extends UnitTestCase {
   }
 
   /**
+   * Missing expected CPR records a FAILED replay step, not a green one.
+   *
+   * @covers ::execute
+   */
+  public function testMissingExpectedRecordsFailedStep(): void {
+    $this->seedSubmission();
+    $this->cprVerifier->method('verify')->willReturn(ParentCprVerifier::RESULT_MISSING_EXPECTED_CPR);
+    $collector = $this->createMock(WorkflowExecutionCollector::class);
+    $collector->expects($this->once())
+      ->method('addStep')
+      ->with($this->anything(), $this->anything(), $this->anything(), 'failed');
+    $this->action->setExecutionCollector($collector);
+
+    $this->action->execute();
+
+    $this->assertSame(ParentCprVerifier::RESULT_MISSING_EXPECTED_CPR, $this->tokenStorage['cpr_consent_result']);
+  }
+
+  /**
    * The deterministic workflow id and parent number reach the verifier.
    *
    * With no token override, the action derives parent_approval_<sid>_p<N>.

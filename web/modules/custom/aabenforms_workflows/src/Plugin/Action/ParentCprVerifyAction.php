@@ -149,8 +149,8 @@ class ParentCprVerifyAction extends AabenFormsActionBase {
           'failed',
         ],
         ParentCprVerifier::RESULT_MISSING_EXPECTED_CPR => [
-          sprintf('Submission carries no parent %d CPR - consent not enforced (legacy form)', $parentNumber),
-          'completed',
+          sprintf('No parent %d CPR on the submission - consent could not be verified', $parentNumber),
+          'failed',
         ],
         default => ['Unknown verification result', 'failed'],
       };

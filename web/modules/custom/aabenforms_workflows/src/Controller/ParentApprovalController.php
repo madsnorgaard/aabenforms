@@ -204,9 +204,12 @@ class ParentApprovalController extends ControllerBase {
       ];
     }
 
-    // Check if MitID authenticated.
+    // Check if MitID authenticated. The flag is scoped to BOTH the parent
+    // number AND the submission id, so a MitID login for one family's request
+    // cannot satisfy the gate for a different submission held in the same
+    // browser session.
     $session = $request->getSession();
-    $mitid_authenticated = $session->get("mitid_authenticated_parent{$parent_number}");
+    $mitid_authenticated = $session->get("mitid_authenticated_parent{$parent_number}_{$submission_id}");
 
     if (!$mitid_authenticated) {
       // Show MitID login page.
@@ -451,14 +454,29 @@ class ParentApprovalController extends ControllerBase {
       );
     }
     if ($result === ParentCprVerifier::RESULT_MISSING_EXPECTED_CPR) {
-      // Backwards-compatible fallback: the form submission does not carry a
-      // parent_<N>_cpr field (legacy forms or forms not yet updated with CPR
-      // capture). Log a warning and allow the approval to continue so that
-      // existing deployments are not broken. Once all active forms are
-      // updated to collect the CPR, this branch should be converted to a
-      // hard 403 (same as RESULT_MISMATCH) or removed entirely.
+      // The submission carries no parent_<N>_cpr to compare against, so the
+      // consent gate cannot verify which parent is acting. Fail CLOSED by
+      // default (require_parent_cpr_match, default TRUE even if the config key
+      // is absent). Deployments mid-migration can flip the flag off to keep
+      // the legacy warn-and-allow until their forms are back-filled.
+      $require_match = $this->config('aabenforms_workflows.settings')->get('require_parent_cpr_match') ?? TRUE;
+      if ($require_match) {
+        $this->logger->warning(
+          'CPR gate denied: submission @sid has no parent@parent_cpr field; approval blocked (require_parent_cpr_match on, workflow @wid)',
+          [
+            '@sid' => $submission_id,
+            '@parent' => $parent_number,
+            '@wid' => $workflow_id,
+          ]
+        );
+        return $this->renderGateFailure(
+          Response::HTTP_FORBIDDEN,
+          $this->t('Adgang nægtet'),
+          $this->t('Sagen mangler det forventede CPR-nummer; kontakt sagsbehandleren.')
+        );
+      }
       $this->logger->warning(
-        'CPR gate skipped: submission @sid has no parent@parent_cpr field; approval allowed without CPR verification (workflow @wid)',
+        'CPR gate skipped: submission @sid has no parent@parent_cpr field; approval allowed without CPR verification (require_parent_cpr_match off, workflow @wid)',
         [
           '@sid' => $submission_id,
           '@parent' => $parent_number,
@@ -478,7 +496,7 @@ class ParentApprovalController extends ControllerBase {
       );
     }
 
-    $request->getSession()->set("mitid_authenticated_parent{$parent_number}", TRUE);
+    $request->getSession()->set("mitid_authenticated_parent{$parent_number}_{$submission_id}", TRUE);
     $this->logger->info('Parent @parent MitID handoff verified for submission @sid', [
       '@parent' => $parent_number,
       '@sid' => $submission_id,
