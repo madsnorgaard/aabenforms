@@ -6,7 +6,7 @@ Status key: **WORKS** (verified) · **PARTIAL** · **BROKEN** (verified defect) 
 
 | Claim | Status | Notes / fix |
 |---|---|---|
-| Visual workflow modeler, ready-made flows | **WORKS** | 18 ECA flows render in the React-Flow Workflow Modeler with execution replay; zero console errors. (Marketing "7"/"13 BPMN templates" count and "BPMN 2.0 designer" wording are inaccurate — it is the Modeler API / `workflow_modeler`.) |
+| Visual workflow modeler, ready-made flows | **WORKS** | 18 ECA flows render in the React-Flow Workflow Modeler with execution replay; zero console errors. (Marketing "7"/"13 BPMN templates" count and "BPMN 2.0 designer" wording are inaccurate - it is the Modeler API / `workflow_modeler`.) |
 | Parent-CPR consent gate ("only the right parent can approve", #54) | **BROKEN → fixed** | Was inert (no parent CPR collected → always `missing_expected_cpr`) and the controller failed **open**; session flag not submission-scoped. Closed in the consent-gate-hardening PR (fail-closed, real CPR fields, scoped session, submit-time re-verify). |
 | MitID authentication | **BROKEN → fixed** | `MitIdValidateAction` reported "verified" with no session ("demo mode"); the result token was never gated. Now fails **closed** by default behind `allow_mitid_demo_mode`. |
 | CPR/CVR lookup via Serviceplatformen (SF1520/SF1530) + audit "resolved against registry" | **BROKEN → fixed** | `getTokenValue()` looked up the literal `[token]` string, so the lookups never called Serviceplatformen yet logged success. Token resolution fixed; lookup steps now record `skipped`/`failed` honestly. |
