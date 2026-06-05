@@ -112,3 +112,6 @@ aabenforms_workflows.settings:
     notification_sender_email:
       type: email
       label: 'Default sender email for notifications'
+    require_parent_cpr_match:
+      type: boolean
+      label: 'Fail closed when a parent-approval submission has no expected CPR to verify against'

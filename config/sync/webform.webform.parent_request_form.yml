@@ -31,11 +31,39 @@ elements: |-
     '#title': 'Parent 1 Email'
     '#required': true
     '#description': 'Email address for Parent 1 (will receive MitID login link)'
+  parent1_cpr:
+    '#type': cpr_field
+    '#title': 'Parent 1 CPR Number'
+    '#required': true
+    '#description': 'Parent 1 Danish CPR number. Must match the CPR asserted by Parent 1 MitID login before the approval is accepted.'
+    '#access_create_roles':
+      - administrator
+      - case_worker
+    '#access_update_roles':
+      - administrator
+      - case_worker
+    '#access_view_roles':
+      - administrator
+      - case_worker
   parent2_email:
     '#type': email
     '#title': 'Parent 2 Email'
     '#required': true
     '#description': 'Email address for Parent 2 (will receive MitID login link)'
+  parent2_cpr:
+    '#type': cpr_field
+    '#title': 'Parent 2 CPR Number'
+    '#required': true
+    '#description': 'Parent 2 Danish CPR number. Must match the CPR asserted by Parent 2 MitID login before the approval is accepted.'
+    '#access_create_roles':
+      - administrator
+      - case_worker
+    '#access_update_roles':
+      - administrator
+      - case_worker
+    '#access_view_roles':
+      - administrator
+      - case_worker
   parents_together:
     '#type': radios
     '#title': 'Parent Status'
@@ -216,8 +244,7 @@ settings:
 access:
   create:
     roles:
-      - anonymous
-      - authenticated
+      - case_worker
     users: {  }
     permissions: {  }
   view_any:
