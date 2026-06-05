@@ -150,6 +150,19 @@ abstract class AabenFormsActionBase extends ActionBase implements ContainerFacto
    *   The token value, or the default.
    */
   protected function getTokenValue(string $fieldKey, string $default): string {
+    // A bracketed reference such as '[parent1_session:cpr]' is an ECA token
+    // that must be RESOLVED via replacement against the token environment.
+    // The previous code passed the literal bracketed string to getTokenData()
+    // as a data-bag key, so these always missed: CPR/CVR lookups silently
+    // received an empty value and never called Serviceplatformen, while still
+    // recording a "completed" step. Bare keys keep their direct-lookup
+    // behaviour below (getOrReplace would wrongly return the literal name for
+    // an unset bare token, breaking empty() guards).
+    if (str_contains($fieldKey, '[')) {
+      $replaced = $this->tokenService->replaceClear($fieldKey, []);
+      $replaced = is_string($replaced) ? trim($replaced) : '';
+      return $replaced !== '' ? $replaced : $default;
+    }
     $value = $this->tokenService->getTokenData($fieldKey);
     if (is_string($value)) {
       return $value;
