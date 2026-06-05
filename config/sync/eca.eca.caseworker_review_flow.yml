@@ -5,6 +5,11 @@ dependencies:
   module:
     - aabenforms_workflows
     - eca_content
+    - modeler_api
+third_party_settings:
+  modeler_api:
+    modeler_id: workflow_modeler
+    label: caseworker_review_flow
 id: caseworker_review_flow
 weight: null
 template: null

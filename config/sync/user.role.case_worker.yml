@@ -5,6 +5,7 @@ dependencies:
   module:
     - aabenforms_core
     - aabenforms_workflows
+    - modeler_api
     - system
     - webform
 id: case_worker
@@ -16,5 +17,10 @@ permissions:
   - 'access webform api'
   - 'administer workflows'
   - 'edit any webform submission'
+  - 'modeler api collection eca'
+  - 'modeler api replay eca'
+  - 'modeler api test eca'
+  - 'modeler api view eca'
+  - 'modeler api view eca with workflow_modeler'
   - 'use text format webform_default'
   - 'view any webform submission'
