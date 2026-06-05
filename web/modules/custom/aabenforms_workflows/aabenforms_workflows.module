@@ -128,3 +128,30 @@ function aabenforms_workflows_theme(array $existing, string $type, string $theme
     ],
   ];
 }
+
+/**
+ * Implements hook_cron().
+ *
+ * Self-heals an abandoned ECA execution-replay capture. When a tester arms
+ * replay (eca.token_browser::initTesting) the GLOBAL state flag
+ * _eca_internal_debug_mode is set TRUE, and while it is on every ECA run
+ * records its token data - including citizen CPR - into a cross-user shared
+ * tempstore. The contrib token browser only disarms while the tester's UI
+ * keeps polling; an abandoned browser tab leaves capture on indefinitely.
+ * Reset it once the arming is older than a short TTL so citizen PII is not
+ * recorded into a shared store unattended.
+ */
+function aabenforms_workflows_cron(): void {
+  $state = \Drupal::state();
+  if (!$state->get('_eca_internal_debug_mode', FALSE)) {
+    return;
+  }
+  // 15 minutes, matching the MitID session TTL.
+  $ttl = 900;
+  $started = (int) $state->get('_eca_internal_debug_test_started', 0);
+  if ($started === 0 || (\Drupal::time()->getRequestTime() - $started) > $ttl) {
+    $state->set('_eca_internal_debug_mode', FALSE);
+    $state->delete('_eca_internal_debug_test_started');
+    \Drupal::logger('aabenforms_workflows')->warning('Reset a stale ECA replay capture: debug mode was left armed, so citizen PII is no longer being recorded to the shared replay store.');
+  }
+}

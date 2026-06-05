@@ -18,8 +18,6 @@ permissions:
   - 'administer workflows'
   - 'edit any webform submission'
   - 'modeler api collection eca'
-  - 'modeler api replay eca'
-  - 'modeler api test eca'
   - 'modeler api view eca'
   - 'modeler api view eca with workflow_modeler'
   - 'use text format webform_default'
