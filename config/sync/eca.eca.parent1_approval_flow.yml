@@ -44,6 +44,17 @@ actions:
       session_data_token: parent1_session
     successors:
       -
+        id: parent1_cpr_verify
+        condition: ''
+  parent1_cpr_verify:
+    label: 'Parent 1: Verify CPR Consent'
+    plugin: aabenforms_parent_cpr_verify
+    configuration:
+      parent_number: '1'
+      workflow_id_token: ''
+      result_token: parent1_cpr_consent
+    successors:
+      -
         id: parent1_cpr
         condition: ''
   parent1_cpr:
