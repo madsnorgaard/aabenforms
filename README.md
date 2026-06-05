@@ -185,7 +185,7 @@ curl -s http://localhost:8080/realms/danish-gov-test/.well-known/openid-configur
 
 **Legend**:  Shipped |  In Progress |  Planned
 
-The Digital Post + NemLogin rewrite plan is the explicit modular alternative to the OS2/Bellcom dependency maze. Goal: each integration installs cleanly on any modern Drupal 11 with at most one mainstream contrib, no `os2web_*` chain.
+The Digital Post + NemLog-in rewrite plan is an explicit modular alternative to the heavier proprietary integration stacks. Goal: each integration installs cleanly on any modern Drupal 11 with at most one mainstream contrib module, with no deep vendor dependency chain.
 
 ### Development Progress
 
