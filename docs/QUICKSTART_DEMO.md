@@ -1,10 +1,34 @@
 # ÅbenForms Quick Start Demo Guide
 
-**Goal**: Demonstrate ÅbenForms can replace XFlow in 15 minutes.
+**Goal**: Demonstrate ÅbenForms as a no-licence-fee, open-source alternative to proprietary municipal workflow platforms in 15 minutes.
+
+**Status**: Pre-pilot POC. Live demo at https://aabenforms.dk (frontend) and https://api.aabenforms.dk (backend). MitID via Keycloak mock; Serviceplatformen and Digital Post via test/mock endpoints. There are no production municipality deployments.
 
 ---
 
-##  Quick Demo (15 minutes)
+## Important: what is real vs what is a demo mock
+
+Before running this demo, be honest with yourself and the audience about which parts are
+real and which are illustrative mocks.
+
+**Real today** (works, though against test/mock endpoints):
+- ECA workflow engine, the Workflow Modeler editor, and execution replay
+- MitID OIDC sign-in against a Keycloak mock IdP (fails closed by default; demo mode is opt-in)
+- CPR (SF1520) and CVR (SF1530) lookup clients (against test/WireMock; need client certs for live)
+- Custom webform elements with server-side validation: CPR (modulus-11), CVR, DAWA
+- Field-level CPR encryption (AES-256) plus audit logging
+- Digital Post (SF1601) in fake_db / wiremock test modes (no live MeMo/SOAP or idempotency yet)
+
+**Demo mocks** (NOT production - do not claim these "work in production"):
+- Payment, SMS, GIS/zoning, payroll, and calendar/booking actions are demo mocks that return
+  canned success responses. They demonstrate the workflow shape, not a live integration.
+
+When you show the demos below, say plainly: "This is a demo mock that returns a simulated
+response so we can see the workflow end to end. A live integration is a pilot deliverable."
+
+---
+
+## Quick Demo (15 minutes)
 
 ### Prerequisites
 ```bash
@@ -13,20 +37,22 @@ ddev start
 ddev drush cr
 ```
 
-### Demo 1: Payment Processing (3 minutes)
+### Demo 1: Payment Processing - demo mock (3 minutes)
 
-**Show XFlow Alternative**:
+**Demonstrate the payment step in a workflow**. The payment service is a demo mock that
+returns a simulated success response; it does not contact a live payment provider.
+
 ```bash
-echo "=== Testing Payment Service (Nets Easy Mock) ==="
+echo "=== Testing Payment Service (demo mock) ==="
 ddev drush php:eval '
 $payment = \Drupal::service("aabenforms_workflows.payment_service");
 
-// Process parking permit payment
+// Process parking permit payment (mock)
 $result = $payment->processPayment([
   "amount" => 30000, // 300 DKK
   "currency" => "DKK",
   "order_id" => "DEMO-PARKING-001",
-  "payment_method" => "nets_easy",
+  "payment_method" => "card",
   "description" => "Parking permit - 6 months",
 ]);
 
@@ -45,14 +71,16 @@ Transaction ID: TXN-ABCDEF123456
 Amount: 300 DKK
 ```
 
- **XFlow Feature Parity**: Payment processing works!
+Note: simulated response from the demo mock. A live payment integration is a pilot deliverable.
 
 ---
 
-### Demo 2: SMS Notifications (2 minutes)
+### Demo 2: SMS Notifications - demo mock (2 minutes)
+
+The SMS service is a demo mock that returns a simulated send result.
 
 ```bash
-echo "=== Testing SMS Service (Danish SMS Gateway Mock) ==="
+echo "=== Testing SMS Service (demo mock) ==="
 ddev drush php:eval '
 $sms = \Drupal::service("aabenforms_workflows.sms_service");
 
@@ -74,7 +102,7 @@ Message ID: SMS-xxx-1234567890
 Segments: 1
 ```
 
- **XFlow Feature Parity**: SMS notifications work!
+Note: simulated response from the demo mock.
 
 ---
 
@@ -98,18 +126,18 @@ echo "File URL: " . $result["file_url"] . "\n";
 '
 ```
 
- **XFlow Feature Parity**: PDF generation works!
-
 ---
 
-### Demo 4: Calendar Booking (3 minutes)
+### Demo 4: Calendar Booking - demo mock (3 minutes)
+
+The calendar/booking service is a demo mock returning simulated slots and bookings.
 
 ```bash
-echo "=== Testing Calendar Service (Marriage Booking) ==="
+echo "=== Testing Calendar Service (demo mock - Marriage Booking) ==="
 ddev drush php:eval '
 $calendar = \Drupal::service("aabenforms_workflows.calendar_service");
 
-// Fetch available ceremony slots
+// Fetch available ceremony slots (mock)
 $slots = $calendar->getAvailableSlots("2026-03-01", "2026-03-15", 60);
 
 echo "Available Slots: " . $slots["total_slots"] . "\n";
@@ -118,7 +146,7 @@ foreach (array_slice($slots["slots"], 0, 5) as $slot) {
   echo "  - " . $slot["date"] . " " . $slot["start_time"] . "-" . $slot["end_time"] . " at " . $slot["location"] . "\n";
 }
 
-// Book a slot
+// Book a slot (mock)
 $booking = $calendar->bookSlot($slots["slots"][0]["slot_id"], [
   ["name" => "Partner 1", "email" => "p1@test.dk"],
   ["name" => "Partner 2", "email" => "p2@test.dk"],
@@ -129,20 +157,21 @@ echo "Booking ID: " . $booking["booking_id"] . "\n";
 '
 ```
 
- **XFlow Feature Parity**: Calendar/booking works!
+Note: simulated response from the demo mock.
 
 ---
 
-### Demo 5: GIS Zoning Validation (3 minutes)
+### Demo 5: GIS Zoning Validation - demo mock (3 minutes)
 
-** This feature EXCEEDS XFlow capabilities!**
+The GIS/zoning service is a demo mock. It returns illustrative zoning and neighbour data; it
+does not query a live GIS system.
 
 ```bash
-echo "=== Testing GIS Service (Zoning Validation) ==="
+echo "=== Testing GIS Service (demo mock - Zoning Validation) ==="
 ddev drush php:eval '
 $gis = \Drupal::service("aabenforms_workflows.gis_service");
 
-// Check if extension is allowed
+// Check if extension is allowed (mock)
 $validation = $gis->validateConstructionType(
   "Vestergade 10, 8000 Aarhus C",
   "tilbygning"
@@ -154,7 +183,7 @@ echo "Construction Type: " . $validation["construction_type"] . "\n";
 echo "Allowed: " . ($validation["allowed"] ? "YES" : "NO") . "\n";
 echo "Reason: " . $validation["reason"] . "\n";
 
-// Find neighbors to notify
+// Find neighbors to notify (mock)
 $neighbors = $gis->findNeighborsInRadius(
   "Vestergade 10, 8000 Aarhus C",
   50
@@ -167,28 +196,31 @@ foreach ($neighbors["neighbors"] as $neighbor) {
 '
 ```
 
- **EXCEEDS XFlow**: Automatic GIS validation and neighbor discovery!
+Note: simulated response from the demo mock. GIS integration is a pilot deliverable, not a
+shipped feature.
 
 ---
 
 ### Demo 6: Complete Workflow Test (2 minutes)
 
+This stitches together the payment, PDF, and SMS steps. Payment and SMS are demo mocks.
+
 ```bash
 echo "=== Testing Complete Parking Permit Workflow ==="
 ddev drush php:eval '
-// Simulate complete workflow execution
+// Simulate complete workflow execution (payment + SMS are demo mocks)
 $services = [
   "payment" => \Drupal::service("aabenforms_workflows.payment_service"),
   "sms" => \Drupal::service("aabenforms_workflows.sms_service"),
   "pdf" => \Drupal::service("aabenforms_workflows.pdf_service"),
 ];
 
-echo "Step 1: Process payment...\n";
+echo "Step 1: Process payment (mock)...\n";
 $payment_result = $services["payment"]->processPayment([
   "amount" => 30000,
   "currency" => "DKK",
   "order_id" => "WORKFLOW-DEMO-001",
-  "payment_method" => "nets_easy",
+  "payment_method" => "card",
 ]);
 echo "   Payment " . $payment_result["status"] . "\n";
 
@@ -199,76 +231,85 @@ $pdf_result = $services["pdf"]->generatePdf("parking_permit", [
 ]);
 echo "   PDF generated: " . $pdf_result["filename"] . "\n";
 
-echo "\nStep 3: Send SMS confirmation...\n";
+echo "\nStep 3: Send SMS confirmation (mock)...\n";
 $sms_result = $services["sms"]->sendSms(
   "+4512345678",
   "Din parkeringslicens er godkendt! Se vedhæftet PDF."
 );
 echo "   SMS " . $sms_result["status"] . "\n";
 
-echo "\n Complete workflow executed successfully!\n";
-echo "This is what XFlow does - but we did it with open source!\n";
+echo "\nWorkflow executed (payment and SMS via demo mocks).\n";
+echo "Open source, no per-form or per-integration licence fees.\n";
 '
 ```
 
 ---
 
-##  Summary: ÅbenForms vs XFlow
+## Summary: ÅbenForms vs proprietary alternatives
 
-| Feature | XFlow | ÅbenForms | Status |
-|---------|-------|-----------|--------|
-| Payment Processing |  |  Demonstrated | **PARITY** |
-| SMS Notifications |  |  Demonstrated | **PARITY** |
-| PDF Generation |  |  Demonstrated | **PARITY** |
-| Calendar Booking |  |  Demonstrated | **PARITY** |
-| GIS Validation |  Limited |  Full GIS + neighbors | **EXCEEDS** |
-| Cost | €75K/5yr | €0 software license | **59% SAVINGS** |
+| Area | Proprietary alternatives | ÅbenForms |
+|------|--------------------------|-----------|
+| Payment step | Production integration | Demo mock today; live integration is a pilot deliverable |
+| SMS step | Production integration | Demo mock today |
+| PDF generation | Yes | Working |
+| Calendar booking | Production integration | Demo mock today |
+| GIS validation | Varies by vendor | Demo mock today |
+| Licensing | Annual licence fees, often per-integration and per-form | Open source, no licence fees |
+| API | Often older SOAP APIs | Modern JSON:API |
+| Data control / lock-in | Vendor-controlled | Self-hosted, full source access, no lock-in |
 
----
-
-##  Key Talking Points for Demo
-
-1. **"This is what XFlow does for €75,000 over 5 years..."**
-   - Show payment processing
-   - Show SMS sending
-   - Show PDF generation
-
-2. **"...but ÅbenForms does it for FREE with open source"**
-   - Zero licensing costs
-   - Same functionality
-   - Better in some areas (GIS)
-
-3. **"Plus we added features XFlow doesn't have"**
-   - Automatic neighbor discovery
-   - GIS zoning validation
-   - Open API (JSON:API standard)
-
-4. **"And it's all built on proven technology"**
-   - Drupal 11 (1M+ developers)
-   - BPMN 2.0 (industry standard)
-   - Modern PHP 8.4
+The honest pitch: ÅbenForms already runs real ECA workflows, MitID sign-in, CPR/CVR lookups, and
+field-level encryption against test endpoints. The payment, SMS, GIS, payroll, and calendar
+actions are demo mocks that show the workflow shape; making them live is pilot work.
 
 ---
 
-##  Next Steps
+## Key Talking Points for Demo
 
-1.  **Core functionality works** (as demonstrated)
-2.  **Complete UI** (frontend components)
-3.  **Add tests** (quality assurance)
-4.  **Write docs** (user guides)
-5.  **Record videos** (training materials)
+1. **No per-form or per-integration licence fees**
+   - Proprietary self-service platforms typically charge annual licence fees plus
+     per-integration fees. ÅbenForms is open source with no licence fees.
 
-**Status**: **Ready for pilot deployment in forward-thinking municipality!**
+2. **Open source, no vendor lock-in**
+   - Full source access, self-hostable, your data stays under your control.
+
+3. **Workflows are real, several integrations are still mocks**
+   - The ECA engine, Workflow Modeler, MitID sign-in, CPR/CVR lookup, and encryption are real.
+   - Payment, SMS, GIS, payroll, and calendar actions are demo mocks today.
+
+4. **Built on proven technology**
+   - Drupal 11 (core 11.3.10), PHP 8.4
+   - ECA 3.1.1 workflow engine with the Workflow Modeler editor
+   - Modern JSON:API
 
 ---
 
-##  Contact
+## Workflow Library
 
-- **Email**: aabenforms@example.dk
-- **Demo Site**: https://demo.aabenforms.dk (coming soon)
+- 13 ready-made workflow templates (BPMN source files) under
+  `web/modules/custom/aabenforms_workflows/workflows/`.
+- 18 ECA flows deployed (config/sync/eca.eca.*).
+
+---
+
+## Status and Next Steps
+
+This is a pre-pilot POC. Outstanding work before a pilot:
+
+1. Replace demo mocks (payment, SMS, GIS, payroll, calendar) with live integrations.
+2. Live Serviceplatformen and Digital Post endpoints (client certs, MeMo/SOAP, idempotency).
+3. Data retention / right-to-erasure subsystem (planned, issue #91).
+4. Frontend components and end-to-end tests.
+5. User guides and training materials.
+
+---
+
+## Contact
+
+- **Demo Site (frontend)**: https://aabenforms.dk
+- **Demo Site (backend API)**: https://api.aabenforms.dk
 - **GitHub**: https://github.com/madsnorgaard/aabenforms
-- **Docs**: https://docs.aabenforms.dk
 
 ---
 
-*"Open source. Zero vendor lock-in. Danish municipal workflows. That's ÅbenForms."*
+*Open source. No vendor lock-in. Danish municipal workflows. That's ÅbenForms.*

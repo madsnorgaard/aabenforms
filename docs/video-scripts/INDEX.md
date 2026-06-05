@@ -20,11 +20,11 @@ Complete video script package for producing professional demo videos.
 ### 1. Platform Overview (3 minutes)
 **File**: [01-PLATFORM_OVERVIEW.md](01-PLATFORM_OVERVIEW.md)
 
-**Purpose**: Introduction to ÅbenForms, value proposition, cost comparison
+**Purpose**: Introduction to ÅbenForms, value proposition
 **Audience**: Municipal decision-makers, IT managers
 **Key Messages**:
-- Open source alternative to XFlow
-- 90% cost savings
+- Open source alternative to proprietary alternatives
+- No per-form licence fees
 - No vendor lock-in
 - Community-driven
 
@@ -32,12 +32,12 @@ Complete video script package for producing professional demo videos.
 - Exact narration (Danish + English)
 - Screen actions with timestamps
 - Visual callouts and graphics
-- Cost comparison chart
-- Feature comparison table
+- Cost comparison framing (no fabricated figures)
+- Feature overview
 - GitHub repository showcase
 - Call to action
 
-**Complexity**: ⭐ Simple (mostly slides and homepage)
+**Complexity**: Simple (mostly slides and homepage)
 **Recording Time**: ~1 hour
 **Editing Time**: ~4 hours
 
@@ -49,29 +49,27 @@ Complete video script package for producing professional demo videos.
 **Purpose**: End-to-end workflow demonstration (simple example)
 **Audience**: Municipal staff, citizens, general public
 **Key Messages**:
-- 5 minutes from start to approved permit
-- MitID authentication
-- Payment processing
-- Automatic PDF generation
-- SMS confirmation
-- 75% time savings vs manual process
+- A short, guided application flow
+- MitID authentication (against a Keycloak mock IdP)
+- Payment step (demo mock - not a live payment gateway)
+- PDF generation
+- SMS confirmation (demo mock)
 
 **Script Includes**:
 - Complete workflow walkthrough
-- MitID login sequence
+- MitID login sequence (mock IdP)
 - Form completion (vehicle info, address)
-- Payment processing (Nets)
+- Payment step (demo mock)
 - PDF license generation
-- SMS notification
-- Time comparison graphic
+- SMS notification (demo mock)
 
 **Test Data Required**:
-- Citizen: Jens Jensen (CPR: 0101701234)
-- Vehicle: AB12345 (VW Golf)
+- Citizen: Jens Jensen (fictional, CPR: 0101701234)
+- Vehicle: AB12345 (VW Golf, fictional)
 - Payment: Test card 4111 1111 1111 1111
-- Zone: Zone 2 - Nørregade området
+- Zone: Zone 2 - Nørregade området (fictional scenario)
 
-**Complexity**: ⭐⭐ Medium (live demo with integrations)
+**Complexity**: Medium (demo flow with mocked integrations)
 **Recording Time**: ~2 hours
 **Editing Time**: ~5 hours
 
@@ -83,29 +81,28 @@ Complete video script package for producing professional demo videos.
 **Purpose**: Complex dual-authentication workflow
 **Audience**: Municipal registry office, engaged couples
 **Key Messages**:
-- Dual MitID authentication (both partners)
-- Calendar integration
-- Real-time availability
-- Automated reminders (email + SMS)
-- Complex workflow orchestration
+- Dual MitID authentication (both partners, against the mock IdP)
+- Calendar/booking step (demo mock)
+- Reminders (email + SMS, demo mocks)
+- Multi-party workflow orchestration
 - Celebratory, warm tone
 
 **Script Includes**:
 - Dual partner authentication flow
-- Calendar and venue selection
+- Calendar and venue selection (demo mock)
 - Witness information
-- Payment and confirmation
-- Automated reminder system
+- Payment and confirmation (payment is a demo mock)
+- Reminder system (demo mock)
 - Calendar invitation (.ics) download
 
 **Test Data Required**:
-- Partner A: Anna Andersen (CPR: 0101851234)
-- Partner B: Bo Bertelsen (CPR: 0202881234)
-- Witnesses: Carla Christensen, David Davidsen
-- Venue: Rådhuset, Gammel Festsal
+- Partner A: Anna Andersen (fictional, CPR: 0101851234)
+- Partner B: Bo Bertelsen (fictional, CPR: 0202881234)
+- Witnesses: Carla Christensen, David Davidsen (fictional)
+- Venue: Rådhuset, Gammel Festsal (fictional scenario)
 - Date: 3 weeks from recording date
 
-**Complexity**: ⭐⭐⭐ Complex (dual auth, calendar, multiple integrations)
+**Complexity**: Complex (dual auth, calendar/payroll/calendar steps are demo mocks)
 **Recording Time**: ~2.5 hours
 **Editing Time**: ~6 hours
 
@@ -117,37 +114,37 @@ Complete video script package for producing professional demo videos.
 **Purpose**: Advanced features showcase (GIS, SBSYS, GDPR)
 **Audience**: Municipal planners, building inspectors, architects
 **Key Messages**:
-- **GIS zoning validation** (XFlow doesn't have this!)
-- Automatic neighbor notification
-- Multi-stage approval workflow
-- SBSYS integration
-- GDPR compliance by design
-- 75% faster than manual process
+- GIS zoning validation (demo mock)
+- Automatic neighbor notification (demo mock)
+- Multi-stage approval workflow (ECA flows)
+- SBSYS integration (planned, shown as demo mock)
+- Field-level CPR encryption and audit logging (real, built into aabenforms_core)
+- Faster than a manual paper process
 
 **Script Includes**:
 - Project type selection
-- MitID + property identification
-- **GIS map visualization** (KEY FEATURE)
-- **Automatic zoning validation** (KEY FEATURE)
+- MitID + property identification (mock IdP)
+- GIS map visualization (demo mock)
+- Automatic zoning validation (demo mock)
 - Document upload with validation
-- **Automatic neighbor notification** (KEY FEATURE)
-- BPMN workflow stages
-- SBSYS integration
-- GDPR compliance dashboard
+- Automatic neighbor notification (demo mock)
+- Workflow stages (ECA flows)
+- SBSYS integration (planned, shown as demo mock)
+- GDPR / audit-log view
 - Building permit issuance
 
 **Test Data Required**:
-- Applicant: Mette Mortensen (CPR: 0101701234)
-- Property: Skovvej 15 (ID: 751-12345)
-- GIS data: Zone Residential, 3 neighbors identified
+- Applicant: Mette Mortensen (fictional, CPR: 0101701234)
+- Property: Skovvej 15 (fictional, ID: 751-12345)
+- GIS data: Zone Residential, 3 neighbors (mock scenario)
 - Documents: 6 PDFs (plans, drawings, calculations)
-- Contractor: Byg & Anlæg ApS (CVR: 98765432)
+- Contractor: Byg & Anlæg ApS (fictional, CVR: 98765432)
 
-**Complexity**: ⭐⭐⭐⭐ Very Complex (GIS maps, multi-stage workflow, many integrations)
+**Complexity**: Very Complex (GIS/SBSYS shown as demo mocks, multi-stage ECA workflow)
 **Recording Time**: ~3 hours
 **Editing Time**: ~8 hours
 
-**NOTE**: This is the **most important video** - it showcases features XFlow doesn't have!
+**NOTE**: Several features in this video (GIS, neighbor notification, SBSYS) are demo mocks, not live production integrations. Narrate them as illustrative.
 
 ---
 
@@ -158,31 +155,31 @@ Complete video script package for producing professional demo videos.
 **Audience**: Municipal IT staff, workflow designers, administrators
 **Key Messages**:
 - No coding required
-- BPMN.io industry standard
-- 16 Danish municipal task types
+- Workflow Modeler (visual workflow editor)
+- 13 ready-made workflow templates / 18 ECA flows deployed
 - Drag-and-drop interface
 - Validation and testing
 - Template gallery
 - Community sharing
 
 **Script Includes**:
-- BPMN.io editor overview (3 panels)
-- Building simple workflow from scratch (dog registration)
-- Adding conditional logic (gateways)
-- Danish municipal task palette (16 types)
-- **GIS Validation task** (unique feature)
-- **Neighbor Notification task** (unique feature)
+- Workflow Modeler editor overview
+- Building a simple workflow from scratch (dog registration)
+- Adding conditional logic
+- Danish municipal task palette
+- GIS Validation task (demo mock)
+- Neighbor Notification task (demo mock)
 - Validation and simulation
 - Template gallery browsing
-- Export/import workflows (BPMN XML)
-- Advanced features (subprocess, timers, parallel gateways)
+- Export/import workflows
+- Advanced features (subprocess, timers, parallel branches)
 
 **Test Data Required**:
 - Admin account: admin@demo.aabenforms.dk / demo123
-- Workflow templates: 16+ in gallery
-- BPMN.io editor configured with Danish palette
+- 13 ready-made workflow templates in gallery
+- Workflow Modeler configured with Danish palette
 
-**Complexity**: ⭐⭐⭐ Complex (technical tutorial, requires clear instruction)
+**Complexity**: Complex (technical tutorial, requires clear instruction)
 **Recording Time**: ~4 hours
 **Editing Time**: ~8 hours
 
@@ -206,38 +203,35 @@ Complete video script package for producing professional demo videos.
 
 ---
 
-## Key Differentiators to Emphasize
+## Key Points to Emphasize
 
-These features make ÅbenForms superior to XFlow:
+These points differentiate ÅbenForms from proprietary alternatives:
 
 ### 1. GIS Zoning Validation (Video 04)
 - **What**: Automatic property identification and zoning validation
-- **Why**: XFlow requires manual checking; we automate it
-- **Impact**: Saves 2 hours per building permit application
+- **Status**: Demo mock - illustrates the intended capability, not a live integration
 - **Screen Time**: 90 seconds in Video 04 (1:45-3:00)
 
 ### 2. Automatic Neighbor Notification (Video 04)
-- **What**: GIS-based neighbor identification and automated letters
-- **Why**: XFlow requires manual neighbor lookup and letter writing
-- **Impact**: Saves 1 hour per application, reduces errors
+- **What**: GIS-based neighbor identification and generated letters
+- **Status**: Demo mock - illustrates the intended capability
 - **Screen Time**: 45 seconds in Video 04 (4:00-4:45)
 
-### 3. Visual Workflow Builder (Video 05)
-- **What**: Drag-and-drop BPMN workflow creation without coding
-- **Why**: XFlow has limited workflow customization
+### 3. Visual Workflow Editor (Video 05)
+- **What**: Drag-and-drop workflow creation without coding via the Workflow Modeler
+- **Why**: Proprietary alternatives typically have limited workflow customization
 - **Impact**: Non-technical staff can create new services
 - **Screen Time**: Entire 10-minute video
 
 ### 4. Open Source & No Vendor Lock-in (Video 01)
-- **What**: AGPL-3.0 licensed, self-hostable, community-driven
-- **Why**: XFlow is proprietary, expensive, vendor lock-in
-- **Impact**: 90% cost savings, full data sovereignty
+- **What**: GPL-2.0-or-later licensed, self-hostable, community-driven
+- **Why**: Proprietary alternatives carry licence and per-integration fees and vendor lock-in
+- **Impact**: No per-form licence fees, full data control
 - **Screen Time**: 45 seconds in Video 01 (2:15-2:45)
 
 ### 5. Danish Municipal Task Palette (Video 05)
-- **What**: 16 pre-configured task types for Danish workflows
+- **What**: Pre-configured task types for Danish workflows
 - **Why**: Generic BPM tools require extensive configuration
-- **Impact**: 10x faster workflow creation
 - **Screen Time**: 90 seconds in Video 05 (5:00-6:30)
 
 ---
@@ -279,7 +273,7 @@ These features make ÅbenForms superior to XFlow:
 - Documentation: https://docs.aabenforms.dk
 - Community: https://community.aabenforms.dk
 
-### Test Accounts
+### Test Accounts (all fictional)
 - **Citizen**: 0101701234 (Jens Jensen)
 - **Partner A**: 0101851234 (Anna Andersen)
 - **Partner B**: 0202881234 (Bo Bertelsen)
@@ -313,13 +307,13 @@ Examples:
 
 | Video | Script | Recording | Editing | QA | Published |
 |-------|--------|-----------|---------|-----|-----------|
-| 01 - Platform Overview |  | ⬜ | ⬜ | ⬜ | ⬜ |
-| 02 - Parking Permit |  | ⬜ | ⬜ | ⬜ | ⬜ |
-| 03 - Marriage Booking |  | ⬜ | ⬜ | ⬜ | ⬜ |
-| 04 - Building Permit |  | ⬜ | ⬜ | ⬜ | ⬜ |
-| 05 - Visual Builder |  | ⬜ | ⬜ | ⬜ | ⬜ |
+| 01 - Platform Overview | Done | Not started | Not started | Not started | Not started |
+| 02 - Parking Permit | Done | Not started | Not started | Not started | Not started |
+| 03 - Marriage Booking | Done | Not started | Not started | Not started | Not started |
+| 04 - Building Permit | Done | Not started | Not started | Not started | Not started |
+| 05 - Visual Builder | Done | Not started | Not started | Not started | Not started |
 
-**Legend**:  Complete |  In Progress | ⬜ Not Started
+**Legend**: Done | In Progress | Not Started
 
 ---
 
@@ -352,24 +346,8 @@ Examples:
 
 ## Success Metrics
 
-### YouTube Performance Targets (First Month)
-- **Platform Overview**: 1,000+ views, 65%+ retention
-- **Parking Permit**: 500+ views, 55%+ retention
-- **Marriage Booking**: 400+ views, 55%+ retention
-- **Building Permit**: 600+ views, 60%+ retention (key video)
-- **Visual Builder**: 800+ views, 50%+ retention
-
-### Engagement Targets
-- Click-through rate: 4-10% (thumbnail quality)
-- Like ratio: 95%+ (high quality indicator)
-- Comments: 5-10 per video (engagement)
-- Subscribers gained: 50-100 from series
-
-### Business Impact Targets
-- Demo requests: 10-20 from municipalities
-- GitHub stars: +200 (from 1,247 to 1,450+)
-- Downloads: 50-100 (self-hosted installations)
-- Community members: +50 (forum, Discord)
+Set concrete view/retention/engagement targets once the channel has a baseline.
+Avoid publishing fabricated benchmark figures before any video exists.
 
 ---
 
@@ -397,7 +375,5 @@ All video scripts and production materials:
 
 ---
 
-**Last Updated**: 2024-02-02
-**Version**: 1.0.0
-**Status**: Ready for Production 
+**Status**: Pre-pilot POC. Scripts ready for review.
 **Maintained by**: ÅbenForms Core Team

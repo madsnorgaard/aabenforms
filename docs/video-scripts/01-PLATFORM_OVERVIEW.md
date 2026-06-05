@@ -61,66 +61,64 @@
 ### [0:15-0:45] The Problem Statement (30 seconds)
 
 #### NARRATION (Danish)
-"I dag betaler danske kommuner millioner af kroner årligt for digitale selvbetjeningsløsninger som KMD XFlow. Men hvad nu hvis der fandtes en moderne, open source alternative - uden vendor lock-in, uden skjulte omkostninger, og med fuld kontrol over jeres data?"
+"I dag betaler danske kommuner for digitale selvbetjeningsløsninger fra proprietære alternativer - typisk med årlige licensafgifter og gebyrer pr. formular eller integration. Men hvad nu hvis der fandtes et moderne, open source-alternativ - uden vendor lock-in, uden licensafgifter pr. formular, og med fuld kontrol over jeres data?"
 
 #### NARRATION (English)
-"Today, Danish municipalities pay millions of kroner annually for digital self-service solutions like KMD XFlow. But what if there was a modern, open-source alternative - without vendor lock-in, without hidden costs, and with full control over your data?"
+"Today, Danish municipalities pay proprietary alternatives for digital self-service solutions - typically with annual licence fees and per-form or per-integration charges. But what if there was a modern, open-source alternative - without vendor lock-in, without per-form licence fees, and with full control over your data?"
 
 #### SCREEN ACTIONS
-1. Show cost comparison slide:
-   - XFlow: 500,000 kr/year (typical municipality)
-   - ÅbenForms: Self-hosted (free) or 50,000 kr/year (managed)
-2. Highlight savings: **90% cost reduction**
+1. Show cost comparison slide (framing only, no fabricated figures):
+   - Proprietary alternatives: annual licence fees plus per-integration fees
+   - ÅbenForms: self-hosted (no licence fee) or a managed-hosting option
+2. Highlight: no per-form licence fees
 
 #### VISUAL CALLOUTS
-- Animated bar chart showing cost comparison
-- Highlight "90% savings" in bold
-- Show checkmarks for benefits:
-  -  No vendor lock-in
-  -  Full data sovereignty
-  -  Community-driven development
+- Comparison slide framing proprietary licence + per-integration fees vs open source
+- Show benefits as plain text:
+  - No vendor lock-in
+  - Full data control
+  - Community-driven development
 
 #### RECORDING TIPS
-- Pause for 2 seconds on cost comparison chart
-- Use arrow annotations to highlight key numbers
-- Emphasize "millions of kroner" with slight vocal stress
+- Pause for 2 seconds on cost comparison slide
+- Keep the comparison generic - do not cite specific vendor prices
+- Emphasize "no per-form licence fees"
 
 ---
 
 ### [0:45-1:30] Key Features Overview (45 seconds)
 
 #### NARRATION (Danish)
-"ÅbenForms giver jer alle de funktioner I kender fra XFlow - og meget mere. MitID-integration, betalingshåndtering via Nets, PDF-generering, SMS-beskeder, og kompleks workflow-orkestrering. Men vi går længere: GIS-integration til byggesager, GDPR-compliance by design, og en visuel workflow-builder der gør det let at oprette nye selvbetjeningsløsninger uden at skrive kode."
+"ÅbenForms har MitID-login og en ECA-workflow-motor med en visuel editor, Workflow Modeler, der gør det let at oprette godkendelsesflows uden at skrive kode. Custom webform-elementer validerer CPR, CVR og adresser serverside, og CPR-felter krypteres på feltniveau med audit-logning. I demoen vises betaling, SMS, GIS og kalender som mocks - de illustrerer den tiltænkte funktionalitet, men er ikke live produktionsintegrationer endnu."
 
 #### NARRATION (English)
-"ÅbenForms provides all the features you know from XFlow - and more. MitID integration, payment processing via Nets, PDF generation, SMS notifications, and complex workflow orchestration. But we go further: GIS integration for building permits, GDPR compliance by design, and a visual workflow builder that makes it easy to create new self-service solutions without writing code."
+"ÅbenForms has MitID sign-in and an ECA workflow engine with a visual editor, the Workflow Modeler, that makes it easy to create approval flows without writing code. Custom webform elements validate CPR, CVR and addresses server-side, and CPR fields are encrypted at field level with audit logging. In the demo, payment, SMS, GIS and calendar appear as mocks - they illustrate the intended functionality but are not live production integrations yet."
 
 #### SCREEN ACTIONS
 1. Navigate to Features page
 2. Scroll through feature list slowly
-3. Show feature comparison table:
+3. Show feature overview table (status, not vendor comparison):
 
-| Feature | XFlow | ÅbenForms |
-|---------|-------|-----------|
-| MitID Integration |  |  |
-| Payment Processing |  |  |
-| PDF Generation |  |  |
-| SMS Notifications |  |  |
-| GIS Zoning Validation |  |  |
-| Visual Workflow Builder | Limited |  |
-| Open Source |  |  |
-| Self-Hosting |  |  |
+| Feature | Status |
+|---------|--------|
+| MitID sign-in (Keycloak mock IdP) | Working |
+| CPR / CVR / DAWA webform validation | Working |
+| Field-level CPR encryption + audit log | Working |
+| ECA workflow engine + Workflow Modeler | Working |
+| Payment processing | Demo mock |
+| SMS notifications | Demo mock |
+| GIS zoning validation | Demo mock |
+| Open source / self-hosting | Yes |
 
 #### VISUAL CALLOUTS
-- Highlight each feature with animated checkmark
-- Circle "GIS Integration" as unique feature
-- Box "Visual Workflow Builder" section
-- Use green highlights for ÅbenForms advantages
+- Mark each row with its status (Working / Demo mock)
+- Box the "Workflow Modeler" row
+- Be clear which items are demo mocks
 
 #### RECORDING TIPS
 - Slow down when listing technical features
 - Use cursor to point to each feature as you mention it
-- Pause briefly between feature categories
+- Do not present demo mocks as live production features
 
 ---
 
@@ -145,7 +143,7 @@
 
 #### VISUAL CALLOUTS
 - Label each workflow card with category
-- Show "15 ready-to-use workflows" counter
+- Show "13 ready-to-use workflow templates" counter
 - Highlight "Community Templates" section
 - Show workflow complexity indicator (Simple/Medium/Complex)
 

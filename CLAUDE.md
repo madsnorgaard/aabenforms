@@ -3,7 +3,7 @@
 ## Project Overview
 
 **ÅbenForms** is a headless workflow automation platform for Danish municipalities, built on:
-- **Backend**: Drupal 11.3.2 (this repository)
+- **Backend**: Drupal 11.3.10 (this repository)
 - **Frontend**: Nuxt 3 (separate repository)
 - **Deployment**: contabo-infrastructure orchestration (separate repository, deploys to VPS2)
 
@@ -16,17 +16,17 @@ This backend provides:
 - Modular SF1601 Digital Post (`aabenforms_digital_post` + ECA bridge submodule, plug-and-play on bare Drupal 11)
 - Shared admin design tokens via `aabenforms_core/admin` library (CSS custom properties)
 
-## Active workstream (Apr 2026)
+## Active workstream
 
-Modular Digital Post + NemLogin rewrite. Approved plan: `/home/mno/.claude/plans/zesty-wobbling-kahn.md`. Goal: each Danish-gov integration installs cleanly on any modern Drupal 11 with at most one mainstream contrib (`drupal:key`) - no OS2/Bellcom dependency maze.
+Modular Digital Post + NemLogin rewrite. Goal: each Danish-government integration installs cleanly on any modern Drupal 11 with at most one mainstream contrib (`drupal:key`), with no dependency on proprietary alternative stacks.
 
-- **Session 1 SHIPPED**: `aabenforms_digital_post` core (DTOs, sender service, fake_db / wiremock transports, Drush, settings form, log table). Live on prod in `fake_db` mode.
-- **Session 2A SHIPPED**: `aabenforms_digital_post_eca` submodule (plugin id `aabenforms_digital_post_send`). `citizen_service_application.bpmn` Approved + Rejected branches both wired; verified end-to-end on prod.
-- **Session 2B PENDING**: real MeMo XML + SF1601 SOAP via `itk-dev/serviceplatformen`; `live_test` against Serviceplatformen exttest endpoint.
-- **Session 2C PENDING**: `aabenforms_nemlogin` OIDC core + Keycloak preset + shim `aabenforms_mitid` over it.
-- **Session 3 PENDING**: webform / beskedfordeler / os2web_key bridges, advanced queue, examples, remove `aabenforms_mitid`, bare-D11 GitHub Actions verification.
+- **Session 1 (shipped)**: `aabenforms_digital_post` core (DTOs, sender service, fake_db / wiremock transports, Drush, settings form, log table). Runs on the demo in `fake_db` mode. No live MeMo/SOAP and no idempotency yet.
+- **Session 2A (shipped)**: `aabenforms_digital_post_eca` submodule (plugin id `aabenforms_digital_post_send`). `citizen_service_application.bpmn` Approved + Rejected branches both wired.
+- **Session 2B (planned, issue #77)**: real MeMo XML + SF1601 SOAP via `itk-dev/serviceplatformen`; `live_test` against Serviceplatformen exttest endpoint.
+- **Session 2C (planned, issue #79)**: `aabenforms_nemlogin` OIDC core + Keycloak preset + shim `aabenforms_mitid` over it. These modules do not exist yet.
+- **Session 3 (planned)**: webform / beskedfordeler (#78) / key bridges, advanced queue, examples, remove `aabenforms_mitid`, bare-D11 GitHub Actions verification.
 
-Recent platform-wide fixes (Apr 25, 2026):
+Recent platform-wide fixes:
 - `aabenforms_log` shim replaces removed upstream `eca_base_log`/`eca_base_mail`. `aabenforms_workflows_update_11001` migrates saved configs.
 - `hook_storage_transform_import` in `aabenforms_workflows.module` preserves wizard-created configs across `drush cim` (without it, every deploy nuked admin-created workflows).
 - Wizard step indicator modernized (numbered circles + track line) using `--af-*` tokens from `aabenforms_core/admin`.
@@ -37,9 +37,9 @@ Recent platform-wide fixes (Apr 25, 2026):
 
 | Component | Version | Purpose |
 |-----------|---------|---------|
-| Drupal Core | 11.3.2 | CMS foundation |
+| Drupal Core | 11.3.10 | CMS foundation |
 | PHP | 8.4 | Runtime |
-| MariaDB | 10.11 | Database (consistent local→production) |
+| MariaDB | (DDEV default) | Database (consistent local to production) |
 | DDEV | Latest | Local development |
 | Composer | 2.x | Dependency management |
 | Drush | 13.7 | CLI tool |
@@ -102,139 +102,116 @@ ddev composer update drupal/core --with-dependencies
 
 ### Custom Modules (Package: ÅbenForms)
 
+These are the modules that actually exist today under `web/modules/custom/`:
+
 ```
 web/modules/custom/
-├── aabenforms_core/              # Foundation (CRITICAL - Phase 1)
+├── aabenforms_core/              # Foundation: shared services, Serviceplatformen
+│   │                            #   client, field-level CPR encryption (AES-256),
+│   │                            #   GDPR audit logging, admin design tokens
 │   ├── aabenforms_core.info.yml
 │   ├── aabenforms_core.module
 │   └── src/
-│       └── Services/             # Shared services, utilities
 │
-├── aabenforms_tenant/            # Multi-tenancy (Optional - Phase 1)
+├── aabenforms_tenant/            # Multi-tenancy (depends on: domain)
 │   ├── aabenforms_tenant.info.yml
-│   ├── aabenforms_tenant.module
 │   └── src/
-│       ├── Entity/TenantConfig.php
-│       └── Services/TenantDetector.php
 │
-├── aabenforms_workflows/         # ECA integration (CRITICAL - Phase 1)
+├── aabenforms_workflows/         # ECA integration + Workflow Modeler editor
+│   │                            #   13 workflow templates (.bpmn source files),
+│   │                            #   21 ECA action plugins (incl. CPR/CVR lookup)
 │   ├── aabenforms_workflows.info.yml
 │   ├── aabenforms_workflows.module
-│   └── config/install/           # Pre-built workflow templates
+│   └── workflows/                # .bpmn template source files
 │
-├── aabenforms_gdpr/              # Security & GDPR (HIGH - Phase 2)
-│   └── [Field encryption, audit logs, retention policies]
+├── aabenforms_webform/           # Custom webform elements with server-side
+│   └──                          #   validation: CPR (modulus-11), CVR, DAWA address
 │
-├── aabenforms_mitid/             # MitID authentication (HIGH - Phase 2)
-│   └── [OIDC integration for citizen/business login]
+├── aabenforms_mitid/             # MitID OIDC sign-in (against a Keycloak mock IdP)
+│   └──                          #   Fails closed by default; demo mode gated by
+│                                #   allow_mitid_demo_mode
 │
-├── aabenforms_cpr/               # SF1520 CPR lookup (HIGH - Phase 3)
-│   └── [Serviceplatformen person data]
-│
-├── aabenforms_cvr/               # SF1530 CVR lookup (HIGH - Phase 3)
-│   └── [Serviceplatformen company data]
-│
-├── aabenforms_dawa/              # Address autocomplete (MEDIUM - Phase 3)
-│   └── [Danish address validation]
-│
-├── aabenforms_digital_post/      # SF1601 Digital Post (HIGH - Phase 3)
-│   └── [Official notifications]
-│
-├── aabenforms_sbsys/             # SBSYS integration (MEDIUM - Phase 4)
-│   └── [Case management]
-│
-└── aabenforms_get_organized/     # GetOrganized ESDH (MEDIUM - Phase 4)
-    └── [Document archiving]
+└── aabenforms_digital_post/      # SF1601 Digital Post core (DTOs, sender service)
+    └── modules/
+        ├── aabenforms_digital_post_eca/            # ECA bridge submodule
+        └── aabenforms_digital_post_session_inbox/  # Session inbox submodule
 ```
 
-### Module Dependencies
+Planned, not yet implemented (do not assume these exist): `aabenforms_nemlogin`
+(+ `_keycloak`), `aabenforms_digital_post_webform`, `aabenforms_digital_post_beskedfordeler`,
+`aabenforms_digital_post_os2web_key`, `aabenforms_cpr`, `aabenforms_cvr`, `aabenforms_dawa`,
+`aabenforms_gdpr`, `aabenforms_sbsys`, `aabenforms_get_organized`. See the GitHub issue
+backlog (#72-#92) for status.
+
+Notes on the "standalone module" framing:
+- CPR (SF1520) and CVR (SF1530) lookup are ECA action plugins inside `aabenforms_workflows`
+  plus a Serviceplatformen client in `aabenforms_core` - not standalone modules.
+- DAWA address autocomplete is a webform element in `aabenforms_webform` - not a module.
+- Field-level CPR encryption and GDPR audit logging are built into `aabenforms_core`. There
+  is no retention / right-to-erasure subsystem yet (planned, issue #91).
+
+### Module Dependencies (existing modules)
 
 ```
-aabenforms_core (no dependencies)
-  ↓
-  ├─→ aabenforms_tenant (depends on: domain module)
-  ├─→ aabenforms_workflows (depends on: eca, webform)
-  ├─→ aabenforms_gdpr (depends on: encrypt, key, real_aes)
-  ├─→ aabenforms_mitid (depends on: openid_connect, aabenforms_gdpr)
-  ├─→ aabenforms_cpr (depends on: aabenforms_gdpr)
-  ├─→ aabenforms_cvr (depends on: aabenforms_core)
-  ├─→ aabenforms_dawa (depends on: aabenforms_core)
-  ├─→ aabenforms_digital_post (depends on: aabenforms_gdpr)
-  ├─→ aabenforms_sbsys (depends on: aabenforms_workflows)
-  └─→ aabenforms_get_organized (depends on: aabenforms_workflows)
+aabenforms_core (no aabenforms dependencies)
+  ├─→ aabenforms_tenant (depends on: domain)
+  ├─→ aabenforms_workflows (depends on: eca, webform; eca 3.1 also needs modeler_api)
+  ├─→ aabenforms_webform (depends on: webform, aabenforms_core)
+  ├─→ aabenforms_mitid (depends on: openid_connect, aabenforms_core)
+  └─→ aabenforms_digital_post (depends on: key, aabenforms_core)
+        ├─→ aabenforms_digital_post_eca (depends on: eca)
+        └─→ aabenforms_digital_post_session_inbox
 ```
-
-**Key Principle**: All Danish integration modules are STANDALONE - enable only what you need.
 
 ## Contrib Modules
 
 | Module | Version | Purpose |
 |--------|---------|---------|
 | **Workflow Engine** | | |
-| eca | 2.1.18 | Event-Condition-Action engine (replaces Maestro) |
-| webform | 6.3.0-beta7 | Dynamic form builder |
+| eca | 3.1.1 | Event-Condition-Action engine (depends on modeler_api) |
+| modeler | 1.0.3 | Workflow Modeler editor (adopted editor for all flows) |
+| bpmn_io | 3.0.5 | Present, but the Workflow Modeler is the adopted editor |
+| webform | 6.3.0-beta8 | Dynamic form builder |
 | **Multi-Tenancy** | | |
-| domain | 2.0.0-rc1 | URL-based tenant routing |
-| domain_access | 2.0.0-rc1 | Per-tenant content isolation |
-| **Security & GDPR** | | |
-| encrypt | 3.2.0 | Field-level encryption |
+| domain | 2.0.1 | URL-based tenant routing |
+| domain_access | 2.0.1 | Per-tenant content isolation |
+| **Security** | | |
 | key | 1.22.0 | Key management |
-| real_aes | 2.6.0 | AES encryption provider |
 | **API** | | |
 | jsonapi | Core | JSON:API implementation |
 | jsonapi_extras | 3.28.0 | JSON:API enhancements |
 | **Authentication** | | |
-| openid_connect | 3.0.0-alpha6 | OpenID Connect (for MitID) |
-| externalauth | 2.0.8 | External authentication framework |
+| openid_connect | 3.x | OpenID Connect (for MitID) |
+| externalauth | 2.x | External authentication framework |
 | **Admin** | | |
-| gin | 3.0.0 | Modern admin theme |
-| gin_toolbar | 1.0.0 | Enhanced toolbar |
+| gin | 5.0.12 | Admin theme |
+| gin_toolbar | 2.x | Toolbar |
 
-## Danish Government Integrations Roadmap
+## Danish Government Integrations
 
-### Phase 2: Authentication & Security (Weeks 5-8)
-- **aabenforms_mitid**: MitID OIDC integration
-  - Personal login (MitID Privat)
-  - Business login (MitID Erhverv)
-  - NSIS compliance
-- **aabenforms_gdpr**: GDPR compliance
-  - CPR field encryption (AES-256)
-  - Access audit logging
-  - Data retention policies
-  - Right to erasure workflows
+### Today (real, against test/mock endpoints)
+- **aabenforms_mitid**: MitID OIDC sign-in against a Keycloak mock IdP. No live registration;
+  fails closed by default, demo mode behind `allow_mitid_demo_mode`.
+- **CPR (SF1520) / CVR (SF1530) lookup**: action plugins in `aabenforms_workflows` plus a
+  Serviceplatformen client in `aabenforms_core`. Run against test/WireMock; live access needs
+  client certificates (planned, issue #76).
+- **DAWA / CPR / CVR webform elements**: custom elements in `aabenforms_webform` with
+  server-side validation (CPR modulus-11, CVR, DAWA).
+- **Field-level CPR encryption + audit logging**: built into `aabenforms_core`.
+- **aabenforms_digital_post** (SF1601): runs in `fake_db` / `wiremock` test modes. No live
+  MeMo/SOAP and no idempotency yet (planned, issues #73, #77).
 
-### Phase 3: Serviceplatformen (Weeks 9-12)
-All integrations via **Serviceplatformen SF15** (KOMBIT's API gateway):
+### Planned (not yet implemented - see GitHub backlog #72-#92)
+- Live Serviceplatformen certs + enrollment for SF1520/SF1530 (#76)
+- Real SF1601 MeMo builder + SOAP transport (#77)
+- Beskedfordeler SF1461/SF1462 delivery receipts (#78)
+- MitID / NemLog-in token validation + production registration (#79)
+- DAWA + Datafordeler (BBR/Matriklen) server-side validation (#80)
+- Case-handoff / ESDH adapters and SF1470 journaling (#84-#86)
+- GDPR retention + right-to-erasure subsystem (#91)
 
-- **aabenforms_cpr** (SF1520): CPR lookup
-  - Person master data
-  - Address history
-  - Family relations
-
-- **aabenforms_cvr** (SF1530): CVR lookup
-  - Company data
-  - P-numbers (production units)
-  - Industry classifications
-
-- **aabenforms_dawa**: DAWA autocomplete
-  - Address validation
-  - Geolocation
-  - Direct integration (no auth required)
-
-- **aabenforms_digital_post** (SF1601): Digital Post
-  - Secure notifications
-  - Fallback to physical mail
-  - Delivery receipts
-
-### Phase 4: Case Management (Weeks 13-16)
-- **aabenforms_sbsys**: SBSYS integration
-  - Case creation
-  - Document archiving
-  - Status synchronization
-
-- **aabenforms_get_organized**: GetOrganized ESDH
-  - Document filing
-  - Metadata management
+Payment, SMS, GIS/zoning, payroll and calendar/booking actions are currently demo mocks, not
+production integrations (#81-#83).
 
 ## Development Workflow
 
@@ -288,7 +265,12 @@ ddev drush domain:create odense.aabenforms.ddev.site "Odense Kommune"
 # 127.0.0.1 odense.aabenforms.ddev.site
 ```
 
-## BPMN Workflow Development
+## Workflow Development
+
+The visual editor is the **Workflow Modeler** provided by `drupal/modeler` (React Flow /
+Modeler API, modeler_id `workflow_modeler`). It is the adopted editor for all flows. `bpmn_io`
+is installed but is not the editor used for the flows. Workflow templates are stored as `.bpmn`
+source files (BPMN is the on-disk template format, not the editor).
 
 ### BpmnTemplateManager Service
 
@@ -321,7 +303,9 @@ file_put_contents('/tmp/workflow.bpmn', $exported);
 
 ### Creating Custom BPMN Templates
 
-BPMN templates are stored in `web/modules/custom/aabenforms_workflows/templates/bpmn/`:
+There are 13 ready-made workflow templates (BPMN source files) stored in
+`web/modules/custom/aabenforms_workflows/workflows/`, and 18 ECA flows deployed under
+`config/sync/eca.eca.*`. A template file looks like this:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -364,7 +348,8 @@ BPMN templates are stored in `web/modules/custom/aabenforms_workflows/templates/
 
 ### ECA Action Plugins
 
-ÅbenForms provides 4 custom ECA action plugins for Danish workflows:
+ÅbenForms provides 21 custom ECA action plugins (non-test) in `aabenforms_workflows` for Danish
+workflows. A few representative examples:
 
 #### 1. MitID Validation (`aabenforms_mitid_validate`)
 ```php
@@ -449,10 +434,10 @@ To export:
  **CRITICAL**: CPR numbers (Danish social security numbers) are **sensitive personal data** under GDPR Article 9.
 
 **Requirements**:
-1. **Field-level encryption** via `aabenforms_gdpr` module
+1. **Field-level encryption** built into `aabenforms_core`
 2. **Access logging** - all CPR lookups must be audited
 3. **Data minimization** - only request CPR when absolutely necessary
-4. **Retention policies** - auto-delete after legal retention period
+4. **Retention policies** - planned, not yet implemented (issue #91)
 5. **Consent management** - explicit user consent required
 
 ### Encryption Setup
@@ -465,7 +450,7 @@ ddev drush config:set encrypt.profile.cpr_encryption encryption_key aes
 ```
 
 ### Audit Logging
-All CPR lookups via `aabenforms_cpr` are automatically logged:
+All CPR lookups via the CPR lookup action plugin are automatically logged:
 - User ID
 - Timestamp
 - CPR queried
@@ -503,8 +488,8 @@ web_environment:
 
 ## Database
 
-**Type**: MariaDB 10.11
-**Why**: Consistent across all environments (local DDEV → Platform.sh production)
+**Type**: MariaDB (DDEV default)
+**Why**: Consistent across local and production environments
 
 ```bash
 # Connect to database
@@ -532,9 +517,9 @@ ddev drush config:get system.performance
 ```
 
 ### Production Recommendations
-- Enable Redis (Platform.sh service)
+- Enable Redis or Memcached
 - Enable Drupal performance caching
-- Use Varnish (Platform.sh CDN)
+- Put a reverse-proxy cache or CDN in front
 - Lazy-load Webform fields
 - Index frequently queried fields
 
@@ -691,10 +676,10 @@ ddev exec phpunit --filter=SendSmsActionTest
 
 **Creating New BPMN Templates**:
 
-1. **Use BPMN Modeler**:
+1. **Use the Workflow Modeler** (drupal/modeler, modeler_id `workflow_modeler`):
    ```
-   Navigate to: /admin/config/workflow/eca/modeler
-   Create new model or import BPMN 2.0 XML
+   Navigate to: /admin/config/workflow/eca
+   Create a new model with the Workflow Modeler, or import a .bpmn template file
    ```
 
 2. **Template Structure**:
@@ -959,4 +944,4 @@ ddev drush watchdog:show --format=json > workflow_logs.json
 
 ## License
 
-GPL-2.0 - See LICENSE file
+GPL-2.0-or-later - See LICENSE file
