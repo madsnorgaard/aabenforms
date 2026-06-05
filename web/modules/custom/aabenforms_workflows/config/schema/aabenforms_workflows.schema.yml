@@ -115,3 +115,6 @@ aabenforms_workflows.settings:
     require_parent_cpr_match:
       type: boolean
       label: 'Fail closed when a parent-approval submission has no expected CPR to verify against'
+    allow_mitid_demo_mode:
+      type: boolean
+      label: 'Allow MitID validation to pass without a real session (demo only; default off)'

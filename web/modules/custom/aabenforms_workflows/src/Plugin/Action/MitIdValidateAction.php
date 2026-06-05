@@ -4,6 +4,7 @@ namespace Drupal\aabenforms_workflows\Plugin\Action;
 
 use Drupal\aabenforms_mitid\Service\MitIdSessionManager;
 use Drupal\Core\Action\Attribute\Action;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\eca\Attribute\EcaAction;
@@ -31,12 +32,48 @@ class MitIdValidateAction extends AabenFormsActionBase {
   protected MitIdSessionManager $sessionManager;
 
   /**
+   * The config factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  protected ConfigFactoryInterface $configFactory;
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     $instance = parent::create($container, $configuration, $plugin_id, $plugin_definition);
     $instance->sessionManager = $container->get('aabenforms_mitid.session_manager');
+    $instance->configFactory = $container->get('config.factory');
     return $instance;
+  }
+
+  /**
+   * Whether MitID demo mode (pass with no real session) is permitted.
+   *
+   * Default is FALSE: without a verified session the action fails CLOSED so
+   * the audit trail never records an unverified identity as "verified".
+   */
+  protected function demoModeAllowed(): bool {
+    return (bool) ($this->configFactory->get('aabenforms_workflows.settings')->get('allow_mitid_demo_mode') ?? FALSE);
+  }
+
+  /**
+   * Records the "no valid MitID session" outcome, fail-closed by default.
+   *
+   * @param string $context
+   *   Short reason for logging.
+   */
+  protected function recordNoSession(string $context): void {
+    if ($this->demoModeAllowed()) {
+      $this->log('MitID validation: ' . $context . ' - demo mode (allow_mitid_demo_mode on)', [], 'info');
+      $this->setTokenValue($this->configuration['result_token'], TRUE);
+      $this->recordStep('MitID Identity Validation', 'Demo mode: identity was NOT verified (no MitID session)', 'completed');
+      return;
+    }
+    $this->log('MitID validation failed: ' . $context . ' (demo mode off)', [], 'warning');
+    $this->setTokenValue($this->configuration['result_token'], FALSE);
+    $this->recordStep('MitID Identity Validation', 'No valid MitID session - identity could not be verified', 'failed');
   }
 
   /**
@@ -98,9 +135,7 @@ class MitIdValidateAction extends AabenFormsActionBase {
     $workflowId = $this->getTokenValue($this->configuration['workflow_id_token'] ?? 'workflow_id', '');
 
     if (empty($workflowId)) {
-      $this->log('MitID validation: No workflow ID - demo mode', [], 'info');
-      $this->setTokenValue($this->configuration['result_token'], TRUE);
-      $this->recordStep('MitID Identity Validation', 'Citizen identity verified via NemID/MitID national eID');
+      $this->recordNoSession('no workflow id in context');
       return;
     }
 
@@ -109,11 +144,7 @@ class MitIdValidateAction extends AabenFormsActionBase {
       $sessionData = $this->sessionManager->getSession($workflowId);
 
       if (empty($sessionData)) {
-        $this->log('MitID validation: No session found - demo mode for workflow {workflow_id}', [
-          'workflow_id' => $workflowId,
-        ], 'info');
-        $this->setTokenValue($this->configuration['result_token'], TRUE);
-        $this->recordStep('MitID Identity Validation', 'Citizen identity verified via NemID/MitID national eID');
+        $this->recordNoSession('no session for workflow ' . $workflowId);
         return;
       }
 

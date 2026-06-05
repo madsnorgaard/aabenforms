@@ -100,9 +100,9 @@ class CprLookupAction extends AabenFormsActionBase {
     $cpr = $cpr ? preg_replace('/[^0-9]/', '', $cpr) : '';
 
     if (empty($cpr)) {
-      $this->log('CPR lookup: No CPR provided - demo mode', [], 'info');
+      $this->log('CPR lookup skipped: no CPR available to look up', [], 'warning');
       $this->setTokenValue($this->configuration['result_token'], NULL);
-      $this->recordStep('CPR Registry Lookup', 'Personal data retrieved from the national CPR registry (SF1520)');
+      $this->recordStep('CPR Registry Lookup', 'Skipped - no CPR available to look up', 'skipped');
       return;
     }
 
@@ -129,7 +129,7 @@ class CprLookupAction extends AabenFormsActionBase {
           'cpr' => substr($cpr, 0, 6) . 'XXXX',
         ], 'warning');
         $this->setTokenValue($this->configuration['result_token'], NULL);
-        $this->recordStep('CPR Registry Lookup', 'Personal data retrieved from the national CPR registry (SF1520)');
+        $this->recordStep('CPR Registry Lookup', 'No person found in the national CPR registry (SF1520)', 'failed');
         return;
       }
 
