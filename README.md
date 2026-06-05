@@ -22,16 +22,16 @@ the backend uses a Keycloak mock for local development and the
 frontend's MitID button is hidden in prod.
 
 This repository contains the **Drupal 11 backend** that provides:
-- ECA workflow engine (event-driven automation)
-- Visual BPMN 2.0 workflow builder with Danish municipal task palette
-- 13 production-ready BPMN templates (parking permit, marriage booking, building permit, citizen service application, FOI, HR onboarding, mileage expense, MED election, address change, phone declaration, association booking, contact form, company verification)
-- ~20 ECA action plugins (Digital Post, payment, SMS, PDF, calendar, GIS, MitID, CPR/CVR lookup, audit log, log, parent approval emails, etc.)
-- Modular Danish government integrations: `aabenforms_digital_post` SF1601 (shipped in `fake_db` mode, real SOAP transport coming in Session 2B), MitID OIDC, planned NemLogin OIDC core
+- ECA workflow engine (event-driven automation), editable in the visual **Workflow Modeler** (React Flow, `drupal/modeler`) with execution replay + token inspection
+- **18 municipal ECA flows** (parking / building / marriage / association permits, citizen service, FOI, address & phone change, company verification, dual-parent approval, HR onboarding, mileage, MED election, caseworker review)
+- ~21 ECA action plugins. **Real today:** MitID session validation, CPR (SF1520) + CVR (SF1530) lookup, Digital Post (SF1601, `fake_db`/`wiremock`), PDF, audit log, approval emails, parent-CPR consent gate. **Demo mocks (not production):** payment, SMS, GIS/zoning, payroll, calendar — clearly flagged in [`docs/PROMISES-VS-VERIFIED.md`](docs/PROMISES-VS-VERIFIED.md)
+- Modular Danish government integrations: `aabenforms_digital_post` SF1601 (`fake_db`/`wiremock` today; real MeMo + SOAP planned), MitID OIDC (Keycloak mock IdP today)
+- Custom Danish webform elements with server-side validation: CPR (format + modulus-11), CVR, DAWA address (client-side autocomplete against `api.dataforsyningen.dk`)
 - WireMock + Keycloak mock services bundled in DDEV for zero-config local development
-- Dynamic webforms with JSON:API exposure
-- Multi-tenant architecture via Domain module
-- GDPR-compliant CPR encryption and audit logging
+- Dynamic webforms with JSON:API exposure; domain-based multi-tenancy; GDPR-oriented CPR encryption + audit logging
 - Shared admin design tokens (`aabenforms_core/admin` library) so feature modules style consistently from one source of CSS variables
+
+> **What is real vs. demo?** This is a pre-pilot POC. See [`docs/PROMISES-VS-VERIFIED.md`](docs/PROMISES-VS-VERIFIED.md) for an honest, verified claim-by-claim status, and the [Roadmap & backlog](#roadmap--backlog) below for what's next.
 
 ## Architecture
 
@@ -202,13 +202,33 @@ The Digital Post + NemLog-in rewrite plan is an explicit modular alternative to 
 -  GDPR-oriented data masking for separated parents
 -  Automated test coverage via CI (see badges above for current numbers)
 
-**Phase 4 Next** (In Progress):
--  BpmnTemplateManagerTest.php (5 tests)
--  WorkflowsModuleTest.php replacement
--  End-to-end browser tests (FunctionalJavascript)
--  Performance and security test suites
--  Achieve 60%+ test coverage
--  Production Serviceplatformen integration (replace mocks)
+**Recent progress — security hardening (Jun 2026):** a multi-agent local pressure test found several "green checkmarks" that were theatrical — the control reported success while doing nothing. Fixed in a staged sweep:
+- **#68** parent-CPR consent gate — fail-closed, real caseworker CPR fields, submission-scoped session, re-verify at submit (closes a consent bypass)
+- **#69** audit integrity — token resolution so CPR/CVR lookups actually fire; MitID validation fails closed; honest replay step statuses
+- **#70** execution-replay PII — least-privilege + cron self-heal so an armed replay can't record citizen CPR to a shared store
+- **#71** [`docs/PROMISES-VS-VERIFIED.md`](docs/PROMISES-VS-VERIFIED.md) — honest claim-vs-verified table
+
+## Roadmap & backlog
+
+The backlog lives in [GitHub issues](https://github.com/madsnorgaard/aabenforms/issues), grouped by theme:
+
+**🔒 Security — finish the sweep** ([`security`](https://github.com/madsnorgaard/aabenforms/labels/security))
+[#72](https://github.com/madsnorgaard/aabenforms/issues/72) Serviceplatformen circuit breaker (outage DoS) · [#73](https://github.com/madsnorgaard/aabenforms/issues/73) Digital Post idempotency + recipient-from-session · [#74](https://github.com/madsnorgaard/aabenforms/issues/74) replay PII redaction · [#75](https://github.com/madsnorgaard/aabenforms/issues/75) register `administer workflows` perm · [#54](https://github.com/madsnorgaard/aabenforms/issues/54) consent-gate kernel test
+
+**🔌 Productionise the real integrations** ([`integration`](https://github.com/madsnorgaard/aabenforms/labels/integration))
+[#76](https://github.com/madsnorgaard/aabenforms/issues/76) Serviceplatformen certs/enrollment → live SF1520/SF1530 · [#77](https://github.com/madsnorgaard/aabenforms/issues/77) SF1601 real MeMo + SOAP (live Digital Post) · [#78](https://github.com/madsnorgaard/aabenforms/issues/78) Beskedfordeler SF1461/SF1462 (receipts + case-completed events) · [#79](https://github.com/madsnorgaard/aabenforms/issues/79) MitID token validation + production registration + NemLog-in Erhverv · [#80](https://github.com/madsnorgaard/aabenforms/issues/80) DAWA server-side + Datafordeler/BBR
+
+**🧪 Replace demo mocks with real providers** ([`mocks`](https://github.com/madsnorgaard/aabenforms/labels/mocks))
+[#81](https://github.com/madsnorgaard/aabenforms/issues/81) payment (Nets/MobilePay) · [#82](https://github.com/madsnorgaard/aabenforms/issues/82) SMS (GatewayAPI/Cellcast) · [#83](https://github.com/madsnorgaard/aabenforms/issues/83) GIS/BBR zoning + neighbours
+
+**🏛️ Case-system / ESDH handoff — the differentiator** ([`esdh`](https://github.com/madsnorgaard/aabenforms/labels/esdh))
+[#84](https://github.com/madsnorgaard/aabenforms/issues/84) case-handoff module (adapter + transactional outbox) · [#85](https://github.com/madsnorgaard/aabenforms/issues/85) SF1470 journaling + KLE/FORM · [#86](https://github.com/madsnorgaard/aabenforms/issues/86) ESDH adapters (F2 / KMD Nova / Schultz / SAPA / GetOrganized / SBSYS)
+
+**⚙️ Advanced flow capabilities** ([`flows`](https://github.com/madsnorgaard/aabenforms/labels/flows))
+[#87](https://github.com/madsnorgaard/aabenforms/issues/87) SLA/deadline timers + escalation + reminders · [#88](https://github.com/madsnorgaard/aabenforms/issues/88) caseworker task inbox + parallel/join gateways + sub-processes · [#89](https://github.com/madsnorgaard/aabenforms/issues/89) appeals/klage + content_moderation + afgørelsesbrev generation · [#90](https://github.com/madsnorgaard/aabenforms/issues/90) persistent execution history + Recipe templates + standalone viewer
+
+**📋 Compliance & platform** ([`compliance`](https://github.com/madsnorgaard/aabenforms/labels/compliance))
+[#91](https://github.com/madsnorgaard/aabenforms/issues/91) GDPR retention + right-to-erasure · [#92](https://github.com/madsnorgaard/aabenforms/issues/92) WCAG 2.1 AA audit + NIS2/DPA/DPIA pack
 
 ## Workflow System
 
