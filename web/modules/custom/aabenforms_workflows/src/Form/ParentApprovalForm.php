@@ -5,7 +5,9 @@ namespace Drupal\aabenforms_workflows\Form;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\aabenforms_mitid\Service\MitIdSessionManager;
 use Drupal\aabenforms_workflows\Service\ApprovalTokenService;
+use Drupal\aabenforms_workflows\Service\ParentCprVerifier;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Psr\Log\LoggerInterface;
 
@@ -30,6 +32,20 @@ class ParentApprovalForm extends FormBase {
    * @var \Drupal\aabenforms_workflows\Service\ApprovalTokenService
    */
   protected ApprovalTokenService $tokenService;
+
+  /**
+   * The MitID session manager.
+   *
+   * @var \Drupal\aabenforms_mitid\Service\MitIdSessionManager
+   */
+  protected MitIdSessionManager $mitidSessionManager;
+
+  /**
+   * The parent-approval CPR verifier (issue #54 consent gate).
+   *
+   * @var \Drupal\aabenforms_workflows\Service\ParentCprVerifier
+   */
+  protected ParentCprVerifier $cprVerifier;
 
   /**
    * The logger.
@@ -73,16 +89,24 @@ class ParentApprovalForm extends FormBase {
    *   The entity type manager.
    * @param \Drupal\aabenforms_workflows\Service\ApprovalTokenService $token_service
    *   The approval token service.
+   * @param \Drupal\aabenforms_mitid\Service\MitIdSessionManager $mitid_session_manager
+   *   The MitID session manager (re-verifies the OIDC handoff at submit).
+   * @param \Drupal\aabenforms_workflows\Service\ParentCprVerifier $cpr_verifier
+   *   The parent-approval CPR verifier (issue #54 consent gate).
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger.
    */
   public function __construct(
     EntityTypeManagerInterface $entity_type_manager,
     ApprovalTokenService $token_service,
+    MitIdSessionManager $mitid_session_manager,
+    ParentCprVerifier $cpr_verifier,
     LoggerInterface $logger,
   ) {
     $this->entityTypeManager = $entity_type_manager;
     $this->tokenService = $token_service;
+    $this->mitidSessionManager = $mitid_session_manager;
+    $this->cprVerifier = $cpr_verifier;
     $this->logger = $logger;
   }
 
@@ -93,6 +117,8 @@ class ParentApprovalForm extends FormBase {
     return new static(
       $container->get('entity_type.manager'),
       $container->get('aabenforms_workflows.approval_token'),
+      $container->get('aabenforms_mitid.session_manager'),
+      $container->get('aabenforms_workflows.parent_cpr_verifier'),
       $container->get('logger.factory')->get('aabenforms_workflows')
     );
   }
@@ -244,6 +270,29 @@ class ParentApprovalForm extends FormBase {
 
     if (in_array($current_status, ['complete', 'rejected'])) {
       $form_state->setErrorByName('submission_id', $this->t('This request has already been processed.'));
+      return;
+    }
+
+    // Defence in depth: re-verify the MitID session + CPR match at submit
+    // time. The controller gate ran before this form was shown, but the
+    // 15-minute MitID session may have expired since, and we never want a
+    // stale or different identity to finalise the decision.
+    $workflow_id = sprintf('parent_approval_%d_p%d', $submission_id, $parent_number);
+    if (!$this->mitidSessionManager->hasValidSession($workflow_id)) {
+      $form_state->setErrorByName('submission_id', $this->t('Your MitID session has expired. Please open the approval link again to re-authenticate.'));
+      return;
+    }
+    $require_match = $this->config('aabenforms_workflows.settings')->get('require_parent_cpr_match') ?? TRUE;
+    $cpr_result = $this->cprVerifier->verify($submission, (int) $parent_number, $workflow_id);
+    $consent_ok = $cpr_result === ParentCprVerifier::RESULT_MATCH
+      || (!$require_match && $cpr_result === ParentCprVerifier::RESULT_MISSING_EXPECTED_CPR);
+    if (!$consent_ok) {
+      $this->logger->warning('Parent approval submit blocked by CPR re-check: submission @sid parent @parent result @result', [
+        '@sid' => $submission_id,
+        '@parent' => $parent_number,
+        '@result' => $cpr_result,
+      ]);
+      $form_state->setErrorByName('submission_id', $this->t('Security verification failed. Please contact the case worker.'));
     }
   }
 
