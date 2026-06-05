@@ -6,6 +6,11 @@ dependencies:
     - aabenforms_workflows
     - eca_base
     - eca_content
+    - modeler_api
+third_party_settings:
+  modeler_api:
+    modeler_id: workflow_modeler
+    label: med_election_voting_flow
 id: med_election_voting_flow
 weight: null
 template: null

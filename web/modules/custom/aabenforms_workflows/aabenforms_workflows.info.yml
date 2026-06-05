@@ -11,3 +11,4 @@ dependencies:
   - webform:webform
   - modeler_api:modeler_api
   - bpmn_io:bpmn_io
+  - modeler:modeler
