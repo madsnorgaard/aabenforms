@@ -231,6 +231,149 @@ class WorkflowTemplateInstantiatorTest extends KernelTestBase {
   }
 
   /**
+   * An instantiated flow gates its MitID action and denies on failure.
+   *
+   * @covers ::gateIdentityActions
+   */
+  public function testInstantiatedFlowGatesIdentity(): void {
+    $result = $this->instantiator->instantiate('building_permit', $this->buildingPermitConfig());
+    $this->assertTrue($result['success'], $result['message'] ?? '');
+
+    $eca = $this->config('eca.eca.' . $result['workflow_id']);
+    $actions = $eca->get('actions') ?? [];
+    $conditions = $eca->get('conditions') ?? [];
+
+    $mitid = NULL;
+    foreach ($actions as $id => $a) {
+      if (($a['plugin'] ?? '') === 'aabenforms_mitid_validate') {
+        $mitid = $id;
+        break;
+      }
+    }
+    $this->assertNotNull($mitid, 'building_permit instantiates a MitID action.');
+
+    $okId = 'gate_' . $mitid . '_ok';
+    $denyId = 'gate_' . $mitid . '_deny';
+    $this->assertArrayHasKey($okId, $conditions);
+    $this->assertArrayHasKey($denyId, $conditions);
+    $this->assertSame('eca_scalar', $conditions[$okId]['plugin']);
+    $this->assertFalse((bool) $conditions[$okId]['configuration']['negate']);
+    $this->assertTrue((bool) $conditions[$denyId]['configuration']['negate']);
+
+    $okSuccessor = FALSE;
+    $denyTarget = NULL;
+    foreach ($actions[$mitid]['successors'] as $s) {
+      if (($s['condition'] ?? '') === $okId) {
+        $okSuccessor = TRUE;
+      }
+      if (($s['condition'] ?? '') === $denyId) {
+        $denyTarget = $s['id'];
+      }
+    }
+    $this->assertTrue($okSuccessor, 'A successor runs only when MitID is verified.');
+    $this->assertNotNull($denyTarget, 'A deny branch exists for failed MitID.');
+    $this->assertSame('aabenforms_workflow_deny', $actions[$denyTarget]['plugin']);
+    $this->assertSame([], $actions[$denyTarget]['successors'], 'Deny is terminal.');
+
+    // No successor anywhere references an undefined condition (no dead labels).
+    foreach ($actions as $a) {
+      foreach (($a['successors'] ?? []) as $s) {
+        $c = $s['condition'] ?? '';
+        if ($c !== '') {
+          $this->assertArrayHasKey($c, $conditions, "Condition '$c' is defined.");
+        }
+      }
+    }
+  }
+
+  /**
+   * An annotated exclusive gateway emits a real eca_scalar condition per edge.
+   *
+   * @covers ::walkBpmnNode
+   * @covers ::makeEdgeCondition
+   */
+  public function testExclusiveGatewayEmitsRealCondition(): void {
+    $xml = <<<'XML'
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:aabenforms="http://aabenforms.dk/bpmn/eca"
+  id="Definitions_gw" targetNamespace="http://aabenforms.dk/bpmn">
+  <bpmn:process id="gw_process" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1"/>
+    <bpmn:serviceTask id="Task_Decide" name="Decide">
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_log">
+          <aabenforms:config key="message">decide</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="Gateway_Decide" name="Decision?">
+      <bpmn:extensionElements>
+        <aabenforms:gateway token="[decision_status]"/>
+      </bpmn:extensionElements>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="Task_Approve" name="Approve">
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_log">
+          <aabenforms:config key="message">a</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_Reject" name="Reject">
+      <bpmn:extensionElements>
+        <aabenforms:ecaAction plugin="aabenforms_log">
+          <aabenforms:config key="message">r</aabenforms:config>
+        </aabenforms:ecaAction>
+      </bpmn:extensionElements>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="End_A"/>
+    <bpmn:endEvent id="End_R"/>
+    <bpmn:sequenceFlow id="F1" sourceRef="StartEvent_1" targetRef="Task_Decide"/>
+    <bpmn:sequenceFlow id="F2" sourceRef="Task_Decide" targetRef="Gateway_Decide"/>
+    <bpmn:sequenceFlow id="F_app" name="approve" sourceRef="Gateway_Decide" targetRef="Task_Approve"/>
+    <bpmn:sequenceFlow id="F_rej" name="reject" sourceRef="Gateway_Decide" targetRef="Task_Reject"/>
+    <bpmn:sequenceFlow id="F3" sourceRef="Task_Approve" targetRef="End_A"/>
+    <bpmn:sequenceFlow id="F4" sourceRef="Task_Reject" targetRef="End_R"/>
+  </bpmn:process>
+</bpmn:definitions>
+XML;
+
+    $result = $this->instantiator->instantiate('contact_form', $this->contactFormConfig(), $xml);
+    $this->assertTrue($result['success'], $result['message'] ?? '');
+
+    $eca = $this->config('eca.eca.' . $result['workflow_id']);
+    $actions = $eca->get('actions') ?? [];
+    $conditions = $eca->get('conditions') ?? [];
+
+    // One eca_scalar condition per labelled edge, comparing the gateway token.
+    $scalarRights = [];
+    foreach ($conditions as $c) {
+      if (($c['plugin'] ?? '') === 'eca_scalar') {
+        $this->assertSame('[decision_status]', $c['configuration']['left']);
+        $this->assertSame('equal', $c['configuration']['operator']);
+        $scalarRights[] = $c['configuration']['right'];
+      }
+    }
+    $this->assertContains('approve', $scalarRights);
+    $this->assertContains('reject', $scalarRights);
+
+    // The decide action's successors reference real condition ids, not labels.
+    $decide = NULL;
+    foreach ($actions as $id => $a) {
+      if (str_contains($id, 'Task_Decide')) {
+        $decide = $id;
+        break;
+      }
+    }
+    $this->assertNotNull($decide);
+    $this->assertNotEmpty($actions[$decide]['successors']);
+    foreach ($actions[$decide]['successors'] as $s) {
+      $this->assertArrayHasKey($s['condition'], $conditions, 'Successor references a real condition, not a raw label.');
+    }
+  }
+
+  /**
    * Tests that an unknown template id surfaces the validator error path.
    *
    * The metadata service returns no parameters for an unknown id, so the only
