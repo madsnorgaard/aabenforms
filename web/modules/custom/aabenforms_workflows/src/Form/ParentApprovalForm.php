@@ -5,6 +5,7 @@ namespace Drupal\aabenforms_workflows\Form;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\aabenforms_core\Service\CprAccess;
 use Drupal\aabenforms_mitid\Service\MitIdSessionManager;
 use Drupal\aabenforms_workflows\Service\ApprovalTokenService;
 use Drupal\aabenforms_workflows\Service\ParentCprVerifier;
@@ -101,6 +102,13 @@ class ParentApprovalForm extends FormBase {
   protected ContentEntityTypes $entityTypes;
 
   /**
+   * The CPR access helper (decrypts CPR stored at rest).
+   *
+   * @var \Drupal\aabenforms_core\Service\CprAccess
+   */
+  protected CprAccess $cprAccess;
+
+  /**
    * Constructs a ParentApprovalForm object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
@@ -117,6 +125,8 @@ class ParentApprovalForm extends FormBase {
    *   The event dispatcher, used to fire the one-shot approval custom event.
    * @param \Drupal\eca\Service\ContentEntityTypes $entity_types
    *   The ECA content entity types service.
+   * @param \Drupal\aabenforms_core\Service\CprAccess $cpr_access
+   *   The CPR access helper, used to decrypt the stored child CPR for display.
    */
   public function __construct(
     EntityTypeManagerInterface $entity_type_manager,
@@ -126,6 +136,7 @@ class ParentApprovalForm extends FormBase {
     LoggerInterface $logger,
     EventDispatcherInterface $event_dispatcher,
     ContentEntityTypes $entity_types,
+    CprAccess $cpr_access,
   ) {
     $this->entityTypeManager = $entity_type_manager;
     $this->tokenService = $token_service;
@@ -134,6 +145,7 @@ class ParentApprovalForm extends FormBase {
     $this->logger = $logger;
     $this->eventDispatcher = $event_dispatcher;
     $this->entityTypes = $entity_types;
+    $this->cprAccess = $cpr_access;
   }
 
   /**
@@ -147,7 +159,8 @@ class ParentApprovalForm extends FormBase {
       $container->get('aabenforms_workflows.parent_cpr_verifier'),
       $container->get('logger.factory')->get('aabenforms_workflows'),
       $container->get('event_dispatcher'),
-      $container->get('eca.service.content_entity_types')
+      $container->get('eca.service.content_entity_types'),
+      $container->get('aabenforms_core.cpr_access')
     );
   }
 
@@ -180,7 +193,7 @@ class ParentApprovalForm extends FormBase {
     ];
 
     // CPR - mask if parents apart per GDPR.
-    $child_cpr = $submission->getElementData('child_cpr');
+    $child_cpr = $this->cprAccess->reveal((string) $submission->getElementData('child_cpr'));
     if (!$this->parentsTogether) {
       // Mask CPR: show only first 6 digits (birthdate) and last digit.
       $child_cpr = substr($child_cpr, 0, 6) . '-XXX' . substr($child_cpr, -1);

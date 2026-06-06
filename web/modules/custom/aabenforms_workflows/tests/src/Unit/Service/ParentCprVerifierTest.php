@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\Tests\aabenforms_workflows\Unit\Service;
 
 use Drupal\aabenforms_core\Service\AuditLogger;
+use Drupal\aabenforms_core\Service\CprAccess;
 use Drupal\aabenforms_mitid\Service\MitIdSessionManager;
 use Drupal\aabenforms_workflows\Service\ParentCprVerifier;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
@@ -67,10 +68,32 @@ class ParentCprVerifierTest extends UnitTestCase {
     $logger_factory = $this->createMock(LoggerChannelFactoryInterface::class);
     $logger_factory->method('get')->willReturn($this->logger);
 
+    // CprAccess mock: reveal() simulates decryption by stripping an AFENC1:
+    // prefix, so tests can pass either plaintext or "encrypted" CPR.
+    $cprAccess = $this->createMock(CprAccess::class);
+    $cprAccess->method('reveal')->willReturnCallback(
+      static fn (string $v): string => str_starts_with($v, 'AFENC1:') ? substr($v, 7) : $v
+    );
+
     $this->verifier = new ParentCprVerifier(
       $this->sessionManager,
       $this->auditLogger,
       $logger_factory,
+      $cprAccess,
+    );
+  }
+
+  /**
+   * The stored parent CPR, encrypted at rest, is decrypted before comparison.
+   *
+   * @covers ::verify
+   */
+  public function testVerifyDecryptsStoredCprBeforeMatch(): void {
+    $this->sessionManager->method('getCprFromSession')->willReturn('0101001234');
+    $this->assertEquals(
+      ParentCprVerifier::RESULT_MATCH,
+      // Stored value is encrypted; without reveal() this would never match.
+      $this->verifier->verify($this->submission(1, 'AFENC1:0101001234'), 1, 'wf-enc'),
     );
   }
 
