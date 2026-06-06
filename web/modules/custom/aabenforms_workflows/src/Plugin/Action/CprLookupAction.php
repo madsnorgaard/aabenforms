@@ -2,6 +2,7 @@
 
 namespace Drupal\aabenforms_workflows\Plugin\Action;
 
+use Drupal\aabenforms_core\Service\CprAccess;
 use Drupal\aabenforms_core\Service\ServiceplatformenClient;
 use Drupal\Core\Action\Attribute\Action;
 use Drupal\Core\Config\ConfigFactoryInterface;
@@ -39,12 +40,20 @@ class CprLookupAction extends AabenFormsActionBase {
   protected ConfigFactoryInterface $configFactory;
 
   /**
+   * The CPR access helper (decrypts CPR stored at rest).
+   *
+   * @var \Drupal\aabenforms_core\Service\CprAccess
+   */
+  protected CprAccess $cprAccess;
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     $instance = parent::create($container, $configuration, $plugin_id, $plugin_definition);
     $instance->serviceplatformenClient = $container->get('aabenforms_core.serviceplatformen_client');
     $instance->configFactory = $container->get('config.factory');
+    $instance->cprAccess = $container->get('aabenforms_core.cpr_access');
     return $instance;
   }
 
@@ -119,6 +128,10 @@ class CprLookupAction extends AabenFormsActionBase {
    */
   public function execute(): void {
     $cpr = $this->getTokenValue($this->configuration['cpr_token'], '');
+
+    // Decrypt if the CPR was stored encrypted at rest (webform fields); a
+    // session-sourced or plaintext CPR passes through unchanged.
+    $cpr = $this->cprAccess->reveal((string) $cpr);
 
     // Clean CPR (remove hyphens/spaces).
     $cpr = $cpr ? preg_replace('/[^0-9]/', '', $cpr) : '';

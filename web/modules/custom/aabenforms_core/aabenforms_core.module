@@ -308,3 +308,36 @@ function aabenforms_core_page_attachments(array &$attachments): void {
     ];
   }
 }
+
+/**
+ * Implements hook_ENTITY_TYPE_presave() for webform_submission entities.
+ *
+ * Encrypts every cpr_field value before it is written to the database, so
+ * CPR numbers are not stored in plaintext at rest. The companion reveal()
+ * happens at the points of use (CPR lookup, Digital Post recipient, audit
+ * hashing). Encryption is idempotent, so re-saving a submission does not
+ * double-encrypt.
+ */
+function aabenforms_core_webform_submission_presave(\Drupal\webform\WebformSubmissionInterface $submission): void {
+  $webform = $submission->getWebform();
+  if ($webform === NULL) {
+    return;
+  }
+  /** @var \Drupal\aabenforms_core\Service\CprAccess $cprAccess */
+  $cprAccess = \Drupal::service('aabenforms_core.cpr_access');
+  foreach ($webform->getElementsInitializedAndFlattened() as $key => $element) {
+    // A field holds a CPR when it uses the cpr_field element, or - because
+    // several citizen forms use a plain textfield - when its key is "cpr" or
+    // ends in "_cpr" (cpr, child_cpr, applicant_cpr, partner1_cpr, ...).
+    $is_cpr = ($element['#type'] ?? '') === 'cpr_field'
+      || $key === 'cpr'
+      || str_ends_with($key, '_cpr');
+    if (!$is_cpr) {
+      continue;
+    }
+    $value = $submission->getElementData($key);
+    if (is_string($value) && $value !== '') {
+      $submission->setElementData($key, $cprAccess->protect($value));
+    }
+  }
+}

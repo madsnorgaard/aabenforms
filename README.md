@@ -62,7 +62,7 @@ Local URLs: site at https://aabenforms.ddev.site, JSON:API at `/jsonapi`, mail a
 | `aabenforms_digital_post` (+ `_eca`) | Partial | SF1601 Digital Post in `fake_db`/`wiremock`; real MeMo and SOAP transport are planned (issue #77) |
 | `aabenforms_nemlogin`, `aabenforms_sbsys`, `aabenforms_get_organized` | Planned | NemLog-in Erhverv and ESDH/case-system integrations (issues #79, #84-#86) |
 
-Encryption and GDPR audit logging are built into `aabenforms_core`. A retention and right-to-erasure subsystem does not exist yet and is tracked in issue #91.
+Encryption and GDPR audit logging are built into `aabenforms_core`. CPR numbers are encrypted at rest (AES-256) on submission and decrypted only at the point of use (registry lookup, Digital Post recipient, audit hashing). The encryption key is read from the `AABENFORMS_CPR_KEY` environment variable (base64 of 32 random bytes, generated with `openssl rand -base64 32`); the key and encryption profile are provisioned automatically by a database update and never stored in git. If the variable is unset, submissions still succeed but CPR is stored unencrypted and a warning is logged. A retention and right-to-erasure subsystem does not exist yet and is tracked in issue #91.
 
 ## Recent progress
 

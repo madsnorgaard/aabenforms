@@ -117,6 +117,13 @@ class AuditLogActionTest extends UnitTestCase {
     $auditLoggerProperty = $reflectionClass->getProperty('auditLogger');
     $auditLoggerProperty->setAccessible(TRUE);
     $auditLoggerProperty->setValue($this->action, $this->auditLogger);
+
+    // CPR access helper: reveal is a pass-through for these tests.
+    $cprAccess = $this->createMock(\Drupal\aabenforms_core\Service\CprAccess::class);
+    $cprAccess->method('reveal')->willReturnArgument(0);
+    $cprAccessProperty = $reflectionClass->getProperty('cprAccess');
+    $cprAccessProperty->setAccessible(TRUE);
+    $cprAccessProperty->setValue($this->action, $cprAccess);
   }
 
   /**

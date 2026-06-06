@@ -103,6 +103,10 @@ class SendDigitalPostActionTest extends UnitTestCase {
     $action->setSender($this->sender);
     $action->setConfigFactory($this->configFactory);
     $action->setExecutionCollector($this->executionCollector);
+    // CPR access helper: reveal is a pass-through for these tests.
+    $cprAccess = $this->createMock(\Drupal\aabenforms_core\Service\CprAccess::class);
+    $cprAccess->method('reveal')->willReturnArgument(0);
+    $action->setCprAccess($cprAccess);
     return $action;
   }
 

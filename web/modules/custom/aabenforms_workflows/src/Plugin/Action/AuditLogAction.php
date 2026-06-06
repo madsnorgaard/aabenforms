@@ -3,6 +3,7 @@
 namespace Drupal\aabenforms_workflows\Plugin\Action;
 
 use Drupal\aabenforms_core\Service\AuditLogger;
+use Drupal\aabenforms_core\Service\CprAccess;
 use Drupal\Core\Action\Attribute\Action;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -31,11 +32,19 @@ class AuditLogAction extends AabenFormsActionBase {
   protected AuditLogger $auditLogger;
 
   /**
+   * The CPR access helper (decrypts CPR stored at rest).
+   *
+   * @var \Drupal\aabenforms_core\Service\CprAccess
+   */
+  protected CprAccess $cprAccess;
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     $instance = parent::create($container, $configuration, $plugin_id, $plugin_definition);
     $instance->auditLogger = $container->get('aabenforms_core.audit_logger');
+    $instance->cprAccess = $container->get('aabenforms_core.cpr_access');
     return $instance;
   }
 
@@ -145,6 +154,8 @@ class AuditLogAction extends AabenFormsActionBase {
       $cpr = NULL;
       if (!empty($this->configuration['cpr_token'])) {
         $cpr = $this->getTokenValue($this->configuration['cpr_token'], '');
+        // Decrypt if stored encrypted at rest before hashing for the audit.
+        $cpr = $this->cprAccess->reveal((string) $cpr);
         if ($cpr) {
           $cpr = preg_replace('/[^0-9]/', '', $cpr);
         }
