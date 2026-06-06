@@ -8,6 +8,7 @@
  */
 
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
 
 /**
  * Wizard-created workflow configs are preserved across drush cim.
@@ -25,6 +26,17 @@ function aabenforms_workflows_help(string $route_name, RouteMatchInterface $rout
   switch ($route_name) {
     case 'help.page.aabenforms_workflows':
       return '<p>' . t('ECA workflow integration and templates for ÅbenForms.') . '</p>';
+
+    // On the ECA list - the entry point for "Test this event" - explain why a
+    // MitID-gated flow denies in a synthetic test, and how to run its happy
+    // path by activating a demo citizen.
+    case 'entity.eca.collection':
+      if (\Drupal::moduleHandler()->moduleExists('aabenforms_mitid')
+        && \Drupal::currentUser()->hasPermission('administer eca')) {
+        $link = Url::fromRoute('aabenforms_mitid.demo_session')->toString();
+        return '<p>' . t('MitID-gated flows fail closed: with no verified identity, <em>Test this event</em> stops at the deny step. To run a gated flow through its happy path, first <a href=":url">activate a demo citizen</a> - it binds an identity to your browser for 15 minutes.', [':url' => $link]) . '</p>';
+      }
+      return NULL;
   }
   return NULL;
 }

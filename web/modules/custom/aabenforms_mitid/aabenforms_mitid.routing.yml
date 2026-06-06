@@ -6,6 +6,14 @@ aabenforms_mitid.settings:
   requirements:
     _permission: 'administer site configuration'
 
+aabenforms_mitid.demo_session:
+  path: '/admin/config/aabenforms/mitid/demo-session'
+  defaults:
+    _form: '\Drupal\aabenforms_mitid\Form\DemoSessionForm'
+    _title: 'Test as demo citizen'
+  requirements:
+    _permission: 'administer eca'
+
 aabenforms_mitid.login:
   path: '/mitid/login'
   defaults:
