@@ -1,17 +1,25 @@
 # CI/CD with Danish Government Mock Services
 
-**Status**: **COMPLETE** - Mock services integrated into GitHub Actions CI
-**Date**: 2026-01-25
+**Status**: Working - mock services integrated into GitHub Actions CI
+
+This is a pre-pilot POC. The same mock services described here run locally in DDEV
+and in CI; none of them talk to live Danish government endpoints.
 
 ---
 
 ## What We Built
 
-Your GitHub Actions CI pipeline now runs with the **same Danish government mock services** that you use locally in DDEV:
+The GitHub Actions CI pipeline runs with the same Danish government mock services
+used locally in DDEV:
 
-1. **Keycloak** (MitID Mock) - 10 realistic Danish test users
-2. **WireMock** (Serviceplatformen Mock) - SF1520 CPR lookup stubs
-3. **Realistic test data** - Valid CPR numbers, Danish names, Copenhagen addresses
+1. Keycloak (MitID mock) - 10 Danish test users in the `danish-gov-test` realm
+2. WireMock (Serviceplatformen mock) - SF1520 CPR lookup stubs
+3. Test data - valid CPR numbers, Danish names, Copenhagen addresses
+
+MitID is a Keycloak mock realm only (no live MitID registration). CPR (SF1520) and
+CVR (SF1530) lookups run against WireMock; live use would require client
+certificates. Digital Post (SF1601) is exercised in test/mock modes only - there is
+no live MeMo/SOAP path yet.
 
 ---
 
@@ -45,9 +53,9 @@ Your GitHub Actions CI pipeline now runs with the **same Danish government mock 
                        ┌──────────────────────┐
                        │ CI Summary           │
                        │                      │
-                       │ Tests passed      │
-                       │ 70% coverage      │
-                       │ 🇩🇰 10 test users    │
+                       │ Tests result         │
+                       │ Coverage report      │
+                       │ 10 test users        │
                        └──────────────────────┘
 ```
 
@@ -81,10 +89,10 @@ The CI pipeline automatically:
 - No external API dependencies
 - **100% offline capable**
 
-### 4. Fast & Free
+### 4. Fast and free
 
-- **Pipeline duration**: ~5-8 minutes
-- **Cost**: $0 (GitHub free tier)
+- **Pipeline duration**: a few minutes
+- **Cost**: GitHub free tier
 - **Parallel jobs**: Composer validation + PHPUnit tests
 - **Caching**: Composer dependencies cached
 
@@ -179,7 +187,7 @@ class MitIdAuthenticationTest extends KernelTestBase {
 ```php
 <?php
 
-namespace Drupal\Tests\aabenforms_cpr\Kernel;
+namespace Drupal\Tests\aabenforms_workflows\Kernel;
 
 use Drupal\KernelTests\KernelTestBase;
 use GuzzleHttp\Client;
@@ -187,12 +195,16 @@ use GuzzleHttp\Client;
 /**
  * Tests SF1520 CPR lookup with mock Serviceplatformen.
  *
- * @group aabenforms_cpr
+ * CPR (SF1520) and CVR (SF1530) lookups are action plugins in
+ * aabenforms_workflows backed by the Serviceplatformen client in
+ * aabenforms_core. They are not standalone modules.
+ *
+ * @group aabenforms_workflows
  * @group integration
  */
 class CprLookupTest extends KernelTestBase {
 
-  protected static $modules = ['aabenforms_core', 'aabenforms_cpr'];
+  protected static $modules = ['aabenforms_core', 'aabenforms_workflows'];
 
   public function testMockCprLookup() {
     $serviceplatformenUrl = getenv('SERVICEPLATFORMEN_URL');
@@ -290,7 +302,7 @@ Navigate to: `https://github.com/madsnorgaard/aabenforms/actions`
 You'll see:
 - All jobs (Composer validation, PHPUnit tests)
 - Code coverage percentage
-- 🇩🇰 Mock service information
+- Mock service information
 -  Duration (~5-8 minutes)
 
 ### 3. Coverage Report Artifact
@@ -343,13 +355,11 @@ ddev test
 
 ## Benefits Summary
 
-| Metric | Before Mock Services | With Mock Services | Improvement |
-|--------|---------------------|-------------------|-------------|
-| **Setup Time** | 4-8 weeks (credentials) | 5 minutes | **99% faster** |
-| **CI Duration** | 15-20 min (external APIs) | 5-8 min | **60% faster** |
-| **CI Cost** | $50-100/month (paid tier) | $0 | **100% saved** |
-| **Test Reliability** | 70% (flaky APIs) | 99% (deterministic) | **41% more stable** |
-| **Offline Development** | No | Yes | **Developer happiness** |
+Running against mock services instead of live Danish government endpoints means:
+
+- No service agreements or production credentials needed to develop or run CI
+- No external network dependency, so CI is deterministic and can run offline
+- Faster, more reliable CI runs (no flaky third-party APIs)
 
 ---
 
@@ -357,11 +367,11 @@ ddev test
 
 ### 1. Write More Integration Tests
 
-Focus on modules that will integrate with Danish services:
-- `aabenforms_mitid`: Authentication flows
-- `aabenforms_cpr`: CPR data validation
-- `aabenforms_cvr`: Company lookup (add SF1530 stubs)
-- `aabenforms_digital_post`: Notification delivery (add SF1601 stubs)
+Focus on the areas that integrate with Danish services:
+- `aabenforms_mitid`: authentication flows (Keycloak mock)
+- `aabenforms_workflows`: CPR (SF1520) and CVR (SF1530) lookup action plugins
+- `aabenforms_core`: Serviceplatformen client
+- `aabenforms_digital_post`: Digital Post (SF1601) delivery in fake_db / wiremock modes
 
 ### 2. Add More WireMock Stubs
 
@@ -450,43 +460,27 @@ Configure GitHub to require CI passing before merge:
 
 ---
 
-## Success Metrics
+## Coverage Targets
 
-### Coverage Goals
-- **aabenforms_core**: 70%+ (foundation services)
-- **aabenforms_mitid**: 80%+ (authentication critical)
-- **aabenforms_cpr**: 80%+ (personal data handling)
-- **aabenforms_workflows**: 60%+ (ECA integration)
-
-### CI Performance Goals
-- **Duration**: < 10 minutes
-- **Reliability**: > 95% pass rate
-- **Cost**: $0 (free tier)
+Targets to aim for as tests are added:
+- **aabenforms_core**: foundation services and Serviceplatformen client
+- **aabenforms_mitid**: authentication (security critical)
+- **aabenforms_workflows**: ECA actions including CPR/CVR lookup
+- **aabenforms_digital_post**: SF1601 in test/mock modes
 
 ---
 
-## Community Value
+## Reusing the Mock Stack
 
-This CI setup can be shared with:
-- **OS2 community**: Other municipalities building on Drupal
-- **Danish government projects**: Reusable mock services
-- **Open-source projects**: Standards-based testing approach
-
-Consider extracting `.ddev/mocks/` to separate repository:
-```
-github.com/os2community/danish-gov-mock-services
-```
-
-Benefits:
-- Reusable across projects
-- Docker Hub images
-- Community contributions (more test users, more stubs)
-- Presentation at OS2 Day
+The `.ddev/mocks/` setup (Keycloak realm + WireMock mappings) is self-contained and
+could be extracted into a separate repository for reuse across other Drupal projects
+or open-source efforts. It is standards-based (OIDC, SOAP) so it is not tied to this
+project.
 
 ---
 
-**Status**: **COMPLETE** - CI with mock services is ready
+**Status**: Working - CI runs against mock services.
 
-**Next Action**: Write your first integration test and watch it run with Danish test data!
+**Next Action**: Write an integration test and run it with the Danish test data.
 
-**Questions?** See `docs/DDEV_MOCK_SERVICES_GUIDE.md` for detailed setup guide.
+**Questions?** See `docs/DDEV_MOCK_SERVICES_GUIDE.md` for the setup guide.

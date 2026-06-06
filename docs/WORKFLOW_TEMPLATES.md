@@ -1,10 +1,18 @@
 # Workflow Template Reference
 
-**Last Updated**: 2026-02-02
+**Last Updated**: 2026-06-06
+
+## Status
+
+Pre-pilot POC. There are no real municipality deployments. Live demo at https://aabenforms.dk (frontend) and https://api.aabenforms.dk (backend). MitID runs against a Keycloak mock IdP; Serviceplatformen (CPR/CVR) and Digital Post run against test/mock endpoints.
 
 ## Overview
 
-ÅbenForms provides 5 pre-built BPMN workflow templates for common Danish municipal use cases. This document describes each template in detail, including when to use it, required fields, and configuration options.
+ÅbenForms ships 13 ready-made workflow templates (BPMN source files under `web/modules/custom/aabenforms_workflows/workflows/`) for common Danish municipal use cases, plus a set of supporting flows; in total 18 ECA flows are deployed. The visual editor is the Workflow Modeler (the `drupal/modeler` React Flow editor, modeler id `workflow_modeler`), not a BPMN designer. This document describes the most commonly used templates in detail, including when to use each one, required fields, and configuration options.
+
+The full template set is: address_change, association_booking, building_permit, citizen_service_application, company_verification, contact_form, foi_request, hr_onboarding, marriage_booking, med_election_nomination, mileage_expense, parking_permit, phone_declaration.
+
+Several action plugins referenced below are demo mocks, not production integrations. Payment, SMS, GIS/zoning, payroll and calendar/booking actions return simulated results and must not be treated as working production features. Real (against test or mock endpoints) actions are: the ECA workflow engine and Workflow Modeler, MitID OIDC sign-in (Keycloak mock), CPR (SF1520) and CVR (SF1530) lookup clients, the custom CPR/CVR/DAWA webform elements with server-side validation, field-level CPR encryption with audit logging, and Digital Post (SF1601) in its `fake_db`/`wiremock` test modes.
 
 ---
 
@@ -29,13 +37,13 @@
 
 ### Description
 
-Complex building permit workflow demonstrating full Danish municipal workflow pattern with:
+Complex building permit workflow demonstrating a full Danish municipal workflow pattern with:
 - MitID authentication
 - Document validation
 - Multi-step approvals
 - Case worker review
-- SBSYS integration
-- GDPR compliance with full audit logging
+- Case-system handoff (planned ESDH/case-management integration, not yet implemented)
+- GDPR compliance with field-level CPR encryption and audit logging
 
 ### Use Cases
 
@@ -101,7 +109,7 @@ expected_completion_date: Date (required)
 7. USER TASK: Case Worker Review
    ↓
 8. GATEWAY: Decision
-   ├─ APPROVE → Create SBSYS Case → Send Approval
+   ├─ APPROVE → Create Case (planned case-system handoff) → Send Approval
    ├─ REJECT → Send Rejection Notice
    └─ REQUEST INFO → Wait for Response (30 days timeout)
        ├─ Info Received → Back to Case Worker Review
@@ -120,29 +128,29 @@ expected_completion_date: Date (required)
 | `document_validation` | Strict | Strict, Lenient, None | Document format checking |
 | `review_timeout` | 30 days | 7-90 days | Time for case worker review |
 | `info_request_timeout` | 30 days | 7-60 days | Time for applicant to provide info |
-| `sbsys_case_type` | Building Permit | Configurable | SBSYS case classification |
+| `case_type` | Building Permit | Configurable | Case classification (used by planned case-system handoff) |
 | `notification_method` | Digital Post | Email, Digital Post, Both | Notification channel |
 
 ### Integration Points
 
 **Danish Services**:
-- **MitID**: Citizen authentication (OIDC)
-- **SF1520**: CPR person lookup (Serviceplatformen)
-- **DAWA**: Address validation (open API)
-- **SF1601**: Digital Post notifications (Serviceplatformen)
+- **MitID**: Citizen authentication (OIDC, against a Keycloak mock IdP today)
+- **SF1520**: CPR person lookup (Serviceplatformen, test/mock endpoint)
+- **DAWA**: Address validation (open API; implemented as a webform element)
+- **SF1601**: Digital Post notifications (Serviceplatformen; test/mock modes only today)
 
-**Municipal Systems**:
-- **SBSYS**: Case creation and management
-- **GetOrganized**: Document archiving (ESDH)
+**Case / ESDH systems** (planned, not yet implemented):
+- Case creation and management handoff
+- Document archiving (ESDH)
 
-### Example: Aarhus Kommune Building Permit
+### Example: Building Permit (illustrative scenario)
 
-**Scenario**: Citizen applies for renovation permit for residential property.
+**Scenario**: A citizen applies for a renovation permit for a residential property. This is a hypothetical demo scenario, not a real deployment.
 
 ```yaml
 # Configuration
-Workflow ID: building_permit_aarhus_residential
-Label: Boligrenoveringspermit - Aarhus Kommune
+Workflow ID: building_permit_residential
+Label: Boligrenoveringstilladelse
 Authentication: MitID High
 Review SLA: 21 working days
 Auto-assign: Building Department
@@ -151,22 +159,20 @@ Auto-assign: Building Department
 **Process**:
 1. Citizen submits application online
 2. MitID authentication (High)
-3. CPR verification against national registry
+3. CPR verification (SF1520 test endpoint)
 4. DAWA validates property address exists
 5. System checks uploaded documents (PDF format, max 20MB)
 6. Case assigned to building inspector
-7. Inspector reviews within 21 days
-8. If approved: SBSYS case created, Digital Post sent
-9. If more info needed: 14-day deadline for response
+7. Inspector reviews within the configured SLA
+8. If approved: case-system handoff (planned) runs, Digital Post sent
+9. If more info needed: deadline timer for applicant response
 10. All actions logged for GDPR compliance
-
-**Timeline**: Average 25 days from submission to decision.
 
 ### Limitations
 
 - Requires MitID integration (not suitable for anonymous submissions)
 - Document validation basic (format/size only, not content)
-- SBSYS integration required for case creation
+- Case-system handoff is planned, not yet implemented
 - Maximum 90-day timeout (configure shorter if needed)
 
 ### When to Use vs. Other Templates
@@ -288,14 +294,14 @@ priority: Radios (admin only, optional)
 - Ticket system integration (Zendesk, Freshdesk)
 - CRM integration (for tracking inquiries)
 
-### Example: Odense Kommune Contact Form
+### Example: Contact Form (illustrative scenario)
 
-**Scenario**: Citizen asks question about waste collection schedule.
+**Scenario**: A citizen asks a question about the waste collection schedule. Hypothetical demo scenario, not a real deployment.
 
 ```yaml
 # Configuration
-Workflow ID: contact_form_odense
-Label: Kontaktformular - Odense Kommune
+Workflow ID: contact_form
+Label: Kontaktformular
 Spam Protection: Honeypot
 Auto-Response: Enabled
 ```
@@ -303,12 +309,10 @@ Auto-Response: Enabled
 **Process**:
 1. Citizen fills out form (no login needed)
 2. System validates email format
-3. Inquiry type "Environment" → routes to environment@odense.dk
-4. Confirmation email sent to citizen (within 1 minute)
+3. Inquiry type "Environment" routes to the environment department
+4. Confirmation email sent to citizen
 5. Submission logged
-6. Department responds within 3 days via email
-
-**Timeline**: Instant submission confirmation, response within SLA.
+6. Department responds within its SLA via email
 
 ### Limitations
 
@@ -444,22 +448,22 @@ From SF1520 (Serviceplatformen):
 ### Integration Points
 
 **Required**:
-- **SF1530**: CVR company lookup (Serviceplatformen)
-- **SF1520**: CPR person lookup (Serviceplatformen)
-- **MitID**: Authentication
+- **SF1530**: CVR company lookup (Serviceplatformen, test/mock endpoint)
+- **SF1520**: CPR person lookup (Serviceplatformen, test/mock endpoint)
+- **MitID**: Authentication (Keycloak mock IdP today)
 
 **Optional**:
-- Certificate storage (ESDH/GetOrganized)
+- Certificate storage (planned ESDH integration)
 - Email notifications
 
-### Example: Aarhus Kommune Contractor Verification
+### Example: Contractor Verification (illustrative scenario)
 
-**Scenario**: Municipality verifies contractor is authorized to sign contract.
+**Scenario**: A municipality verifies that a contractor is authorized to sign a contract. Hypothetical demo scenario, not a real deployment.
 
 ```yaml
 # Configuration
-Workflow ID: contractor_verification_aarhus
-Label: Leverandørverifikation - Aarhus Kommune
+Workflow ID: contractor_verification
+Label: Leverandørverifikation
 Certificate Validity: 180 days
 ```
 
@@ -474,8 +478,6 @@ Certificate Validity: 180 days
 8. If NO: Send rejection notice
 9. All lookups logged (who, when, why)
 
-**Timeline**: 30 seconds to 2 minutes (real-time verification).
-
 ### Certificate Contents
 
 ```
@@ -483,9 +485,9 @@ Certificate Validity: 180 days
    VIRKSOMHEDSVERIFIKATION
 ═══════════════════════════════════════
 
-Udstedt af: Aarhus Kommune
-Dato: 2026-02-02 14:35:00
-Gyldighed: 2026-08-01
+Udstedt af: [Kommune]
+Dato: 2026-06-06 14:35:00
+Gyldighed: 2026-12-03
 
 VIRKSOMHED:
   Navn: Eksempel A/S
@@ -498,7 +500,7 @@ PERSON:
 
 BEKRÆFTELSE:
    Anders Andersen er registreret som
-    direktør for Eksempel A/S per 2026-02-02.
+    direktør for Eksempel A/S per 2026-06-06.
 
    Data verificeret via:
     - CVR-registret (SF1530)
@@ -616,6 +618,8 @@ forward_mail: Checkbox (optional)
 
 ### System Integrations
 
+Note: the municipal-system update steps below are illustrative. In the current POC they run as demo mock actions and do not call live municipal REST APIs.
+
 **Municipal Systems Updated** (parallel):
 
 1. **Citizen Portal**
@@ -652,14 +656,14 @@ forward_mail: Checkbox (optional)
 - Property Tax System API
 - Waste Management System API
 
-### Example: Copenhagen Municipality Address Update
+### Example: Address Update (illustrative scenario)
 
-**Scenario**: Citizen moves within Copenhagen, needs all systems updated.
+**Scenario**: A citizen moves within the same municipality and needs all systems updated. Hypothetical demo scenario, not a real deployment.
 
 ```yaml
 # Configuration
-Workflow ID: address_change_copenhagen
-Label: Adresseændring - Københavns Kommune
+Workflow ID: address_change
+Label: Adresseændring
 Update Systems:
   - Citizen Portal
   - Property Tax
@@ -887,17 +891,17 @@ Day 8+: Escalated to legal team, requester notified of delay
 
 **Optional**:
 - **MitID**: If requiring authentication
-- **SF1601**: Digital Post for official notice
-- **ESDH**: GetOrganized for document management
+- **SF1601**: Digital Post for official notice (test/mock modes today)
+- **ESDH**: Document management (planned integration)
 
-### Example: Aarhus Kommune FOI Request
+### Example: FOI Request (illustrative scenario)
 
-**Scenario**: Journalist requests meeting minutes from municipal board.
+**Scenario**: A journalist requests meeting minutes from a municipal board. Hypothetical demo scenario, not a real deployment.
 
 ```yaml
 # Configuration
-Workflow ID: foi_request_aarhus
-Label: Aktindsigt - Aarhus Kommune
+Workflow ID: foi_request
+Label: Aktindsigt
 Deadline: 7 days (legal requirement)
 Authentication: Optional
 Auto-Redact CPR: Yes
@@ -969,7 +973,7 @@ If denying access, must provide legal basis:
 | **Approvals** | Multi-step | None | Automatic | Automatic | Case-by-case |
 | **Documents** | Yes (upload) | No | No | No | Yes (release) |
 | **Deadline** | 30-90 days | None (SLA) | Real-time | Immediate | 7 days (legal) |
-| **Integrations** | SBSYS, ESDH | Email | CVR, CPR | Multiple systems | Email, ESDH |
+| **Integrations** | Case system (planned), ESDH (planned) | Email | CVR, CPR | Multiple systems (mock) | Email, ESDH (planned) |
 | **Use Frequency** | Occasional | Frequent | Occasional | Occasional | Rare |
 
 ### Complexity Scale
@@ -1080,19 +1084,15 @@ Need to route inquiries?
 
 To create a completely new template:
 
-1. **Use BPMN editor**: `/admin/config/workflow/eca/modeler`
-2. **Follow BPMN 2.0 standard**
-3. **Include required elements**:
+1. **Open the Workflow Modeler**: edit a flow at `/admin/config/workflow/eca`; the adopted editor is the Workflow Modeler (`drupal/modeler`, modeler id `workflow_modeler`)
+2. **Include required elements**:
    - Start event
    - End event
    - At least one task
    - Process documentation
-4. **Test with BpmnTemplateManager**:
-   ```php
-   $manager->validateTemplate('my_template');
-   ```
-5. **Add to workflows directory**
-6. **Document in this file**
+3. **Add the BPMN source file** to `web/modules/custom/aabenforms_workflows/workflows/`
+4. **Browse ready-made templates** at `/admin/aabenforms/workflow-templates`
+5. **Document in this file**
 
 ---
 

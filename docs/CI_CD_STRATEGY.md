@@ -13,7 +13,7 @@
 ├─────────────────────────────────────────────────────────────┤
 │                                                              │
 │  Local Dev          CI/CD              Staging     Production│
-│  (DDEV)         (GitHub Actions)      (Platform)  (Platform) │
+│  (DDEV)         (GitHub Actions)      (Docker)    (VPS2)     │
 │     │                  │                  │            │      │
 │     ▼                  ▼                  ▼            ▼      │
 │  Mock Services    Mock Services      Mock Services  Real     │
@@ -512,7 +512,7 @@ jobs:
 
 ---
 
-## 3. Staging Environment (Platform.sh / Docker)
+## 3. Staging Environment (Docker)
 
 ### Docker Compose for Staging
 
@@ -585,11 +585,8 @@ volumes:
 
 **Deploy to Staging**:
 ```bash
-# On staging server
+# On the staging host
 docker compose -f docker-compose.staging.yml up -d
-
-# Or use Platform.sh
-platform push
 ```
 
 ---
@@ -712,10 +709,8 @@ strategy:
 
 | Metric | With Mocks | Without Mocks |
 |--------|-----------|---------------|
-| **Setup Time** | 30 seconds | N/A (impossible) |
-| **Test Speed** | 5 minutes | N/A |
+| **Setup Time** | Seconds | N/A (impossible) |
 | **Credentials Needed** | None | Required |
-| **Cost** | $0 | DKK 200,000+ |
 | **Offline Development** | Yes | No |
 
 ---
@@ -798,9 +793,16 @@ SLACK_WEBHOOK            # Notifications
 
 ### Continuous Deployment (CD)
 
+Production runs on VPS2 (the contabo-infrastructure host) as a Docker image.
+Deployment is not driven by a Platform.sh action; instead a push to `main`
+fires a `repository_dispatch` event that the `contabo-infrastructure`
+`deploy.yml` workflow picks up on the self-hosted runner. That workflow
+rebuilds the backend Docker image on VPS2 and runs `drush updatedb` and
+`drush cim` against the live container.
+
 ```yaml
-# .github/workflows/deploy.yml
-name: Deploy to Production
+# .github/workflows/deploy.yml (project repo)
+name: Trigger production deploy
 
 on:
   push:
@@ -808,34 +810,28 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy:
-    name: Deploy to Platform.sh
+  dispatch:
+    name: Notify contabo-infrastructure
     runs-on: ubuntu-latest
     needs: [ci-summary]  # Only deploy if CI passes
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Deploy to Platform.sh
-        uses: platformsh/deploy-action@v1
-        with:
-          project-id: ${{ secrets.PLATFORMSH_PROJECT_ID }}
-          cli-token: ${{ secrets.PLATFORMSH_CLI_TOKEN }}
-
-      - name: Run database updates
+      - name: Fire repository_dispatch
         run: |
-          platform ssh "cd /app/backend && vendor/bin/drush updatedb -y"
-          platform ssh "cd /app/backend && vendor/bin/drush cr"
+          gh api repos/madsnorgaard/contabo-infrastructure/dispatches \
+            -f event_type=deploy-aabenforms \
+            -F client_payload[sha]=${{ github.sha }}
+        env:
+          GH_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+```
 
-      - name: Notify on success
-        uses: slackapi/slack-github-action@v1
-        with:
-          webhook-url: ${{ secrets.SLACK_WEBHOOK }}
-          payload: |
-            {
-              "text": "Deployed to production: ${{ github.sha }}"
-            }
+On VPS2 the `contabo-infrastructure` deploy job rebuilds the image and applies
+config:
+
+```bash
+docker compose -f ~/docker/aabenforms/docker-compose.yml up -d --build
+docker compose exec -T backend drush updatedb -y
+docker compose exec -T backend drush cim -y
 ```
 
 ---
@@ -903,9 +899,6 @@ jobs:
 **Docker Compose**:
 - https://docs.docker.com/compose/
 
-**Platform.sh**:
-- https://docs.platform.sh/
-
 **Testing Tools**:
 - PHPUnit: https://phpunit.de/
 - Playwright: https://playwright.dev/
@@ -919,26 +912,23 @@ jobs:
 
 1. **Mock services everywhere** (local, CI, staging)
 2. **No credentials needed** for development
-3. **Fast CI/CD** (15 minutes total)
-4. **Cost-effective** ($0 for CI minutes)
-5. **Production-ready** (switch to real services in prod)
+3. **Fast CI/CD**
+4. **Environment-switched services** (mocks in local/CI/staging; real Danish
+   government endpoints are wired only in production, and most of those
+   integrations are still test/mock-backed - see `docs/PROMISES-VS-VERIFIED.md`)
 
 ### Key Benefits
 
-- **99% faster** than waiting for credentials
-- **DKK 200,000+ saved** per project
-- **Deterministic tests** (same data every time)
-- **Secure** (no production credentials in CI)
--  **Scalable** (parallel jobs, caching)
+- No waiting for real-service credentials to run the suite
+- Deterministic tests (same data every time)
+- Secure (no production credentials in CI)
+- Scalable (parallel jobs, caching)
 
 ---
 
-**Status**: **READY TO IMPLEMENT**
-
-**Next Command**: Create `.github/workflows/ci.yml` and push to test!
+**Status**: Implemented. CI runs on every push and pull request.
 
 ---
 
-**Created By**: Claude Sonnet 4.5 + Mads Nørgaard
 **Date**: 2026-01-25
 **Version**: 1.0.0

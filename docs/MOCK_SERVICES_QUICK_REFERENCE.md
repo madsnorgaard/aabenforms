@@ -1,6 +1,8 @@
 # ÅbenForms Mock Services - Quick Reference Card
 
-**Print this page and keep it handy while developing!** 
+Quick reference for the local DDEV mock services. MitID is a Keycloak mock realm,
+Serviceplatformen (CPR/CVR) is a WireMock mock, and DAWA is mocked via Prism. None
+of these talk to live Danish government endpoints.
 
 ---
 
@@ -26,7 +28,7 @@ ddev mocks-logs         # View logs
 
 ---
 
-##  Test Users (Password: test1234)
+## Test Users (Password: test1234)
 
 | Username | Name | CPR | Type |
 |----------|------|-----|------|
@@ -52,7 +54,7 @@ ddev mocks-logs         # View logs
 
 ---
 
-##  Quick Tests
+## Quick Tests
 
 ### Test MitID Login
 ```bash
@@ -80,7 +82,7 @@ curl http://localhost:8080/realms/danish-gov-test/.well-known/openid-configurati
 
 ---
 
-##  Drupal Configuration Snippet
+## Drupal Configuration Snippet
 
 **File**: `web/sites/default/settings.local.php`
 
@@ -91,17 +93,18 @@ $config['aabenforms_mitid.settings']['oidc']['client_id'] = 'aabenforms-backend'
 $config['aabenforms_mitid.settings']['oidc']['client_secret'] = 'aabenforms-backend-secret-change-in-production';
 $config['aabenforms_mitid.settings']['mock_mode'] = TRUE;
 
-// Serviceplatformen Mock
+// Serviceplatformen Mock (CPR SF1520 / CVR SF1530 via WireMock)
 $config['aabenforms_core.settings']['serviceplatformen']['endpoint'] = 'http://localhost:8081';
 $config['aabenforms_core.settings']['serviceplatformen']['mock_mode'] = TRUE;
 
-// DAWA Mock
-$config['aabenforms_dawa.settings']['api_url'] = 'http://localhost:8082';
+// DAWA Mock (Prism). DAWA address lookup is a webform element in
+// aabenforms_webform, not a standalone module.
+$config['aabenforms_webform.settings']['dawa']['api_url'] = 'http://localhost:8082';
 ```
 
 ---
 
-##  Nuxt 3 Configuration Snippet
+## Nuxt 3 Configuration Snippet
 
 **File**: `nuxt.config.ts`
 
@@ -127,7 +130,7 @@ export default defineNuxtConfig({
 
 ---
 
-##  Troubleshooting
+## Troubleshooting
 
 ### Keycloak Not Starting?
 ```bash
@@ -158,7 +161,7 @@ ddev mocks-logs wiremock                     # Check logs
 
 ---
 
-##  OIDC Endpoints (MitID Mock)
+## OIDC Endpoints (MitID Mock)
 
 ```
 Discovery:      http://localhost:8080/realms/danish-gov-test/.well-known/openid-configuration
@@ -171,7 +174,7 @@ Logout:         http://localhost:8080/realms/danish-gov-test/protocol/openid-con
 
 ---
 
-##  Serviceplatformen Endpoints
+## Serviceplatformen Endpoints
 
 ```
 SF1520 (CPR):         POST http://localhost:8081/sf1520
@@ -181,7 +184,7 @@ SF1601 (Digital Post): POST http://localhost:8081/sf1601
 
 ---
 
-##  DAWA API Endpoints
+## DAWA API Endpoints
 
 ```
 Autocomplete:  GET http://localhost:8082/adresser/autocomplete?q={query}
@@ -244,7 +247,7 @@ ddev drush sql:query "SELECT * FROM aabenforms_audit_log ORDER BY timestamp DESC
 
 ---
 
-##  Full Documentation
+## Full Documentation
 
 - **Comprehensive Guide**: `docs/DDEV_MOCK_SERVICES_GUIDE.md`
 - **International Standards**: `docs/INTERNATIONAL_STANDARDS_AND_TOOLS.md`
@@ -252,7 +255,7 @@ ddev drush sql:query "SELECT * FROM aabenforms_audit_log ORDER BY timestamp DESC
 
 ---
 
-## 🆘 Need Help?
+## Need Help?
 
 1. Check logs: `ddev mocks-logs [service]`
 2. Verify status: `ddev mocks-status`
@@ -262,6 +265,4 @@ ddev drush sql:query "SELECT * FROM aabenforms_audit_log ORDER BY timestamp DESC
 
 ---
 
-**Happy Coding!** 🇩🇰
-
-**Version**: 1.0.0 | **Last Updated**: 2026-01-25
+Drupal 11.3.10 / PHP 8.4 / ECA 3.1.1. Pre-pilot POC.

@@ -2,12 +2,9 @@
 
 ## Overview
 
-ÅbenForms backend includes comprehensive automated testing across unit, kernel, and integration test levels. This guide covers running tests, writing new tests, and understanding the testing infrastructure.
+ÅbenForms backend includes automated testing across unit, kernel, and integration test levels. This guide covers running tests, writing new tests, and understanding the testing infrastructure.
 
-**Current Test Metrics** (Phase 3):
-- **Total Tests**: 156 tests
-- **Coverage**: 45%
-- **Test Types**: Unit (68), Kernel (52), Integration (36)
+Test counts and coverage figures are not hardcoded here because they drift. CI measures both on every run and publishes them as live README badges (see `docs/TESTING.md` for the coverage gate). To see the current numbers locally, run the suite with `--coverage-text`. CI scopes the gating run to the `unit` and `kernel` suites.
 
 ---
 
@@ -24,7 +21,7 @@ ddev start
 ### Run All Tests
 
 ```bash
-# Run full test suite (156 tests)
+# Run full test suite
 ddev exec phpunit --configuration phpunit.xml
 
 # Run with coverage report (HTML format)
@@ -36,19 +33,19 @@ ddev launch coverage/index.html
 
 ### Run Specific Test Types
 
-#### Unit Tests (68 tests)
+#### Unit Tests
 Tests individual classes in isolation with mocked dependencies:
 ```bash
 ddev exec phpunit --configuration phpunit.xml --testsuite unit
 ```
 
-#### Kernel Tests (52 tests)
+#### Kernel Tests
 Tests with Drupal services available but no database:
 ```bash
 ddev exec phpunit --configuration phpunit.xml --testsuite kernel
 ```
 
-#### Integration Tests (36 tests)
+#### Integration Tests
 Tests with full Drupal installation and WireMock for external services:
 ```bash
 ddev exec phpunit --configuration phpunit.xml --testsuite integration
@@ -180,7 +177,9 @@ class BpmnTemplateManagerTest extends UnitTestCase {
     $this->assertIsArray($templates);
     $this->assertContains('building_permit', $templates);
     $this->assertContains('contact_form', $templates);
-    $this->assertCount(5, $templates);
+    // 13 workflow templates ship under
+    // web/modules/custom/aabenforms_workflows/workflows/.
+    $this->assertCount(13, $templates);
   }
 
   /**
@@ -255,6 +254,9 @@ class MitIdValidateActionTest extends KernelTestBase {
     'aabenforms_core',
     'aabenforms_workflows',
     'eca',
+    // ECA 3.1.x hard-depends on modeler_api; kernel tests that enable 'eca'
+    // must enable it too or the container will fail to build.
+    'modeler_api',
   ];
 
   /**
@@ -358,10 +360,10 @@ class WorkflowExecutionTest extends BrowserTestBase {
     'user',
     'webform',
     'eca',
+    'modeler_api',
     'aabenforms_core',
     'aabenforms_workflows',
     'aabenforms_mitid',
-    'aabenforms_cpr',
   ];
 
   /**
@@ -554,7 +556,7 @@ ddev launch coverage/index.html
 
 ### Coverage Thresholds
 
-PHPUnit is configured with minimum coverage thresholds in `phpunit.xml`:
+PHPUnit is configured to emit a coverage report in `phpunit.xml`:
 
 ```xml
 <coverage processUncoveredFiles="true">
@@ -564,15 +566,11 @@ PHPUnit is configured with minimum coverage thresholds in `phpunit.xml`:
 </coverage>
 ```
 
-**Current Coverage** (Phase 3):
-- **Overall**: 45%
-- **aabenforms_workflows**: 52%
-- **aabenforms_core**: 41%
-- **aabenforms_tenant**: 38%
-
-**Target Coverage** (Phase 4):
-- **Overall**: 60%
-- **Critical modules**: 70%+
+CI parses `coverage/cobertura.xml` and fails the job if line coverage drops
+below the minimum floor enforced in `.github/workflows/ci.yml` (see
+`docs/TESTING.md`). Do not record a fixed percentage here; read the live
+coverage badge in the README or run `--coverage-text` locally for the current
+number.
 
 ---
 
@@ -613,8 +611,9 @@ jobs:
 ### Viewing CI Results
 
 - **GitHub Actions**: https://github.com/madsnorgaard/aabenforms/actions
-- **Coverage Badge**: ![Coverage](https://img.shields.io/badge/coverage-45%25-yellow)
-- **Test Badge**: ![Tests](https://img.shields.io/badge/tests-156%20passing-brightgreen)
+- **Coverage and test-count badges**: rendered live from the JSON the CI run
+  writes (`.github/badges/coverage.json`, `.github/badges/tests.json`) via
+  `img.shields.io/endpoint`; there are no hardcoded numbers.
 
 ---
 
@@ -786,4 +785,4 @@ ddev exec phpunit --coverage-html coverage/
 
 ---
 
-**Last Updated**: 2026-02-01 (Phase 3 completion - 156 tests, 45% coverage)
+**Last Updated**: 2026-06

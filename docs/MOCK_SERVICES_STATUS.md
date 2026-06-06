@@ -59,9 +59,9 @@ curl http://localhost:8080/realms/danish-gov-test/.well-known/openid-configurati
 - **SF1520** (CPR Lookup) - Freja Nielsen (CPR: 0101904521)
 
 **Missing Stubs** (TODO):
-- ⏳ SF1520 for remaining 9 test users
-- ⏳ SF1530 (CVR Lookup)
-- ⏳ SF1601 (Digital Post)
+- SF1520 for remaining 9 test users
+- SF1530 (CVR Lookup)
+- SF1601 (Digital Post)
 
 **Verification**:
 ```bash

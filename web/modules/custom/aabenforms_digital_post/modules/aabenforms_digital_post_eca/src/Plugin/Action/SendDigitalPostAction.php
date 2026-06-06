@@ -216,9 +216,14 @@ class SendDigitalPostAction extends AabenFormsActionBase {
 
       $result = $this->sender->send($post);
 
+      $mode = $this->sender->testMode();
+      $demo = in_array($mode, ['fake_db', 'wiremock'], TRUE);
+      $description = $demo
+        ? sprintf('Demo: Digital Post simuleret (%s).', $mode)
+        : ($result->message ?: 'Digital Post afsendt.');
       $this->recordStep(
         label: $result->isSuccess() ? 'Digital Post sent' : 'Digital Post failed',
-        description: sprintf('%s: %s', $this->sender->testMode(), $result->message),
+        description: $description,
         status: $result->isSuccess() ? 'completed' : 'failed',
       );
       $this->setResultToken(
