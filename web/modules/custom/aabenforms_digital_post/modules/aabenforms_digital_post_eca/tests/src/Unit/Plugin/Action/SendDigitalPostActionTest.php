@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\aabenforms_digital_post_eca\Unit\Plugin\Action;
 
+use Drupal\aabenforms_core\Service\CprAccess;
 use Drupal\aabenforms_core\Service\WorkflowExecutionCollector;
 use Drupal\aabenforms_digital_post\DigitalPost\DigitalPost;
 use Drupal\aabenforms_digital_post\DigitalPost\Recipient;
@@ -103,6 +104,10 @@ class SendDigitalPostActionTest extends UnitTestCase {
     $action->setSender($this->sender);
     $action->setConfigFactory($this->configFactory);
     $action->setExecutionCollector($this->executionCollector);
+    // CPR access helper: reveal is a pass-through for these tests.
+    $cprAccess = $this->createMock(CprAccess::class);
+    $cprAccess->method('reveal')->willReturnArgument(0);
+    $action->setCprAccess($cprAccess);
     return $action;
   }
 

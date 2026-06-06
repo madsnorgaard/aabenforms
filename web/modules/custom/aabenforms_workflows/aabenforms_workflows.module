@@ -83,6 +83,40 @@ function aabenforms_workflows_mail(string $key, array &$message, array $params):
         '@sid' => $params['submission_id'],
       ]);
       break;
+
+    case 'foi_acknowledgement':
+      $message['subject'] = t('Modtaget: din anmodning om aktindsigt (@ref)', [
+        '@ref' => $params['reference'],
+      ]);
+      $message['body'][] = t('Kaere @name,', ['@name' => $params['requester_name']]);
+      $message['body'][] = '';
+      $message['body'][] = t('Vi har modtaget din anmodning om aktindsigt. Din sag har referencenummer @ref.', [
+        '@ref' => $params['reference'],
+      ]);
+      $message['body'][] = '';
+      $message['body'][] = t('Kommunen skal efter offentlighedsloven besvare din anmodning hurtigst muligt og som udgangspunkt inden 7 arbejdsdage. Forventet svardato er @due.', [
+        '@due' => $params['due_date'],
+      ]);
+      $message['body'][] = '';
+      $message['body'][] = t('Du modtager svar pa denne e-mailadresse.');
+      break;
+
+    case 'foi_caseworker_notification':
+      $message['subject'] = t('Ny anmodning om aktindsigt (@ref)', [
+        '@ref' => $params['reference'],
+      ]);
+      $message['body'][] = t('En ny anmodning om aktindsigt er modtaget og skal behandles.');
+      $message['body'][] = '';
+      $message['body'][] = t('Reference: @ref', ['@ref' => $params['reference']]);
+      $message['body'][] = t('Frist: @due (7 arbejdsdage)', ['@due' => $params['due_date']]);
+      $message['body'][] = t('Anmoder: @name (@email)', [
+        '@name' => $params['requester_name'],
+        '@email' => $params['requester_email'],
+      ]);
+      $message['body'][] = '';
+      $message['body'][] = t('Anmodning:');
+      $message['body'][] = $params['request_text'];
+      break;
   }
 }
 

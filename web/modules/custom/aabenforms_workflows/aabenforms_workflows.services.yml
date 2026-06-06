@@ -65,11 +65,13 @@ services:
     arguments:
       - '@logger.factory'
 
-  # Stub default for the org-chart lookup. A real LDAP/AD/HR-system
+  # Directory-backed org-chart lookup, sourced from the
+  # aabenforms_workflows.org_chart config. A real LDAP/AD/HR-system
   # integration replaces this via service decoration without touching
   # the action plugin.
   aabenforms_workflows.org_chart:
-    class: Drupal\aabenforms_workflows\Service\StubOrgChartService
+    class: Drupal\aabenforms_workflows\Service\ConfigOrgChartService
+    arguments: ['@config.factory']
 
   # MED voting service: window open/close, ballot recording (with
   # CPR-hash uniqueness), tabulation. Used by the cron-driven ECA flow

@@ -2,6 +2,7 @@
 
 namespace Drupal\aabenforms_workflows\Plugin\Action;
 
+use Drupal\aabenforms_core\Service\CprAccess;
 use Drupal\aabenforms_core\Service\ServiceplatformenClient;
 use Drupal\Core\Action\Attribute\Action;
 use Drupal\Core\Config\ConfigFactoryInterface;
@@ -39,12 +40,20 @@ class CprLookupAction extends AabenFormsActionBase {
   protected ConfigFactoryInterface $configFactory;
 
   /**
+   * The CPR access helper (decrypts CPR stored at rest).
+   *
+   * @var \Drupal\aabenforms_core\Service\CprAccess
+   */
+  protected CprAccess $cprAccess;
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     $instance = parent::create($container, $configuration, $plugin_id, $plugin_definition);
     $instance->serviceplatformenClient = $container->get('aabenforms_core.serviceplatformen_client');
     $instance->configFactory = $container->get('config.factory');
+    $instance->cprAccess = $container->get('aabenforms_core.cpr_access');
     return $instance;
   }
 
@@ -120,12 +129,17 @@ class CprLookupAction extends AabenFormsActionBase {
   public function execute(): void {
     $cpr = $this->getTokenValue($this->configuration['cpr_token'], '');
 
+    // Decrypt if the CPR was stored encrypted at rest (webform fields); a
+    // session-sourced or plaintext CPR passes through unchanged.
+    $cpr = $this->cprAccess->reveal((string) $cpr);
+
     // Clean CPR (remove hyphens/spaces).
     $cpr = $cpr ? preg_replace('/[^0-9]/', '', $cpr) : '';
 
     if (empty($cpr)) {
       $this->log('CPR lookup skipped: no CPR available to look up', [], 'warning');
       $this->setTokenValue($this->configuration['result_token'], NULL);
+      $this->setResultStatus('skipped');
       $this->recordStep('CPR Registry Lookup', 'Skipped - no CPR available to look up', 'skipped');
       return;
     }
@@ -140,6 +154,7 @@ class CprLookupAction extends AabenFormsActionBase {
         'demo' => TRUE,
       ];
       $this->setTokenValue($this->configuration['result_token'], $demoPerson);
+      $this->setResultStatus('found');
       $this->log('CPR lookup ran in demo mode (no Serviceplatformen certificate).', [], 'info');
       $this->recordStep('CPR Registry Lookup', 'Demo: CPR-opslag simuleret med testdata. Rigtige Serviceplatformen-opslag kraever klientcertifikat.', 'completed');
       return;
@@ -168,6 +183,7 @@ class CprLookupAction extends AabenFormsActionBase {
           'cpr' => substr($cpr, 0, 6) . 'XXXX',
         ], 'warning');
         $this->setTokenValue($this->configuration['result_token'], NULL);
+        $this->setResultStatus('not_found');
         $this->recordStep('CPR Registry Lookup', 'No person found in the national CPR registry (SF1520)', 'failed');
         return;
       }
@@ -177,6 +193,7 @@ class CprLookupAction extends AabenFormsActionBase {
       ]);
 
       $this->setTokenValue($this->configuration['result_token'], $personData);
+      $this->setResultStatus('found');
       $this->recordStep('CPR Registry Lookup', 'Personal data retrieved from the national CPR registry (SF1520)');
 
     }
@@ -185,7 +202,26 @@ class CprLookupAction extends AabenFormsActionBase {
       // cURL/SSL/Serviceplatformen error to the citizen.
       $this->log('CPR lookup failed: {message}', ['message' => $e->getMessage()], 'error');
       $this->setTokenValue($this->configuration['result_token'], NULL);
+      $this->setResultStatus('error');
       $this->recordStep('CPR Registry Lookup', 'CPR-opslaget er midlertidigt utilgaengeligt. Prov igen senere.', 'failed');
+    }
+  }
+
+  /**
+   * Writes an explicit scalar status companion token for downstream gating.
+   *
+   * The result_token holds the person array (or NULL); ECA conditions and the
+   * audit action read this `<result_token>_status` scalar (`found`,
+   * `not_found`, `skipped` or `error`) because comparing an array or NULL
+   * token is unreliable.
+   *
+   * @param string $status
+   *   One of 'found', 'not_found', 'skipped' or 'error'.
+   */
+  protected function setResultStatus(string $status): void {
+    $resultToken = (string) ($this->configuration['result_token'] ?? '');
+    if ($resultToken !== '') {
+      $this->setTokenValue($resultToken . '_status', $status);
     }
   }
 
