@@ -5,3 +5,9 @@ services:
       - '@aabenforms_workflows.approval_token'
     tags:
       - { name: drush.command }
+  aabenforms_workflows.drush_modeler:
+    class: Drupal\aabenforms_workflows\Drush\ModelerCommands
+    arguments:
+      - '@entity_type.manager'
+    tags:
+      - { name: drush.command }
