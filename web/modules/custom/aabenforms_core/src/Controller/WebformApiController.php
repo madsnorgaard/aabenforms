@@ -101,6 +101,19 @@ class WebformApiController extends ControllerBase {
 
     $submission_data = $data['data']['attributes']['data'] ?? $data['data'];
 
+    // The SPA POSTs from a different origin than the backend cookie domain, so
+    // the MitID session cookie is not shared. The unguessable workflow_id the
+    // SPA holds from login travels in the payload instead; stash it on the
+    // request so MitIdValidateAction can scope the identity gate to it when the
+    // ECA workflow fires synchronously inside save() below.
+    $workflow_id = $data['data']['attributes']['workflow_id']
+      ?? $data['data']['workflow_id']
+      ?? $data['workflow_id']
+      ?? NULL;
+    if (is_string($workflow_id) && $workflow_id !== '') {
+      $request->attributes->set('aabenforms_workflow_id', $workflow_id);
+    }
+
     $values = [
       'webform_id' => $id,
       'entity_type' => NULL,

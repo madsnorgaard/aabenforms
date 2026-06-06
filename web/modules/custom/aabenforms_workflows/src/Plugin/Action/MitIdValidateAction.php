@@ -67,22 +67,34 @@ class MitIdValidateAction extends AabenFormsActionBase {
   }
 
   /**
+   * Request attribute the webform controller stashes the submitted id under.
+   *
+   * @see \Drupal\aabenforms_core\Controller\WebformApiController::submitWebform()
+   */
+  protected const REQUEST_WORKFLOW_ATTR = 'aabenforms_workflow_id';
+
+  /**
    * Resolves the workflow id that scopes the MitID session to validate.
    *
-   * Resolution order:
-   * 1. The configured ECA token (`workflow_id_token`). A flow, or an upstream
-   *    action, may have populated it explicitly.
-   * 2. Fallback to the browser session's `mitid_workflow_id`, bound at login
-   *    by MitIdController. This is the real bridge between a citizen's MitID
-   *    authentication and the flow gate: the login mints an unguessable
-   *    `wf_<hex>` handle, stashes the session under it, and records it in the
-   *    browser session. A same-browser webform submission (the modeler test
-   *    harness, or the SPA submitting with credentials) carries that cookie,
-   *    so the gate can find the session the citizen just established.
+   * `workflow_id` is the bearer capability minted at MitID login (an
+   * unguessable `wf_<hex>` the session is stored under); whoever holds it can
+   * read that session for 15 minutes. The SPA that drove the login holds it,
+   * so the gate accepts it back from the submission. Resolution order:
    *
-   * The fallback is fail-safe: it only ever yields a handle that THIS browser
-   * established via a completed MitID callback. It cannot manufacture identity
-   * - an empty result still routes to the deny terminal.
+   * 1. The configured ECA token (`workflow_id_token`) - a flow or upstream
+   *    action may have populated it explicitly.
+   * 2. The id the submission carried, stashed on the request by the webform
+   *    controller (or passed as a `workflow_id` query param). This is the
+   *    cross-origin path: the SPA POSTs from a different host than the backend
+   *    cookie domain, so a shared session cookie is NOT available - the id
+   *    travels in the request payload instead.
+   * 3. The browser session's `mitid_workflow_id`, bound at login by
+   *    MitIdController. This is the same-origin path: the modeler test harness
+   *    (and any same-origin submission) carries the backend cookie.
+   *
+   * Fail-safe in every case: each source only yields a handle the caller
+   * already legitimately holds, and an empty result routes to the deny
+   * terminal. It can never manufacture identity.
    *
    * @return string
    *   The resolved workflow id, or '' when none is available.
@@ -94,14 +106,25 @@ class MitIdValidateAction extends AabenFormsActionBase {
       return $workflowId;
     }
 
-    $session = $this->requestStack->getCurrentRequest()?->getSession();
-    // Avoid forcing a session to start when none exists (e.g. CLI/cron),
-    // which would be a no-op anyway and can emit warnings.
-    if ($session && $session->isStarted()) {
-      $bound = $session->get(self::SESSION_WORKFLOW_KEY);
-      if (is_string($bound) && $bound !== '') {
-        $this->log('MitID validation: workflow id taken from browser session (login-bound)', [], 'info');
-        return $bound;
+    $request = $this->requestStack->getCurrentRequest();
+    if ($request) {
+      // Cross-origin SPA: the id rides in the request payload.
+      $fromRequest = $request->attributes->get(self::REQUEST_WORKFLOW_ATTR)
+        ?? $request->query->get('workflow_id');
+      if (is_string($fromRequest) && $fromRequest !== '') {
+        $this->log('MitID validation: workflow id taken from submission payload', [], 'info');
+        return $fromRequest;
+      }
+
+      // Same-origin: the login-bound browser session. Avoid forcing a session
+      // to start when none exists (e.g. CLI/cron), which would be a no-op.
+      $session = $request->getSession();
+      if ($session && $session->isStarted()) {
+        $bound = $session->get(self::SESSION_WORKFLOW_KEY);
+        if (is_string($bound) && $bound !== '') {
+          $this->log('MitID validation: workflow id taken from browser session (login-bound)', [], 'info');
+          return $bound;
+        }
       }
     }
 
