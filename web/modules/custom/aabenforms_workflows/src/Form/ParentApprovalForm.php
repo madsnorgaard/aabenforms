@@ -8,7 +8,11 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\aabenforms_mitid\Service\MitIdSessionManager;
 use Drupal\aabenforms_workflows\Service\ApprovalTokenService;
 use Drupal\aabenforms_workflows\Service\ParentCprVerifier;
+use Drupal\eca\Service\ContentEntityTypes;
+use Drupal\eca_content\Event\ContentEntityCustomEvent;
+use Drupal\eca_content\Event\ContentEntityEvents;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -83,6 +87,20 @@ class ParentApprovalForm extends FormBase {
   protected bool $parentsTogether;
 
   /**
+   * The event dispatcher.
+   *
+   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
+   */
+  protected EventDispatcherInterface $eventDispatcher;
+
+  /**
+   * The ECA content entity types service.
+   *
+   * @var \Drupal\eca\Service\ContentEntityTypes
+   */
+  protected ContentEntityTypes $entityTypes;
+
+  /**
    * Constructs a ParentApprovalForm object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
@@ -95,6 +113,10 @@ class ParentApprovalForm extends FormBase {
    *   The parent-approval CPR verifier (issue #54 consent gate).
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger.
+   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher
+   *   The event dispatcher, used to fire the one-shot approval custom event.
+   * @param \Drupal\eca\Service\ContentEntityTypes $entity_types
+   *   The ECA content entity types service.
    */
   public function __construct(
     EntityTypeManagerInterface $entity_type_manager,
@@ -102,12 +124,16 @@ class ParentApprovalForm extends FormBase {
     MitIdSessionManager $mitid_session_manager,
     ParentCprVerifier $cpr_verifier,
     LoggerInterface $logger,
+    EventDispatcherInterface $event_dispatcher,
+    ContentEntityTypes $entity_types,
   ) {
     $this->entityTypeManager = $entity_type_manager;
     $this->tokenService = $token_service;
     $this->mitidSessionManager = $mitid_session_manager;
     $this->cprVerifier = $cpr_verifier;
     $this->logger = $logger;
+    $this->eventDispatcher = $event_dispatcher;
+    $this->entityTypes = $entity_types;
   }
 
   /**
@@ -119,7 +145,9 @@ class ParentApprovalForm extends FormBase {
       $container->get('aabenforms_workflows.approval_token'),
       $container->get('aabenforms_mitid.session_manager'),
       $container->get('aabenforms_workflows.parent_cpr_verifier'),
-      $container->get('logger.factory')->get('aabenforms_workflows')
+      $container->get('logger.factory')->get('aabenforms_workflows'),
+      $container->get('event_dispatcher'),
+      $container->get('eca.service.content_entity_types')
     );
   }
 
@@ -325,9 +353,24 @@ class ParentApprovalForm extends FormBase {
       $submission->setElementData($comment_field, $comments);
     }
 
-    // Save submission - this will trigger the ECA workflow.
+    // Save submission.
     try {
       $submission->save();
+
+      // Dispatch a one-shot ECA custom event for a recorded approval. The
+      // identity and consent were already verified in validateForm() above,
+      // so this fires exactly once per approval and the flow can record it
+      // honestly - unlike the old content_entity:update trigger, which never
+      // matched and would have re-fired on every later save.
+      if ($action === 'approve') {
+        $event = new ContentEntityCustomEvent(
+          $submission,
+          $this->entityTypes,
+          sprintf('parent%d_approved', $parent_number),
+          []
+        );
+        $this->eventDispatcher->dispatch($event, ContentEntityEvents::CUSTOM);
+      }
 
       $this->logger->info('Parent @parent @action submission @sid', [
         '@parent' => $parent_number,
