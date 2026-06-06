@@ -23,11 +23,43 @@ events:
       type: 'webform_submission marriage_booking'
     successors:
       -
-        id: cpr_lookup_partner1
+        id: mitid_validate
         condition: ''
-conditions: {  }
+conditions:
+  gate_marriage_mitid_ok:
+    plugin: eca_scalar
+    configuration:
+      negate: false
+      left: '[marriage_mitid_valid_status]'
+      right: verified
+      operator: equal
+      type: value
+      case: false
+  gate_marriage_mitid_deny:
+    plugin: eca_scalar
+    configuration:
+      negate: true
+      left: '[marriage_mitid_valid_status]'
+      right: verified
+      operator: equal
+      type: value
+      case: false
 gateways: {  }
 actions:
+  mitid_validate:
+    label: 'Validate booking submitter MitID'
+    plugin: aabenforms_mitid_validate
+    configuration:
+      workflow_id_token: workflow_id_marriage
+      result_token: marriage_mitid_valid
+      session_data_token: marriage_session
+    successors:
+      -
+        id: cpr_lookup_partner1
+        condition: gate_marriage_mitid_ok
+      -
+        id: deny_marriage
+        condition: gate_marriage_mitid_deny
   cpr_lookup_partner1:
     label: 'CPR registry lookup (partner 1)'
     plugin: aabenforms_cpr_lookup
@@ -73,4 +105,12 @@ actions:
       body_template: '<p>Vi har modtaget jeres ansøgning om civil vielse. I modtager bekræftelse på dato i Digital Post.</p>'
       type: 'Digital Post'
       result_token: digital_post_result
+    successors: {  }
+  deny_marriage:
+    label: 'Deny: identity not verified'
+    plugin: aabenforms_workflow_deny
+    configuration:
+      event_type: marriage_booking_denied
+      step_label: 'Identitet ikke bekraeftet'
+      message: 'Bookingen blev ikke behandlet, fordi din identitet ikke kunne bekraeftes med MitID. Log ind med MitID og proev igen.'
     successors: {  }
