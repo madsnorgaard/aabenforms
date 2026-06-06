@@ -6,6 +6,8 @@ use Drupal\aabenforms_core\Service\ServiceplatformenClient;
 use Drupal\aabenforms_core\Service\WorkflowExecutionCollector;
 use Drupal\aabenforms_workflows\Plugin\Action\CvrLookupAction;
 use Drupal\Component\Datetime\TimeInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\Session\AccountProxyInterface;
@@ -55,6 +57,13 @@ class CvrLookupActionTest extends UnitTestCase {
    * @var array
    */
   protected array $tokenStorage = [];
+
+  /**
+   * Whether CVR demo mode is forced on for the current test.
+   *
+   * @var bool
+   */
+  protected bool $cvrDemoMode = FALSE;
 
   /**
    * {@inheritdoc}
@@ -113,6 +122,45 @@ class CvrLookupActionTest extends UnitTestCase {
     $clientProperty = $reflectionClass->getProperty('serviceplatformenClient');
     $clientProperty->setAccessible(TRUE);
     $clientProperty->setValue($this->action, $this->serviceplatformenClient);
+
+    // Config factory: demo flag reads $this->cvrDemoMode; certs are present by
+    // default so the existing tests exercise the real SF1530 path. A test sets
+    // $this->cvrDemoMode = TRUE to exercise the demo branch.
+    $wfSettings = $this->createMock(ImmutableConfig::class);
+    $wfSettings->method('get')->willReturnCallback(
+      fn ($key) => $key === 'allow_cvr_demo_mode' ? $this->cvrDemoMode : NULL
+    );
+    $coreSettings = $this->createMock(ImmutableConfig::class);
+    $coreSettings->method('get')->willReturnCallback(
+      fn ($key) => $key === 'serviceplatformen.certificates' ? ['cert_path' => '/cert.pem', 'key_path' => '/key.pem'] : NULL
+    );
+    $configFactory = $this->createMock(ConfigFactoryInterface::class);
+    $configFactory->method('get')->willReturnCallback(
+      fn ($name) => $name === 'aabenforms_core.settings' ? $coreSettings : $wfSettings
+    );
+    $configFactoryProperty = $reflectionClass->getProperty('configFactory');
+    $configFactoryProperty->setAccessible(TRUE);
+    $configFactoryProperty->setValue($this->action, $configFactory);
+  }
+
+  /**
+   * Demo mode records a labelled simulated step and never calls SF1530.
+   *
+   * @covers ::execute
+   */
+  public function testDemoModeSimulatesWithoutCallingServiceplatformen(): void {
+    $this->cvrDemoMode = TRUE;
+    $this->tokenStorage['cvr'] = '12345678';
+
+    // Serviceplatformen must not be called in demo mode.
+    $this->serviceplatformenClient->expects($this->never())->method('request');
+
+    $this->action->execute();
+
+    $company = $this->tokenStorage['company_data'];
+    $this->assertIsArray($company);
+    $this->assertTrue($company['demo']);
+    $this->assertSame('Demovirksomhed ApS (testdata)', $company['name']);
   }
 
   /**
