@@ -117,6 +117,26 @@ function aabenforms_workflows_mail(string $key, array &$message, array $params):
       $message['body'][] = t('Anmodning:');
       $message['body'][] = $params['request_text'];
       break;
+
+    case 'contact_inbox':
+      $message['subject'] = t('Ny henvendelse fra @name', ['@name' => $params['sender_name']]);
+      $message['body'][] = t('En ny henvendelse er modtaget via kontaktformularen.');
+      $message['body'][] = '';
+      $message['body'][] = t('Afsender: @name (@email)', [
+        '@name' => $params['sender_name'],
+        '@email' => $params['sender_email'],
+      ]);
+      $message['body'][] = '';
+      $message['body'][] = t('Besked:');
+      $message['body'][] = $params['message'];
+      break;
+
+    case 'contact_acknowledgement':
+      $message['subject'] = t('Vi har modtaget din henvendelse');
+      $message['body'][] = t('Kaere @name,', ['@name' => $params['sender_name']]);
+      $message['body'][] = '';
+      $message['body'][] = t('Tak for din henvendelse. Vi vender tilbage hurtigst muligt.');
+      break;
   }
 }
 

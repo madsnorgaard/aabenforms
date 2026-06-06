@@ -23,11 +23,43 @@ events:
       type: 'webform_submission company_verification'
     successors:
       -
-        id: cvr_lookup
+        id: mitid_validate
         condition: ''
-conditions: {  }
+conditions:
+  gate_company_mitid_ok:
+    plugin: eca_scalar
+    configuration:
+      negate: false
+      left: '[company_mitid_valid_status]'
+      right: verified
+      operator: equal
+      type: value
+      case: false
+  gate_company_mitid_deny:
+    plugin: eca_scalar
+    configuration:
+      negate: true
+      left: '[company_mitid_valid_status]'
+      right: verified
+      operator: equal
+      type: value
+      case: false
 gateways: {  }
 actions:
+  mitid_validate:
+    label: 'Validate MitID Erhverv session'
+    plugin: aabenforms_mitid_validate
+    configuration:
+      workflow_id_token: workflow_id_company
+      result_token: company_mitid_valid
+      session_data_token: company_session
+    successors:
+      -
+        id: cvr_lookup
+        condition: gate_company_mitid_ok
+      -
+        id: deny_company
+        condition: gate_company_mitid_deny
   cvr_lookup:
     label: 'CVR registry lookup'
     plugin: aabenforms_cvr_lookup
@@ -62,4 +94,12 @@ actions:
       body_template: '<p>Resultatet af jeres CVR-verifikation er klar. Se vedlagte bilag.</p>'
       type: 'Digital Post'
       result_token: digital_post_result
+    successors: {  }
+  deny_company:
+    label: 'Deny: MitID Erhverv not verified'
+    plugin: aabenforms_workflow_deny
+    configuration:
+      event_type: company_verification_denied
+      step_label: 'Identitet ikke bekraeftet'
+      message: 'Anmodningen blev ikke behandlet, fordi virksomhedens MitID Erhverv-identitet ikke kunne bekraeftes. Log ind og proev igen.'
     successors: {  }

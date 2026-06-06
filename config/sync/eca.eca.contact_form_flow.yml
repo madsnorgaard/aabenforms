@@ -1,0 +1,38 @@
+uuid: e5f6a7b8-c9d0-4567-89ab-contactform001
+langcode: en
+status: true
+dependencies:
+  config:
+    - webform.webform.contact
+  module:
+    - aabenforms_workflows
+    - eca_content
+    - modeler_api
+third_party_settings:
+  modeler_api:
+    modeler_id: workflow_modeler
+    label: contact_form_flow
+id: contact_form_flow
+weight: 0
+template: null
+events:
+  on_submission:
+    plugin: 'content_entity:insert'
+    configuration:
+      type: 'webform_submission contact'
+    successors:
+      -
+        id: route_contact
+        condition: ''
+conditions: {  }
+gateways: {  }
+actions:
+  route_contact:
+    label: 'Route contact submission'
+    plugin: aabenforms_contact_route
+    configuration:
+      inbox_email: kontakt@example.dk
+      name_token: '[webform_submission:values:name:raw]'
+      email_token: '[webform_submission:values:email:raw]'
+      message_token: '[webform_submission:values:message:raw]'
+    successors: {  }
