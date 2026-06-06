@@ -170,31 +170,54 @@ class MitIdValidateActionTest extends UnitTestCase {
   }
 
   /**
-   * Injects a request stack whose browser session may carry a workflow id.
+   * Injects a request stack with the given workflow-id sources populated.
    *
-   * Mirrors how MitIdController binds `mitid_workflow_id` to the browser
-   * session at login; the action's resolveWorkflowId() falls back to it when
-   * the configured token is empty.
+   * Mirrors the three request-side sources resolveWorkflowId() consults: the
+   * submission payload (stashed on the request as an attribute by the webform
+   * controller), a `workflow_id` query param, and the login-bound browser
+   * session `mitid_workflow_id`.
    *
-   * @param string|null $workflowId
-   *   The value to expose under `mitid_workflow_id`, or NULL for none.
-   * @param bool $started
-   *   Whether the session reports itself as started.
+   * @param array $sources
+   *   Any of: 'attribute', 'query', 'session' (string values), and
+   *   'session_started' (bool, default TRUE).
    */
-  protected function setBrowserWorkflowId(?string $workflowId, bool $started = TRUE): void {
+  protected function setRequestContext(array $sources = []): void {
     $session = $this->createMock(SessionInterface::class);
-    $session->method('isStarted')->willReturn($started);
+    $session->method('isStarted')->willReturn($sources['session_started'] ?? TRUE);
     $session->method('get')->willReturnCallback(
-      static fn ($key) => $key === 'mitid_workflow_id' ? $workflowId : NULL
+      static fn ($key) => $key === 'mitid_workflow_id' ? ($sources['session'] ?? NULL) : NULL
     );
-    $request = $this->createMock(Request::class);
-    $request->method('getSession')->willReturn($session);
+
+    $request = new Request();
+    $request->setSession($session);
+    if (isset($sources['attribute'])) {
+      $request->attributes->set('aabenforms_workflow_id', $sources['attribute']);
+    }
+    if (isset($sources['query'])) {
+      $request->query->set('workflow_id', $sources['query']);
+    }
+
     $requestStack = $this->createMock(RequestStack::class);
     $requestStack->method('getCurrentRequest')->willReturn($request);
 
     $property = (new \ReflectionClass($this->action))->getProperty('requestStack');
     $property->setAccessible(TRUE);
     $property->setValue($this->action, $requestStack);
+  }
+
+  /**
+   * Convenience: only the browser session carries the workflow id.
+   *
+   * @param string|null $workflowId
+   *   The value under `mitid_workflow_id`, or NULL for none.
+   * @param bool $started
+   *   Whether the session reports itself as started.
+   */
+  protected function setBrowserWorkflowId(?string $workflowId, bool $started = TRUE): void {
+    $this->setRequestContext([
+      'session' => $workflowId,
+      'session_started' => $started,
+    ]);
   }
 
   /**
@@ -445,6 +468,59 @@ class MitIdValidateActionTest extends UnitTestCase {
 
     $this->assertTrue($this->tokenStorage['mitid_valid'], 'Bridge should let a valid session validate.');
     $this->assertEquals($sessionData, $this->tokenStorage['mitid_session']);
+  }
+
+  /**
+   * Tests the cross-origin path: workflow id from the submission payload.
+   *
+   * The webform controller stashes the SPA-supplied workflow_id on the request
+   * as an attribute; the gate reads it when no cookie/token is present.
+   *
+   * @covers ::resolveWorkflowId
+   */
+  public function testWorkflowIdFromRequestPayload(): void {
+    $workflowId = 'wf_from_payload';
+    $sessionData = [
+      'cpr' => '2506924015',
+      'name' => 'Sofie Hansen',
+      'created_at' => time() - 60,
+      'expires_at' => time() + 600,
+    ];
+
+    // No token, no browser session - only the request attribute.
+    $this->setRequestContext(['attribute' => $workflowId, 'session_started' => FALSE]);
+
+    $this->sessionManager->expects($this->once())
+      ->method('getSession')
+      ->with($workflowId)
+      ->willReturn($sessionData);
+
+    $this->action->execute();
+
+    $this->assertTrue($this->tokenStorage['mitid_valid'], 'Payload-supplied id should validate.');
+  }
+
+  /**
+   * Tests the payload id is preferred over the browser session.
+   *
+   * @covers ::resolveWorkflowId
+   */
+  public function testPayloadPreferredOverBrowserSession(): void {
+    $this->setRequestContext([
+      'attribute' => 'wf_payload',
+      'session' => 'wf_browser',
+    ]);
+
+    $this->sessionManager->expects($this->once())
+      ->method('getSession')
+      ->with('wf_payload')
+      ->willReturn(NULL);
+
+    $this->logger->expects($this->once())->method('warning');
+
+    $this->action->execute();
+
+    $this->assertFalse($this->tokenStorage['mitid_valid']);
   }
 
   /**
