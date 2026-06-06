@@ -680,4 +680,54 @@ class MitIdSessionManagerTest extends UnitTestCase {
     $this->assertEquals($expected, $result);
   }
 
+  /**
+   * Tests seeding a demo persona stores a real-shaped session.
+   *
+   * @covers ::seedDemoSession
+   */
+  public function testSeedDemoSessionStoresPersona(): void {
+    $captured = NULL;
+    $this->store->expects($this->once())
+      ->method('setWithExpire')
+      ->willReturnCallback(function ($key, $value, $ttl) use (&$captured): void {
+        $captured = ['key' => $key, 'value' => $value, 'ttl' => $ttl];
+      });
+
+    $workflowId = $this->sessionManager->seedDemoSession('freja');
+
+    $this->assertIsString($workflowId);
+    $this->assertStringStartsWith('wf_', $workflowId);
+    $this->assertSame($workflowId, $captured['key']);
+    $this->assertSame('0101904521', $captured['value']['cpr']);
+    $this->assertSame('Freja Nielsen', $captured['value']['name']);
+    $this->assertTrue($captured['value']['demo_seeded']);
+    $this->assertSame('freja', $captured['value']['persona']);
+    $this->assertSame($this->sessionTtl, $captured['ttl']);
+  }
+
+  /**
+   * Tests an explicit workflow id is honoured.
+   *
+   * @covers ::seedDemoSession
+   */
+  public function testSeedDemoSessionExplicitWorkflowId(): void {
+    $this->store->expects($this->once())->method('setWithExpire');
+
+    $result = $this->sessionManager->seedDemoSession('lars', 'wf_fixed');
+
+    $this->assertSame('wf_fixed', $result);
+  }
+
+  /**
+   * Tests an unknown persona is refused without touching storage.
+   *
+   * @covers ::seedDemoSession
+   */
+  public function testSeedDemoSessionUnknownPersona(): void {
+    $this->store->expects($this->never())->method('setWithExpire');
+    $this->logger->expects($this->once())->method('warning');
+
+    $this->assertNull($this->sessionManager->seedDemoSession('nobody'));
+  }
+
 }

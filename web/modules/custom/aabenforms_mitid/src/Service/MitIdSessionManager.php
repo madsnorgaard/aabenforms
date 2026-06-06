@@ -3,7 +3,9 @@
 namespace Drupal\aabenforms_mitid\Service;
 
 use Drupal\aabenforms_core\Service\AuditLogger;
+use Drupal\aabenforms_mitid\DemoPersonas;
 use Drupal\Component\Datetime\TimeInterface;
+use Drupal\Component\Utility\Crypt;
 use Drupal\Core\KeyValueStore\KeyValueExpirableFactoryInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Psr\Log\LoggerInterface;
@@ -141,6 +143,44 @@ class MitIdSessionManager {
       ]);
       return FALSE;
     }
+  }
+
+  /**
+   * Seeds a MitID session for a demo persona (test/demo harness only).
+   *
+   * Stores a session shaped exactly like a real MitID callback would, so a
+   * MitID-gated flow can be exercised through its happy path without a live
+   * authentication. The caller is responsible for access control: this is
+   * reached only from the `aabenforms:seed-mitid-session` Drush command and the
+   * permission-gated modeler "Test as demo citizen" action.
+   *
+   * @param string $persona
+   *   A demo persona slug (see \Drupal\aabenforms_mitid\DemoPersonas).
+   * @param string|null $workflow_id
+   *   The workflow id to key the session under. When NULL an unguessable
+   *   `wf_<hex>` handle is generated (matching MitIdController).
+   *
+   * @return string|null
+   *   The workflow id the session was stored under, or NULL when the persona
+   *   is unknown or storage failed.
+   */
+  public function seedDemoSession(string $persona, ?string $workflow_id = NULL): ?string {
+    $data = DemoPersonas::get($persona);
+    if ($data === NULL) {
+      $this->logger->warning('Refusing to seed unknown demo persona: {persona}', [
+        'persona' => $persona,
+      ]);
+      return NULL;
+    }
+
+    // Mark the session so the audit trail never confuses a seeded demo
+    // identity with a real MitID authentication.
+    $data['demo_seeded'] = TRUE;
+    $data['persona'] = $persona;
+
+    $workflow_id = $workflow_id ?: 'wf_' . substr(Crypt::randomBytesBase64(24), 0, 32);
+
+    return $this->storeSession($workflow_id, $data) ? $workflow_id : NULL;
   }
 
   /**
