@@ -93,7 +93,7 @@ ddev drush config:import -y   # import config
 ddev exec phpunit -c web/core web/modules/custom/aabenforms_workflows/tests/src/Unit
 ```
 
-Workflow admin is at `/admin/config/workflow/eca`; the template wizard is at `/admin/aabenforms/workflow-templates`. See [docs/WORKFLOW_GUIDE.md](docs/WORKFLOW_GUIDE.md) for building flows and [docs/](docs/) for the template reference and admin guides.
+Workflow admin is at `/admin/config/workflow/eca`; the template wizard is at `/admin/aabenforms/workflow-templates`. See [docs/WORKFLOW_GUIDE.md](docs/WORKFLOW_GUIDE.md) for building flows, [docs/DATA-FLOW.md](docs/DATA-FLOW.md) for how data moves through every flow and where the PII sinks and trust boundaries are, and [docs/](docs/) for the template reference and admin guides.
 
 ## Related
 
