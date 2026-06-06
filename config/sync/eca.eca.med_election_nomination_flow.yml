@@ -75,6 +75,7 @@ actions:
       event_type: med_nomination_recorded
       additional_data_token: '[webform_submission:values:nominee_name:raw]'
       message_template: 'MED election nomination recorded'
+      status_token: nominator_data_status
     successors: {  }
   deny_nomination:
     label: 'Deny: nominator MitID not verified'

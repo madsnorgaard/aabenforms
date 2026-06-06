@@ -106,6 +106,12 @@ class ManagerLookupAction extends AabenFormsActionBase {
 
       $resolved = $this->orgChart->findManagerEmail($employee_id, $fallback);
       $this->setTokenValue((string) $this->configuration['result_token'], $resolved);
+      // Emit a companion status token so a following audit node logs the real
+      // outcome instead of a hardcoded success.
+      $resultToken = (string) $this->configuration['result_token'];
+      if ($resultToken !== '') {
+        $this->setTokenValue($resultToken . '_status', $resolved !== '' ? 'found' : 'not_found');
+      }
 
       $this->recordStep(
         label: 'Manager email resolved',

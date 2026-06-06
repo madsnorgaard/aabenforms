@@ -63,6 +63,7 @@ actions:
       event_type: mileage_expense_submitted
       additional_data_token: '[webform_submission:values:employee_name:raw]'
       message_template: 'Expense claim submitted'
+      status_token: mileage_employee_id_status
     successors:
       -
         id: lookup_manager
@@ -85,6 +86,7 @@ actions:
       event_type: mileage_expense_manager_notified
       additional_data_token: '[mileage_expense_manager_email]'
       message_template: 'Stub. Production would send approval email.'
+      status_token: mileage_expense_manager_email_status
     successors:
       -
         id: forward_to_payroll
