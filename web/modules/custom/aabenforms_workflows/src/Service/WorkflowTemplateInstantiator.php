@@ -276,6 +276,14 @@ class WorkflowTemplateInstantiator {
       }
     }
 
+    // Build the actions and the conditions that gate them. Exclusive-gateway
+    // edges populate $conditions during the walk; gateIdentityActions() then
+    // adds the MitID / consent gates so the generated flow stops on a failed
+    // identity check, matching the hand-built config/sync flows.
+    $conditions = [];
+    $actions = $this->buildEcaActions($xml, $configuration, $conditions);
+    $this->gateIdentityActions($actions, $conditions);
+
     // Build ECA config structure.
     $eca_config = [
       'langcode' => 'en',
@@ -289,8 +297,8 @@ class WorkflowTemplateInstantiator {
       'version' => '1.0.0',
       'events' => $this->buildEcaEvents($xml, $configuration),
       'gateways' => [],
-      'conditions' => [],
-      'actions' => $this->buildEcaActions($xml, $configuration),
+      'conditions' => $conditions,
+      'actions' => $actions,
     ];
 
     // Save ECA config.
@@ -339,11 +347,13 @@ class WorkflowTemplateInstantiator {
    *   The BPMN XML.
    * @param array $configuration
    *   The configuration array.
+   * @param array $conditions
+   *   Conditions block, populated in place from exclusive-gateway edges.
    *
    * @return array
    *   ECA actions configuration.
    */
-  protected function buildEcaActions(\SimpleXMLElement $xml, array $configuration): array {
+  protected function buildEcaActions(\SimpleXMLElement $xml, array $configuration, array &$conditions): array {
     $namespaces = $xml->getNamespaces(TRUE);
     $bpmnNs = $namespaces['bpmn'] ?? $namespaces['bpmn2'] ?? NULL;
     if (!$bpmnNs) {
@@ -401,7 +411,7 @@ class WorkflowTemplateInstantiator {
 
     $visited = [];
     foreach ($startIds as $startId) {
-      $this->walkBpmnNode($startId, 'start_workflow', '', $nodes, $edges, $actions, $visited, $aabenformsNs, $bpmnNs, $configuration);
+      $this->walkBpmnNode($startId, 'start_workflow', '', $nodes, $edges, $actions, $visited, $aabenformsNs, $bpmnNs, $configuration, $conditions);
     }
 
     return $actions;
@@ -428,6 +438,7 @@ class WorkflowTemplateInstantiator {
     string $aabenformsNs,
     string $bpmnNs,
     array $configuration,
+    array &$conditions,
   ): void {
     $info = $nodes[$nodeId] ?? NULL;
     if (!$info) {
@@ -439,7 +450,7 @@ class WorkflowTemplateInstantiator {
     // startEvent: pass through without emitting an action.
     if ($type === 'startEvent') {
       foreach ($outEdges as $edge) {
-        $this->walkBpmnNode($edge['target'], $prevActionId, $edge['label'], $nodes, $edges, $actions, $visited, $aabenformsNs, $bpmnNs, $configuration);
+        $this->walkBpmnNode($edge['target'], $prevActionId, $edge['label'], $nodes, $edges, $actions, $visited, $aabenformsNs, $bpmnNs, $configuration, $conditions);
       }
       return;
     }
@@ -449,13 +460,38 @@ class WorkflowTemplateInstantiator {
       return;
     }
 
-    // Gateways: fan out. Exclusive attaches edge label as condition; parallel
-    // treats all branches as unconditional. Real condition evaluation is a
-    // followup (edge label is plain text, not yet a Drupal condition).
-    if ($type === 'exclusiveGateway' || $type === 'parallelGateway') {
+    // Parallel gateway: every branch runs, unconditionally.
+    if ($type === 'parallelGateway') {
       foreach ($outEdges as $edge) {
-        $edgeCondition = $type === 'exclusiveGateway' ? $edge['label'] : '';
-        $this->walkBpmnNode($edge['target'], $prevActionId, $edgeCondition, $nodes, $edges, $actions, $visited, $aabenformsNs, $bpmnNs, $configuration);
+        $this->walkBpmnNode($edge['target'], $prevActionId, '', $nodes, $edges, $actions, $visited, $aabenformsNs, $bpmnNs, $configuration, $conditions);
+      }
+      return;
+    }
+
+    // Exclusive gateway: evaluate a real eca_scalar condition per labelled
+    // branch. The gateway declares the token it tests via an aabenforms:gateway
+    // extension; each outgoing edge's label is the value to compare. A gateway
+    // with no declared token falls back to a per-gateway decision token
+    // ([<id>_decision]). That token is unset until an action writes it, so the
+    // generated conditions all evaluate false and the flow safely waits at the
+    // decision (no branch runs) - never the unsafe "run every branch", and
+    // never a dead plain-text condition. Downstream actions are still emitted
+    // so the draft flow is complete and the kommune can wire the decision.
+    if ($type === 'exclusiveGateway') {
+      $gatewayToken = $this->readGatewayToken($info['el'], $aabenformsNs, $bpmnNs);
+      if ($gatewayToken === '') {
+        $gatewayToken = '[' . preg_replace('/[^a-z0-9_]+/i', '_', $nodeId) . '_decision]';
+        if ($outEdges) {
+          $this->logger->warning(
+            'Instantiator: exclusive gateway @id has no aabenforms:gateway token; using @token, which stays false until an action sets it (the flow waits at this decision).',
+            ['@id' => $nodeId, '@token' => $gatewayToken],
+          );
+        }
+      }
+      foreach ($outEdges as $edge) {
+        $label = trim((string) $edge['label']);
+        $edgeCondition = $label !== '' ? $this->makeEdgeCondition($nodeId, $gatewayToken, $label, $conditions) : '';
+        $this->walkBpmnNode($edge['target'], $prevActionId, $edgeCondition, $nodes, $edges, $actions, $visited, $aabenformsNs, $bpmnNs, $configuration, $conditions);
       }
       return;
     }
@@ -485,7 +521,144 @@ class WorkflowTemplateInstantiator {
     }
 
     foreach ($outEdges as $edge) {
-      $this->walkBpmnNode($edge['target'], $actionId, $edge['label'], $nodes, $edges, $actions, $visited, $aabenformsNs, $bpmnNs, $configuration);
+      $this->walkBpmnNode($edge['target'], $actionId, $edge['label'], $nodes, $edges, $actions, $visited, $aabenformsNs, $bpmnNs, $configuration, $conditions);
+    }
+  }
+
+  /**
+   * Reads the token an exclusive gateway evaluates, from its extension.
+   *
+   * Convention: <bpmn:extensionElements><aabenforms:gateway token="[x]"/>.
+   *
+   * @return string
+   *   The token expression (e.g. "[decision_status]"), or '' if not declared.
+   */
+  protected function readGatewayToken(\SimpleXMLElement $gateway, string $aabenformsNs, string $bpmnNs): string {
+    foreach ($gateway->children($bpmnNs) as $child) {
+      if ($child->getName() !== 'extensionElements') {
+        continue;
+      }
+      foreach ($child->children($aabenformsNs) as $ext) {
+        if ($ext->getName() === 'gateway') {
+          $attrs = $ext->attributes();
+          return trim((string) ($attrs['token'] ?? ''));
+        }
+      }
+    }
+    return '';
+  }
+
+  /**
+   * Creates an eca_scalar condition for one exclusive-gateway edge.
+   *
+   * Compares the gateway token against the edge label. Registers the
+   * condition in $conditions and returns its id for the successor to
+   * reference.
+   *
+   * @return string
+   *   The generated condition id.
+   */
+  protected function makeEdgeCondition(string $gatewayId, string $token, string $label, array &$conditions): string {
+    $slug = preg_replace('/[^a-z0-9]+/', '_', strtolower($label)) ?: 'branch';
+    $id = 'gate_' . preg_replace('/[^a-z0-9_]+/i', '_', $gatewayId) . '_' . trim($slug, '_');
+    $conditions[$id] = $this->scalarCondition($token, $label, FALSE);
+    return $id;
+  }
+
+  /**
+   * Builds an eca_scalar condition comparing a token to a value.
+   *
+   * @param string $left
+   *   The left operand, typically a "[token]" expression.
+   * @param string $right
+   *   The value to compare against.
+   * @param bool $negate
+   *   TRUE for the complementary (not-equal) branch.
+   *
+   * @return array
+   *   An eca_scalar condition definition.
+   */
+  protected function scalarCondition(string $left, string $right, bool $negate): array {
+    return [
+      'plugin' => 'eca_scalar',
+      'configuration' => [
+        'left' => $left,
+        'right' => $right,
+        'operator' => 'equal',
+        'type' => 'value',
+        'case' => FALSE,
+        'negate' => $negate,
+      ],
+    ];
+  }
+
+  /**
+   * Adds MitID / consent identity gates to the generated actions.
+   *
+   * For every aabenforms_mitid_validate (or aabenforms_parent_cpr_verify)
+   * action, routes its successors through a verified/match gate and adds a
+   * terminal aabenforms_workflow_deny on failure, so an instantiated flow
+   * stops on a failed identity check just like the hand-built flows. The
+   * runtime status companion token (<result_token>_status) is emitted by
+   * those actions already.
+   *
+   * @param array $actions
+   *   The actions, keyed by id (modified in place).
+   * @param array $conditions
+   *   The conditions block (gates appended in place).
+   */
+  protected function gateIdentityActions(array &$actions, array &$conditions): void {
+    $gated = [
+      'aabenforms_mitid_validate' => [
+        'token_default' => 'mitid_valid',
+        'value' => 'verified',
+        'message' => 'Adgangen blev afvist, fordi identiteten ikke kunne bekraeftes med MitID.',
+      ],
+      'aabenforms_parent_cpr_verify' => [
+        'token_default' => 'cpr_consent_result',
+        'value' => 'match',
+        'message' => 'Adgangen blev afvist, fordi CPR-samtykket ikke kunne bekraeftes.',
+      ],
+    ];
+
+    foreach ($actions as $actionId => $action) {
+      $plugin = $action['plugin'] ?? '';
+      if (!isset($gated[$plugin])) {
+        continue;
+      }
+      $spec = $gated[$plugin];
+      $resultToken = (string) ($action['configuration']['result_token'] ?? $spec['token_default']);
+      if ($resultToken === '') {
+        continue;
+      }
+      $statusToken = '[' . $resultToken . '_status]';
+      $okId = 'gate_' . $actionId . '_ok';
+      $denyId = 'gate_' . $actionId . '_deny';
+      $denyAction = 'deny_' . $actionId;
+
+      $conditions[$okId] = $this->scalarCondition($statusToken, $spec['value'], FALSE);
+      $conditions[$denyId] = $this->scalarCondition($statusToken, $spec['value'], TRUE);
+
+      // Route every existing successor through the verified gate, then add
+      // the deny branch.
+      foreach ($actions[$actionId]['successors'] as &$successor) {
+        if (($successor['id'] ?? '') !== $denyAction) {
+          $successor['condition'] = $okId;
+        }
+      }
+      unset($successor);
+      $actions[$actionId]['successors'][] = ['id' => $denyAction, 'condition' => $denyId];
+
+      $actions[$denyAction] = [
+        'label' => 'Deny: identity not verified',
+        'plugin' => 'aabenforms_workflow_deny',
+        'configuration' => [
+          'event_type' => $plugin === 'aabenforms_parent_cpr_verify' ? 'consent_denied' : 'identity_denied',
+          'step_label' => 'Adgang afvist',
+          'message' => $spec['message'],
+        ],
+        'successors' => [],
+      ];
     }
   }
 
