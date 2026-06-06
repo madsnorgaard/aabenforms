@@ -4,6 +4,7 @@ namespace Drupal\aabenforms_workflows\Plugin\Action;
 
 use Drupal\aabenforms_core\Service\ServiceplatformenClient;
 use Drupal\Core\Action\Attribute\Action;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\eca\Attribute\EcaAction;
@@ -31,12 +32,35 @@ class CprLookupAction extends AabenFormsActionBase {
   protected ServiceplatformenClient $serviceplatformenClient;
 
   /**
+   * The config factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  protected ConfigFactoryInterface $configFactory;
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     $instance = parent::create($container, $configuration, $plugin_id, $plugin_definition);
     $instance->serviceplatformenClient = $container->get('aabenforms_core.serviceplatformen_client');
+    $instance->configFactory = $container->get('config.factory');
     return $instance;
+  }
+
+  /**
+   * Whether to run CPR lookup in demo mode (no real Serviceplatformen call).
+   *
+   * True when the demo flag is set, or - the common case for a POC - when no
+   * Serviceplatformen client certificate is provisioned. Once a certificate is
+   * configured, real SF1520 lookups resume automatically.
+   */
+  protected function demoModeAllowed(): bool {
+    if ($this->configFactory->get('aabenforms_workflows.settings')->get('allow_cpr_demo_mode')) {
+      return TRUE;
+    }
+    $certs = $this->configFactory->get('aabenforms_core.settings')->get('serviceplatformen.certificates') ?? [];
+    return empty($certs['cert_path']) && empty($certs['key_path']);
   }
 
   /**
@@ -106,6 +130,21 @@ class CprLookupAction extends AabenFormsActionBase {
       return;
     }
 
+    if ($this->demoModeAllowed()) {
+      // No Serviceplatformen certificate is provisioned (the POC case). Do not
+      // call SF1520; record an honest, clearly-labelled demo step with test
+      // data so the flow continues without surfacing a connection error.
+      $demoPerson = [
+        'cpr' => substr($cpr, 0, 6) . 'XXXX',
+        'full_name' => 'Demoborger (testdata)',
+        'demo' => TRUE,
+      ];
+      $this->setTokenValue($this->configuration['result_token'], $demoPerson);
+      $this->log('CPR lookup ran in demo mode (no Serviceplatformen certificate).', [], 'info');
+      $this->recordStep('CPR Registry Lookup', 'Demo: CPR-opslag simuleret med testdata. Rigtige Serviceplatformen-opslag kraever klientcertifikat.', 'completed');
+      return;
+    }
+
     try {
       $this->log('Performing CPR lookup via SF1520 for: {cpr}', [
         'cpr' => substr($cpr, 0, 6) . 'XXXX',
@@ -142,8 +181,11 @@ class CprLookupAction extends AabenFormsActionBase {
 
     }
     catch (\Exception $e) {
-      $this->handleError($e, 'CPR Registry Lookup');
+      // Keep the technical detail in the server log, but never surface a raw
+      // cURL/SSL/Serviceplatformen error to the citizen.
+      $this->log('CPR lookup failed: {message}', ['message' => $e->getMessage()], 'error');
       $this->setTokenValue($this->configuration['result_token'], NULL);
+      $this->recordStep('CPR Registry Lookup', 'CPR-opslaget er midlertidigt utilgaengeligt. Prov igen senere.', 'failed');
     }
   }
 

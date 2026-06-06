@@ -118,3 +118,6 @@ aabenforms_workflows.settings:
     allow_mitid_demo_mode:
       type: boolean
       label: 'Allow MitID validation to pass without a real session (demo only; default off)'
+    allow_cpr_demo_mode:
+      type: boolean
+      label: 'Force CPR lookup to run in demo mode (otherwise auto-detected when no Serviceplatformen certificate is configured)'

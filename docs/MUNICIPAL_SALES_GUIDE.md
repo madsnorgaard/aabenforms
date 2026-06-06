@@ -4,47 +4,51 @@
 **Version**: 1.0
 **Date**: February 2026
 **Target Audience**: Municipal decision-makers, IT managers, digital transformation leaders
+**Status**: Pre-pilot POC. Live demo at https://aabenforms.dk (frontend) and https://api.aabenforms.dk (backend). MitID via Keycloak mock; Serviceplatformen and Digital Post via test/mock endpoints. No production municipality deployments yet.
 
 ---
 
 ## Executive Summary
 
-ÅbenForms is an open-source digital workflow automation platform purpose-built for Danish municipalities. It enables citizen-facing services through visual workflow design, seamless integration with Danish government systems, and full GDPR compliance - all at zero licensing cost.
+ÅbenForms is an open-source digital workflow automation platform aimed at Danish municipalities. It enables citizen-facing services through visual workflow design, integration with Danish government systems, and GDPR-minded data handling - with no licence fees. It is currently a pre-pilot POC: the workflow engine, MitID sign-in, and CPR/CVR lookups run against test/mock endpoints, and several integration actions (payment, SMS, GIS, payroll, calendar) are demo mocks today.
 
 **Key Value Proposition**:
-- 100% open-source: No licensing fees (vs. 75,000 DKK/year for XFlow)
-- Visual workflow builder: No-code/low-code workflow creation
-- Danish-first: Built-in integrations with MitID, CPR, CVR, DAWA, Digital Post
-- GDPR-compliant: Encrypted data handling, audit trails, retention policies
-- Fast deployment: Pre-built templates for common municipal services
-- Modern architecture: API-first, headless, cloud-native
+- Open source: no per-form or per-integration licence fees, unlike proprietary alternatives
+- Visual workflow builder: the Workflow Modeler editor, no-code/low-code workflow creation
+- Danish-first: integrations with MitID, CPR, CVR, DAWA, Digital Post (against test/mock endpoints today)
+- GDPR-minded: field-level CPR encryption (AES-256) and audit logging built in
+- Ready-made templates for common municipal services
+- Modern architecture: API-first, headless, JSON:API, no vendor lock-in
 
 ---
 
 ## Platform Benefits
 
-### 1. Cost Savings
+### 1. Cost Model
 
-**Total Cost Comparison (3-year)**:
+Proprietary self-service workflow platforms typically charge annual licence fees, often with
+additional per-integration and per-form fees. ÅbenForms is open source and carries no licence
+fees. Your costs are limited to hosting and whatever implementation or support you choose to
+buy or do in-house.
 
-| Cost Category | XFlow | ÅbenForms | Savings |
-|---------------|-------|-----------|---------|
-| Licensing (Year 1) | 75,000 DKK | 0 DKK | 75,000 DKK |
-| Licensing (Year 2) | 75,000 DKK | 0 DKK | 75,000 DKK |
-| Licensing (Year 3) | 75,000 DKK | 0 DKK | 75,000 DKK |
-| Implementation | 150,000 DKK | 50,000 DKK | 100,000 DKK |
-| Training | 50,000 DKK | 20,000 DKK | 30,000 DKK |
-| Annual Support | 25,000 DKK | 15,000 DKK | 10,000 DKK |
-| **3-Year Total** | **500,000 DKK** | **95,000 DKK** | **405,000 DKK** |
+**Where proprietary alternatives cost money** (generalised):
+- Annual platform licence
+- Per-integration module fees (MitID, CPR/CVR, Digital Post, etc.)
+- Per-form or per-transaction fees in some models
 
-**ROI**: 81% cost reduction over 3 years
+**Where ÅbenForms costs money**:
+- Hosting
+- Optional implementation and support (in-house or bought)
+
+There are no fabricated savings figures here; do your own comparison against your current
+vendor's actual quote.
 
 ### 2. Rapid Deployment
 
-- Pre-built templates for 8+ common municipal workflows
-- Visual drag-and-drop workflow designer (BPMN 2.0 standard)
+- 13 ready-made workflow templates (BPMN source files) for common municipal workflows
+- Visual workflow editing via the Workflow Modeler
 - No custom development required for standard use cases
-- Average implementation time: 2-4 weeks per workflow
+- 18 ECA flows deployed in the current configuration
 
 ### 3. Danish Government Integration
 
@@ -70,27 +74,36 @@ Built-in connectors for essential Danish services:
 - GetOrganized ESDH integration
 - Document archiving with metadata
 
-### 4. GDPR Compliance
+### 4. GDPR-Minded Data Handling
 
-- Field-level AES-256 encryption for sensitive data
-- Comprehensive audit logging
-- Automated data retention policies
-- Right to erasure workflows
+Built in today:
+- Field-level AES-256 encryption for CPR numbers
+- Audit logging
+- Role-based access control
+
+Planned (not yet shipped):
+- Automated data retention and right-to-erasure subsystem (issue #91)
 - Consent management
-- Access control with role-based permissions
+
+Engage your Data Protection Officer for a full compliance assessment before any pilot.
 
 ### 5. Modern Architecture
 
-- Headless CMS (Drupal 11) backend
-- Modern Vue.js/Nuxt 3 frontend
+- Headless CMS (Drupal 11, core 11.3.10, PHP 8.4) backend
+- Vue.js/Nuxt 3 frontend
 - RESTful JSON:API
-- Cloud-native deployment (Platform.sh)
-- Multi-tenancy support (shared instance for multiple municipalities)
+- Self-hostable; no vendor lock-in
+- Multi-tenancy support via the domain module
 - Mobile-responsive design
 
 ---
 
 ## Flagship Workflows
+
+Note on integration status: in the current POC, MitID sign-in, CPR/CVR lookup, DAWA validation,
+and audit logging are real (against test/mock endpoints). Payment, SMS, GIS, and calendar/booking
+steps are demo mocks today. The "annual impact" estimates below are illustrative planning figures,
+not measured results from any deployment - there are no production deployments yet.
 
 ### Workflow 1: Parking Permit Application
 
@@ -125,10 +138,10 @@ Built-in connectors for essential Danish services:
 **Setup Time**: 1 week
 **Technical Complexity**: Low
 
-**Annual Impact (Medium Municipality)**:
+**Illustrative Annual Impact (Medium Municipality, planning estimate only - not measured)**:
 - Applications processed: ~2,000
-- Time saved: 6,000 hours (3 hours/application eliminated)
-- Cost savings: ~900,000 DKK (staff time + postage)
+- Potential time saved if manual processing is fully automated
+- Actual savings depend on the municipality's current process and volumes
 
 ---
 
@@ -155,8 +168,8 @@ Built-in connectors for essential Danish services:
 **Business Value**:
 - Eliminates phone/email booking coordination
 - Dual authentication ensures identity verification
-- Automated reminders reduce no-shows by 40%
-- Real-time calendar synchronization
+- Automated reminders to reduce no-shows
+- Calendar synchronization (calendar action is a demo mock today)
 - Digital certificate delivery
 - Complete audit trail for legal compliance
 
@@ -173,11 +186,10 @@ Built-in connectors for essential Danish services:
 **Setup Time**: 2 weeks
 **Technical Complexity**: Medium
 
-**Annual Impact (Medium Municipality)**:
+**Illustrative Annual Impact (Medium Municipality, planning estimate only - not measured)**:
 - Ceremonies booked: ~300
-- Time saved: 1,200 hours (4 hours/booking eliminated)
-- No-show reduction: 40% (120 ceremonies)
-- Cost savings: ~200,000 DKK
+- Potential reduction in phone/email coordination time and no-shows
+- Actual results depend on the municipality's current process
 
 ---
 
@@ -223,44 +235,37 @@ Built-in connectors for essential Danish services:
 **Setup Time**: 3 weeks
 **Technical Complexity**: High
 
-**Annual Impact (Medium Municipality)**:
+**Illustrative Annual Impact (Medium Municipality, planning estimate only - not measured)**:
 - Applications processed: ~800
-- Time saved: 2,400 hours (3 hours/application eliminated)
-- Paper/postage savings: ~50,000 DKK
-- Faster processing: Average 15 days (vs. 30 days)
-- Cost savings: ~450,000 DKK
+- Potential reduction in caseworker time and paper/postage
+- Potential faster processing through automated pre-checks
+- Actual results depend on the municipality's current process
 
 ---
 
-## ROI Calculations
+## ROI - How to Build Your Own Estimate
 
-### Scenario: Medium Municipality (50,000 residents)
+There are no measured ROI figures to quote: ÅbenForms has no production deployments yet. Rather
+than present fabricated numbers, build an estimate from your own data.
 
-**Annual Workflow Volume**:
-- Parking permits: 2,000 applications
-- Marriage bookings: 300 ceremonies
-- Building permits: 800 applications
-- Other services: 1,500 transactions
+### Inputs to gather
 
-**Total Annual Savings**:
+- Annual volume per workflow (parking permits, marriage bookings, building permits, etc.)
+- Current staff time per application and your loaded hourly staff cost
+- Current paper/postage and reconciliation costs
+- Your current vendor's actual licence and per-integration quote (for the comparison)
 
-| Category | Amount (DKK) |
-|----------|--------------|
-| Staff time savings | 1,400,000 |
-| Paper/postage elimination | 80,000 |
-| Payment reconciliation | 120,000 |
-| No-show reduction | 40,000 |
-| IT licensing fees | 75,000 |
-| **Total Annual Savings** | **1,715,000 DKK** |
+### Method
 
-**Implementation Investment**:
-- Initial setup: 50,000 DKK (3 workflows)
-- Training: 20,000 DKK
-- Annual support: 15,000 DKK
+1. Estimate staff time potentially saved per workflow once routine steps are automated.
+2. Multiply by volume and hourly cost for a conservative staff-time figure.
+3. Add paper/postage and reconciliation savings where applicable.
+4. Subtract your ÅbenForms costs: hosting plus any implementation/support you buy or staff
+   in-house. Remember there are no licence fees.
+5. Compare against the avoided proprietary licence and per-integration fees from your vendor quote.
 
-**Year 1 ROI**: (1,715,000 - 85,000) / 85,000 = 1,918% ROI
-
-**Payback Period**: Less than 3 weeks
+Use conservative assumptions. The honest message is "no licence fees, open source, no lock-in,
+modern JSON:API" - not a fabricated payback period.
 
 ---
 
@@ -352,7 +357,7 @@ Built-in connectors for essential Danish services:
 
 ### Open Source Licensing
 
-ÅbenForms is released under GPL-2.0 license:
+ÅbenForms is released under the GPL-2.0-or-later license:
 - **Zero licensing fees** forever
 - **No per-user costs**
 - **No per-transaction costs**
@@ -371,8 +376,8 @@ Built-in connectors for essential Danish services:
 
 **Professional Package** (350,000 DKK one-time):
 - Everything in Starter Package
-- 8 workflows (all templates)
-- SBSYS/ESDH integration
+- Additional workflows from the template library
+- SBSYS/ESDH integration (planned modules)
 - Custom workflow development (up to 2 workflows)
 - Visual identity customization
 - 5 days on-site training
@@ -419,60 +424,12 @@ Built-in connectors for essential Danish services:
 
 ---
 
-## Municipal Success Stories
+## Deployment Status
 
-### Scenario 1: Aarhus Kommune (350,000 residents)
-
-**Challenge**: Processing 15,000 parking permit applications annually with 4 FTE staff, causing 2-week delays.
-
-**Solution**: Deployed ÅbenForms parking permit workflow with MitID, DAWA, and Nets Easy integration.
-
-**Results** (Year 1):
-- Processing time: 2 weeks → instant
-- Staff redeployed: 3 FTE to higher-value work
-- Citizen satisfaction: 67% → 94%
-- Cost savings: 1,200,000 DKK
-- Paper eliminated: 15,000 permits
-- ROI: 2,400%
-
-**Quote**: "ÅbenForms transformed our parking permit service from a bureaucratic bottleneck to a 24/7 digital experience. Citizens love the instant service, and our staff can focus on exceptions rather than routine processing." - IT Director, Aarhus Kommune
-
----
-
-### Scenario 2: Odense Kommune (205,000 residents)
-
-**Challenge**: Marriage ceremony bookings required phone calls, email exchanges, and manual calendar management, consuming 600 staff hours annually.
-
-**Solution**: Implemented ÅbenForms marriage booking workflow with dual MitID authentication, calendar integration, and automated reminders.
-
-**Results** (Year 1):
-- Booking time: 45 minutes → 10 minutes
-- No-shows reduced: 15% → 6% (40% reduction)
-- Staff hours saved: 480 hours
-- Couple satisfaction: 78% → 96%
-- Cost savings: 180,000 DKK
-- ROI: 900%
-
-**Quote**: "The dual MitID authentication ensures we have verified identities before the ceremony, eliminating last-minute issues. Automated reminders reduced no-shows dramatically." - Citizen Services Manager, Odense Kommune
-
----
-
-### Scenario 3: Randers Kommune (98,000 residents)
-
-**Challenge**: Building permit applications required physical submissions, causing postal delays and incomplete applications.
-
-**Solution**: Deployed ÅbenForms building permit workflow with document upload, caseworker portal, and SBSYS integration.
-
-**Results** (Year 1):
-- Processing time: 30 days → 18 days (40% faster)
-- Incomplete submissions: 35% → 12% (66% reduction)
-- Staff time per application: 4 hours → 2.5 hours
-- Annual hours saved: 1,200 hours
-- Citizen satisfaction: 62% → 87%
-- Cost savings: 420,000 DKK
-- ROI: 1,680%
-
-**Quote**: "Automated document validation catches missing items before caseworker review, dramatically reducing back-and-forth with applicants. SBSYS integration eliminated duplicate data entry." - Planning Director, Randers Kommune
+ÅbenForms is a pre-pilot POC. There are no production municipality deployments and therefore
+no customer references, satisfaction figures, or measured ROI to cite. Any "before/after"
+numbers you may see elsewhere are illustrative planning estimates, not results from a real
+municipality. We can run a live demo against test/mock endpoints and discuss a pilot.
 
 ---
 
@@ -493,12 +450,12 @@ Built-in connectors for essential Danish services:
 - Load balancer for high availability
 
 **Database**:
-- MariaDB 10.11+ or MySQL 8.0+
-- PostgreSQL 14+ (alternative)
+- MariaDB or MySQL 8.0+
+- PostgreSQL (alternative)
 
 **Web Server**:
 - Apache 2.4+ or Nginx 1.20+
-- PHP 8.3+
+- PHP 8.4
 - SSL/TLS certificate (required)
 
 ### Hosting Options
@@ -508,12 +465,10 @@ Built-in connectors for essential Danish services:
 - Full data control
 - Requires IT staff for maintenance
 
-**Cloud Hosting** (Recommended):
-- Platform.sh, AWS, Azure, Google Cloud
-- Automatic scaling
+**Cloud Hosting**:
+- Any standard LAMP/cloud provider (AWS, Azure, Google Cloud, EU regions)
 - Managed backups
-- 99.9% SLA
-- GDPR-compliant EU regions
+- GDPR-appropriate EU regions
 
 **Managed Service**:
 - Fully managed by ÅbenForms team
@@ -634,19 +589,18 @@ Built-in connectors for essential Danish services:
 
 ### GDPR Compliance
 
-**Data Protection**:
+**Data Protection** (built in today):
 - Field-level AES-256 encryption for CPR numbers
-- Pseudonymization for analytics
-- Automated data retention policies (7-year default for municipal records)
-- Right to erasure workflows
+- Audit logging
 - Data minimization (only collect necessary data)
 
+**Planned (not yet shipped)**:
+- Automated data retention policies and right-to-erasure subsystem (issue #91)
+- Pseudonymization for analytics
+
 **Audit & Accountability**:
-- Comprehensive audit logging (who, what, when, why)
-- Tamper-proof logs
-- Regular audit reports
-- Data processing agreements
-- Privacy impact assessments
+- Audit logging (who, what, when, why)
+- Supports data processing agreements and privacy impact assessments as part of a pilot
 
 **Consent Management**:
 - Explicit consent collection
