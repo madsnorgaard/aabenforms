@@ -54,6 +54,7 @@ actions:
       event_type: citizen_service_submitted
       additional_data_token: '[citizen_data:name]'
       message_template: 'Citizen service application received and CPR resolved'
+      status_token: citizen_data_status
     successors:
       -
         id: log_caseworker_assigned

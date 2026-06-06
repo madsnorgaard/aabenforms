@@ -46,6 +46,7 @@ actions:
       event_type: parking_permit_submitted
       additional_data_token: ''
       message_template: 'Parking permit application received; CPR resolved.'
+      status_token: citizen_data_status
     successors:
       -
         id: send_confirmation

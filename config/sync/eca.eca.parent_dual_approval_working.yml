@@ -57,6 +57,7 @@ actions:
       event_type: parent1_approval
       additional_data_token: '[parent1_data:name]'
       message_template: 'Parent 1 authenticated'
+      status_token: parent1_mitid_valid_status
     successors:
       -
         id: mark_parent1_complete
@@ -100,6 +101,7 @@ actions:
       event_type: parent2_approval
       additional_data_token: '[parent2_data:name]'
       message_template: 'Parent 2 authenticated'
+      status_token: parent2_mitid_valid_status
     successors:
       -
         id: mark_parent2_complete

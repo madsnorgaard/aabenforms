@@ -54,6 +54,7 @@ actions:
       event_type: association_booking_submitted
       additional_data_token: '[webform_submission:values:association_name:raw]'
       message_template: 'Association request received and CVR resolved'
+      status_token: association_data_status
     successors:
       -
         id: log_reviewer_assigned

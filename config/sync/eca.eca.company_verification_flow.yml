@@ -46,6 +46,7 @@ actions:
       event_type: company_verification_submitted
       additional_data_token: ''
       message_template: 'Company verification request received; CVR resolved.'
+      status_token: company_data_status
     successors:
       -
         id: send_confirmation

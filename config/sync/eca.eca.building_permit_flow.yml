@@ -46,6 +46,7 @@ actions:
       event_type: building_permit_submitted
       additional_data_token: ''
       message_template: 'Building permit application received; CPR resolved against registry.'
+      status_token: citizen_data_status
     successors:
       -
         id: send_confirmation

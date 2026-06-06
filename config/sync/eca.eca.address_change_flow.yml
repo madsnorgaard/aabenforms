@@ -43,6 +43,7 @@ actions:
       event_type: address_change_submitted
       additional_data_token: '[citizen_data:name]'
       message_template: 'Address change submitted; CPR resolved against registry.'
+      status_token: citizen_data_status
     successors:
       -
         id: send_confirmation

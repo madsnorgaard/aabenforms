@@ -48,6 +48,8 @@ class AuditLogAction extends AabenFormsActionBase {
       'cpr_token' => 'cpr',
       'message_template' => 'Workflow action executed',
       'additional_data_token' => '',
+      'status' => 'success',
+      'status_token' => '',
     ] + parent::defaultConfiguration();
   }
 
@@ -93,6 +95,26 @@ class AuditLogAction extends AabenFormsActionBase {
       '#default_value' => $this->configuration['additional_data_token'],
     ];
 
+    $form['status_token'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Status token'),
+      '#description' => $this->t('Optional token whose value determines the logged status. A prior step result such as <code>citizen_data_status</code> or <code>citizen_mitid_valid_status</code>. Values like found/verified/match/completed map to success; denied maps to denied; anything else (not_found, failed, error) maps to failure. Leave empty to use the fixed status below.'),
+      '#default_value' => $this->configuration['status_token'],
+    ];
+
+    $form['status'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Status'),
+      '#description' => $this->t('Status to log when no status token is configured.'),
+      '#options' => [
+        'success' => $this->t('Success'),
+        'failure' => $this->t('Failure'),
+        'denied' => $this->t('Denied'),
+        'skipped' => $this->t('Skipped'),
+      ],
+      '#default_value' => $this->configuration['status'],
+    ];
+
     return parent::buildConfigurationForm($form, $form_state);
   }
 
@@ -104,6 +126,8 @@ class AuditLogAction extends AabenFormsActionBase {
     $this->configuration['cpr_token'] = $form_state->getValue('cpr_token');
     $this->configuration['message_template'] = $form_state->getValue('message_template');
     $this->configuration['additional_data_token'] = $form_state->getValue('additional_data_token');
+    $this->configuration['status_token'] = $form_state->getValue('status_token');
+    $this->configuration['status'] = $form_state->getValue('status');
     parent::submitConfigurationForm($form, $form_state);
   }
 
@@ -141,13 +165,17 @@ class AuditLogAction extends AabenFormsActionBase {
         }
       }
 
+      // Derive the status from the real outcome of a prior step rather than
+      // always recording success. This is what keeps the audit trail honest.
+      $status = $this->resolveStatus();
+
       // Create audit log entry.
       if ($cpr && $eventType === 'cpr_access') {
         $this->auditLogger->log(
           'cpr_access',
           $cpr,
           'workflow_action',
-          'success',
+          $status,
           array_merge(['message' => $message], $additionalData)
         );
       }
@@ -156,13 +184,14 @@ class AuditLogAction extends AabenFormsActionBase {
           $eventType,
           $cpr ?? 'system',
           $message,
-          'success',
+          $status,
           array_merge(['action_id' => $this->getPluginId()], $additionalData)
         );
       }
 
-      $this->log('Audit log entry created: {type}', [
+      $this->log('Audit log entry created: {type} ({status})', [
         'type' => $eventType,
+        'status' => $status,
       ]);
       $this->recordStep('GDPR Audit Trail', 'Audit log entry created for regulatory compliance');
 
@@ -170,6 +199,53 @@ class AuditLogAction extends AabenFormsActionBase {
     catch (\Exception $e) {
       $this->handleError($e, 'Creating audit log entry');
     }
+  }
+
+  /**
+   * Resolves the status to log.
+   *
+   * When a status token is configured, the real outcome of the prior step is
+   * read and normalised; otherwise the configured fixed status is used. This
+   * stops the audit log from recording success for a step that failed or was
+   * never verified.
+   *
+   * @return string
+   *   One of 'success', 'failure', 'denied' or 'skipped'.
+   */
+  protected function resolveStatus(): string {
+    $statusToken = (string) ($this->configuration['status_token'] ?? '');
+    if ($statusToken !== '') {
+      $raw = $this->getTokenValue($statusToken, '');
+      if ($raw !== '') {
+        return $this->normalizeStatus($raw);
+      }
+    }
+    $fixed = (string) ($this->configuration['status'] ?? 'success');
+    return $fixed !== '' ? $this->normalizeStatus($fixed) : 'success';
+  }
+
+  /**
+   * Maps a raw status marker to the audit-log vocabulary.
+   *
+   * @param string $raw
+   *   The raw status from a result token or config (for example 'found',
+   *   'verified', 'match', 'not_found', 'failed', 'denied').
+   *
+   * @return string
+   *   One of 'success', 'failure', 'denied' or 'skipped'.
+   */
+  protected function normalizeStatus(string $raw): string {
+    $value = strtolower(trim($raw));
+    if (in_array($value, ['success', 'completed', 'found', 'verified', 'match', 'true', '1', 'ok'], TRUE)) {
+      return 'success';
+    }
+    if ($value === 'denied') {
+      return 'denied';
+    }
+    if ($value === 'skipped') {
+      return 'skipped';
+    }
+    return 'failure';
   }
 
   /**

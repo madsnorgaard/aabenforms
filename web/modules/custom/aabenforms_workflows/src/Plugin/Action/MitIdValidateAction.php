@@ -68,12 +68,32 @@ class MitIdValidateAction extends AabenFormsActionBase {
     if ($this->demoModeAllowed()) {
       $this->log('MitID validation: ' . $context . ' - demo mode (allow_mitid_demo_mode on)', [], 'info');
       $this->setTokenValue($this->configuration['result_token'], TRUE);
+      $this->setResultStatus('verified');
       $this->recordStep('MitID Identity Validation', 'Demo mode: identity was NOT verified (no MitID session)', 'completed');
       return;
     }
     $this->log('MitID validation failed: ' . $context . ' (demo mode off)', [], 'warning');
     $this->setTokenValue($this->configuration['result_token'], FALSE);
+    $this->setResultStatus('failed');
     $this->recordStep('MitID Identity Validation', 'No valid MitID session - identity could not be verified', 'failed');
+  }
+
+  /**
+   * Writes an explicit scalar status companion token for downstream gating.
+   *
+   * The boolean result_token is kept for backward compatibility, but ECA
+   * conditions and the audit action read this `<result_token>_status` scalar
+   * (`verified` or `failed`) because comparing a rendered boolean token is
+   * unreliable.
+   *
+   * @param string $status
+   *   Either 'verified' or 'failed'.
+   */
+  protected function setResultStatus(string $status): void {
+    $resultToken = (string) ($this->configuration['result_token'] ?? '');
+    if ($resultToken !== '') {
+      $this->setTokenValue($resultToken . '_status', $status);
+    }
   }
 
   /**
@@ -155,6 +175,7 @@ class MitIdValidateAction extends AabenFormsActionBase {
           'workflow_id' => $workflowId,
         ], 'warning');
         $this->setTokenValue($this->configuration['result_token'], FALSE);
+        $this->setResultStatus('failed');
         $this->recordStep('MitID Identity Validation', 'Session expired - re-authentication required', 'failed');
         return;
       }
@@ -165,6 +186,7 @@ class MitIdValidateAction extends AabenFormsActionBase {
       ]);
 
       $this->setTokenValue($this->configuration['result_token'], TRUE);
+      $this->setResultStatus('verified');
       $this->setTokenValue($this->configuration['session_data_token'], $sessionData);
       $this->recordStep('MitID Identity Validation', 'Citizen identity verified via NemID/MitID national eID');
 
@@ -172,6 +194,7 @@ class MitIdValidateAction extends AabenFormsActionBase {
     catch (\Exception $e) {
       $this->handleError($e, 'MitID Identity Validation');
       $this->setTokenValue($this->configuration['result_token'], FALSE);
+      $this->setResultStatus('failed');
     }
   }
 
