@@ -23,11 +23,43 @@ events:
       type: 'webform_submission building_permit'
     successors:
       -
-        id: cpr_lookup
+        id: mitid_validate
         condition: ''
-conditions: {  }
+conditions:
+  gate_building_mitid_ok:
+    plugin: eca_scalar
+    configuration:
+      negate: false
+      left: '[building_mitid_valid_status]'
+      right: verified
+      operator: equal
+      type: value
+      case: false
+  gate_building_mitid_deny:
+    plugin: eca_scalar
+    configuration:
+      negate: true
+      left: '[building_mitid_valid_status]'
+      right: verified
+      operator: equal
+      type: value
+      case: false
 gateways: {  }
 actions:
+  mitid_validate:
+    label: 'Validate MitID session'
+    plugin: aabenforms_mitid_validate
+    configuration:
+      workflow_id_token: workflow_id_building_permit
+      result_token: building_mitid_valid
+      session_data_token: building_session
+    successors:
+      -
+        id: cpr_lookup
+        condition: gate_building_mitid_ok
+      -
+        id: deny_building
+        condition: gate_building_mitid_deny
   cpr_lookup:
     label: 'CPR registry lookup'
     plugin: aabenforms_cpr_lookup
@@ -62,4 +94,12 @@ actions:
       body_template: '<p>Vi har modtaget din ansøgning om byggetilladelse. En sagsbehandler tager kontakt.</p>'
       type: 'Digital Post'
       result_token: digital_post_result
+    successors: {  }
+  deny_building:
+    label: 'Deny: identity not verified'
+    plugin: aabenforms_workflow_deny
+    configuration:
+      event_type: building_permit_denied
+      step_label: 'Identitet ikke bekraeftet'
+      message: 'Ansoegningen blev ikke behandlet, fordi din identitet ikke kunne bekraeftes med MitID. Log ind med MitID og proev igen.'
     successors: {  }

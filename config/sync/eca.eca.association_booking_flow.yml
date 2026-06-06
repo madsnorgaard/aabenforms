@@ -22,7 +22,25 @@ events:
       -
         id: mitid_validate
         condition: ''
-conditions: {  }
+conditions:
+  gate_association_mitid_ok:
+    plugin: eca_scalar
+    configuration:
+      negate: false
+      left: '[association_mitid_valid_status]'
+      right: verified
+      operator: equal
+      type: value
+      case: false
+  gate_association_mitid_deny:
+    plugin: eca_scalar
+    configuration:
+      negate: true
+      left: '[association_mitid_valid_status]'
+      right: verified
+      operator: equal
+      type: value
+      case: false
 gateways: {  }
 actions:
   mitid_validate:
@@ -35,7 +53,10 @@ actions:
     successors:
       -
         id: cvr_lookup
-        condition: ''
+        condition: gate_association_mitid_ok
+      -
+        id: deny_association
+        condition: gate_association_mitid_deny
   cvr_lookup:
     label: 'CVR registry lookup'
     plugin: aabenforms_cvr_lookup
@@ -91,4 +112,12 @@ actions:
       event_type: association_booking_complete
       additional_data_token: '[webform_submission:values:association_name:raw]'
       message_template: 'Association request decisioned (stub)'
+    successors: {  }
+  deny_association:
+    label: 'Deny: MitID Erhverv not verified'
+    plugin: aabenforms_workflow_deny
+    configuration:
+      event_type: association_booking_denied
+      step_label: 'Identitet ikke bekraeftet'
+      message: 'Bookingen blev ikke behandlet, fordi foreningens MitID Erhverv-identitet ikke kunne bekraeftes. Log ind og proev igen.'
     successors: {  }

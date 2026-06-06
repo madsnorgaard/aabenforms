@@ -22,7 +22,25 @@ events:
       -
         id: mitid_validate
         condition: ''
-conditions: {  }
+conditions:
+  gate_citizen_mitid_ok:
+    plugin: eca_scalar
+    configuration:
+      negate: false
+      left: '[citizen_mitid_valid_status]'
+      right: verified
+      operator: equal
+      type: value
+      case: false
+  gate_citizen_mitid_deny:
+    plugin: eca_scalar
+    configuration:
+      negate: true
+      left: '[citizen_mitid_valid_status]'
+      right: verified
+      operator: equal
+      type: value
+      case: false
 gateways: {  }
 actions:
   mitid_validate:
@@ -35,7 +53,10 @@ actions:
     successors:
       -
         id: cpr_lookup
-        condition: ''
+        condition: gate_citizen_mitid_ok
+      -
+        id: deny_citizen
+        condition: gate_citizen_mitid_deny
   cpr_lookup:
     label: 'CPR registry lookup'
     plugin: aabenforms_cpr_lookup
@@ -81,4 +102,12 @@ actions:
       body_template: '<p>Der er truffet afgørelse på din ansøgning. Se bilag i Digital Post.</p>'
       type: 'Digital Post'
       result_token: digital_post_result
+    successors: {  }
+  deny_citizen:
+    label: 'Deny: identity not verified'
+    plugin: aabenforms_workflow_deny
+    configuration:
+      event_type: citizen_service_denied
+      step_label: 'Identitet ikke bekraeftet'
+      message: 'Ansoegningen blev ikke behandlet, fordi din identitet ikke kunne bekraeftes med MitID. Log ind med MitID og proev igen.'
     successors: {  }
