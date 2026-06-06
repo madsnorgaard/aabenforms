@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\aabenforms_workflows\Service;
 
 use Drupal\aabenforms_core\Service\AuditLogger;
+use Drupal\aabenforms_core\Service\CprAccess;
 use Drupal\aabenforms_mitid\Service\MitIdSessionManager;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\webform\WebformSubmissionInterface;
@@ -76,6 +77,13 @@ class ParentCprVerifier {
   protected LoggerInterface $logger;
 
   /**
+   * The CPR access helper (decrypts CPR stored at rest).
+   *
+   * @var \Drupal\aabenforms_core\Service\CprAccess
+   */
+  protected CprAccess $cprAccess;
+
+  /**
    * Constructs a ParentCprVerifier.
    *
    * @param \Drupal\aabenforms_mitid\Service\MitIdSessionManager $session_manager
@@ -84,15 +92,19 @@ class ParentCprVerifier {
    *   The audit logger - records mismatch / missing-claim events.
    * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory
    *   The logger factory.
+   * @param \Drupal\aabenforms_core\Service\CprAccess $cpr_access
+   *   The CPR access helper, used to decrypt the stored parent CPR.
    */
   public function __construct(
     MitIdSessionManager $session_manager,
     AuditLogger $audit_logger,
     LoggerChannelFactoryInterface $logger_factory,
+    CprAccess $cpr_access,
   ) {
     $this->sessionManager = $session_manager;
     $this->auditLogger = $audit_logger;
     $this->logger = $logger_factory->get('aabenforms_workflows');
+    $this->cprAccess = $cpr_access;
   }
 
   /**
@@ -109,7 +121,9 @@ class ParentCprVerifier {
    *   One of the RESULT_* constants on this class.
    */
   public function verify(WebformSubmissionInterface $submission, int $parent_number, string $workflow_id): string {
-    $expected_raw = (string) ($submission->getElementData("parent{$parent_number}_cpr") ?? '');
+    // The stored parent CPR is encrypted at rest; decrypt it before
+    // comparing against the (plaintext) MitID-asserted CPR.
+    $expected_raw = $this->cprAccess->reveal((string) ($submission->getElementData("parent{$parent_number}_cpr") ?? ''));
     $asserted_raw = (string) ($this->sessionManager->getCprFromSession($workflow_id) ?? '');
 
     $expected = $this->normaliseCpr($expected_raw);
