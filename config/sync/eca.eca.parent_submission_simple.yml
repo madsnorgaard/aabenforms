@@ -54,4 +54,5 @@ actions:
       event_type: parent_submission
       additional_data_token: '[cpr_person_data:name]'
       message_template: '[webform_submission:sid]'
+      status_token: cpr_person_data_status
     successors: {  }
