@@ -9,6 +9,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\eca\Attribute\EcaAction;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * ECA Action: Validate MitID session.
@@ -39,13 +40,72 @@ class MitIdValidateAction extends AabenFormsActionBase {
   protected ConfigFactoryInterface $configFactory;
 
   /**
+   * The request stack.
+   *
+   * @var \Symfony\Component\HttpFoundation\RequestStack
+   */
+  protected RequestStack $requestStack;
+
+  /**
+   * Browser-session key under which MitID login binds the workflow id.
+   *
+   * Set by MitIdController::callback() after a successful MitID/NemLog-in
+   * authentication. It is the per-browser, unguessable handle to the stored
+   * session and is the bridge between login and the flow gate.
+   */
+  protected const SESSION_WORKFLOW_KEY = 'mitid_workflow_id';
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     $instance = parent::create($container, $configuration, $plugin_id, $plugin_definition);
     $instance->sessionManager = $container->get('aabenforms_mitid.session_manager');
     $instance->configFactory = $container->get('config.factory');
+    $instance->requestStack = $container->get('request_stack');
     return $instance;
+  }
+
+  /**
+   * Resolves the workflow id that scopes the MitID session to validate.
+   *
+   * Resolution order:
+   * 1. The configured ECA token (`workflow_id_token`). A flow, or an upstream
+   *    action, may have populated it explicitly.
+   * 2. Fallback to the browser session's `mitid_workflow_id`, bound at login
+   *    by MitIdController. This is the real bridge between a citizen's MitID
+   *    authentication and the flow gate: the login mints an unguessable
+   *    `wf_<hex>` handle, stashes the session under it, and records it in the
+   *    browser session. A same-browser webform submission (the modeler test
+   *    harness, or the SPA submitting with credentials) carries that cookie,
+   *    so the gate can find the session the citizen just established.
+   *
+   * The fallback is fail-safe: it only ever yields a handle that THIS browser
+   * established via a completed MitID callback. It cannot manufacture identity
+   * - an empty result still routes to the deny terminal.
+   *
+   * @return string
+   *   The resolved workflow id, or '' when none is available.
+   */
+  protected function resolveWorkflowId(): string {
+    $tokenName = $this->configuration['workflow_id_token'] ?? 'workflow_id';
+    $workflowId = $this->getTokenValue($tokenName, '');
+    if (!empty($workflowId)) {
+      return $workflowId;
+    }
+
+    $session = $this->requestStack->getCurrentRequest()?->getSession();
+    // Avoid forcing a session to start when none exists (e.g. CLI/cron),
+    // which would be a no-op anyway and can emit warnings.
+    if ($session && $session->isStarted()) {
+      $bound = $session->get(self::SESSION_WORKFLOW_KEY);
+      if (is_string($bound) && $bound !== '') {
+        $this->log('MitID validation: workflow id taken from browser session (login-bound)', [], 'info');
+        return $bound;
+      }
+    }
+
+    return '';
   }
 
   /**
@@ -152,7 +212,7 @@ class MitIdValidateAction extends AabenFormsActionBase {
    * {@inheritdoc}
    */
   public function execute(): void {
-    $workflowId = $this->getTokenValue($this->configuration['workflow_id_token'] ?? 'workflow_id', '');
+    $workflowId = $this->resolveWorkflowId();
 
     if (empty($workflowId)) {
       $this->recordNoSession('no workflow id in context');

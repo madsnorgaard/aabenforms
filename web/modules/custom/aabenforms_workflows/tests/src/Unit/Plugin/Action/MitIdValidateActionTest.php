@@ -14,6 +14,9 @@ use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\eca\EcaState;
 use Drupal\eca\Token\TokenInterface as EcaTokenInterface;
 use Drupal\Tests\UnitTestCase;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 /**
  * Tests the MitIdValidateAction ECA plugin.
@@ -159,6 +162,39 @@ class MitIdValidateActionTest extends UnitTestCase {
     $configFactoryProperty = $reflectionClass->getProperty('configFactory');
     $configFactoryProperty->setAccessible(TRUE);
     $configFactoryProperty->setValue($this->action, $configFactory);
+
+    // Default request stack: a request whose session is not started, so the
+    // browser-session bridge contributes nothing unless a test opts in via
+    // setBrowserWorkflowId(). This keeps the existing fail-closed tests valid.
+    $this->setBrowserWorkflowId(NULL, FALSE);
+  }
+
+  /**
+   * Injects a request stack whose browser session may carry a workflow id.
+   *
+   * Mirrors how MitIdController binds `mitid_workflow_id` to the browser
+   * session at login; the action's resolveWorkflowId() falls back to it when
+   * the configured token is empty.
+   *
+   * @param string|null $workflowId
+   *   The value to expose under `mitid_workflow_id`, or NULL for none.
+   * @param bool $started
+   *   Whether the session reports itself as started.
+   */
+  protected function setBrowserWorkflowId(?string $workflowId, bool $started = TRUE): void {
+    $session = $this->createMock(SessionInterface::class);
+    $session->method('isStarted')->willReturn($started);
+    $session->method('get')->willReturnCallback(
+      static fn ($key) => $key === 'mitid_workflow_id' ? $workflowId : NULL
+    );
+    $request = $this->createMock(Request::class);
+    $request->method('getSession')->willReturn($session);
+    $requestStack = $this->createMock(RequestStack::class);
+    $requestStack->method('getCurrentRequest')->willReturn($request);
+
+    $property = (new \ReflectionClass($this->action))->getProperty('requestStack');
+    $property->setAccessible(TRUE);
+    $property->setValue($this->action, $requestStack);
   }
 
   /**
@@ -373,6 +409,63 @@ class MitIdValidateActionTest extends UnitTestCase {
     $this->action->execute();
 
     // Verify result is FALSE (fail closed).
+    $this->assertFalse($this->tokenStorage['mitid_valid']);
+  }
+
+  /**
+   * Tests the browser-session bridge resolves the workflow id.
+   *
+   * When the configured token is empty (the usual case for a real submission,
+   * where nothing populates `workflow_id_<flow>`), the action falls back to
+   * the `mitid_workflow_id` the login bound to the browser session, so the
+   * gate finds the citizen's session and validates.
+   *
+   * @covers ::execute
+   * @covers ::resolveWorkflowId
+   */
+  public function testWorkflowIdFromBrowserSession(): void {
+    $workflowId = 'wf_browserbound';
+    $sessionData = [
+      'cpr' => '0101904521',
+      'name' => 'Freja Nielsen',
+      'assurance_level' => 'substantial',
+      'created_at' => time() - 60,
+      'expires_at' => time() + 600,
+    ];
+
+    // Token is NOT set; the only source is the browser session.
+    $this->setBrowserWorkflowId($workflowId);
+
+    $this->sessionManager->expects($this->once())
+      ->method('getSession')
+      ->with($workflowId)
+      ->willReturn($sessionData);
+
+    $this->action->execute();
+
+    $this->assertTrue($this->tokenStorage['mitid_valid'], 'Bridge should let a valid session validate.');
+    $this->assertEquals($sessionData, $this->tokenStorage['mitid_session']);
+  }
+
+  /**
+   * Tests the configured token wins over the browser session.
+   *
+   * @covers ::resolveWorkflowId
+   */
+  public function testTokenTakesPrecedenceOverBrowserSession(): void {
+    $this->tokenStorage['workflow_id'] = 'wf_from_token';
+    $this->setBrowserWorkflowId('wf_from_browser');
+
+    $this->sessionManager->expects($this->once())
+      ->method('getSession')
+      ->with('wf_from_token')
+      ->willReturn(NULL);
+
+    // No session for the token id -> fail closed, browser id never consulted.
+    $this->logger->expects($this->once())->method('warning');
+
+    $this->action->execute();
+
     $this->assertFalse($this->tokenStorage['mitid_valid']);
   }
 

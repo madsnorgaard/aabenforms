@@ -3,3 +3,9 @@ aabenforms_mitid.settings:
   description: 'Configure MitID OIDC endpoints, client credentials, and assurance level.'
   route_name: aabenforms_mitid.settings
   parent: system.admin_config_services
+
+aabenforms_mitid.demo_session:
+  title: 'Test as demo citizen'
+  description: 'Activate a demo MitID identity so a gated flow can be run through its happy path in the modeler.'
+  route_name: aabenforms_mitid.demo_session
+  parent: system.admin_config_services

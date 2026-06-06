@@ -1,0 +1,7 @@
+services:
+  aabenforms_mitid.drush_commands:
+    class: Drupal\aabenforms_mitid\Drush\AabenformsMitidCommands
+    arguments:
+      - '@aabenforms_mitid.session_manager'
+    tags:
+      - { name: drush.command }
