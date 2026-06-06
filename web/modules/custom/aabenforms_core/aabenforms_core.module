@@ -16,6 +16,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
 use Drupal\user\Entity\User;
+use Drupal\webform\WebformSubmissionInterface;
 
 /**
  * Implements hook_help().
@@ -318,7 +319,7 @@ function aabenforms_core_page_attachments(array &$attachments): void {
  * hashing). Encryption is idempotent, so re-saving a submission does not
  * double-encrypt.
  */
-function aabenforms_core_webform_submission_presave(\Drupal\webform\WebformSubmissionInterface $submission): void {
+function aabenforms_core_webform_submission_presave(WebformSubmissionInterface $submission): void {
   $webform = $submission->getWebform();
   if ($webform === NULL) {
     return;

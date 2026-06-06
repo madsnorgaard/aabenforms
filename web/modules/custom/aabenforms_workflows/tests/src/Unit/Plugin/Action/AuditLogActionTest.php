@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\aabenforms_workflows\Unit\Plugin\Action;
 
+use Drupal\aabenforms_core\Service\CprAccess;
 use Drupal\aabenforms_core\Service\AuditLogger;
 use Drupal\aabenforms_core\Service\WorkflowExecutionCollector;
 use Drupal\aabenforms_workflows\Plugin\Action\AuditLogAction;
@@ -119,7 +120,7 @@ class AuditLogActionTest extends UnitTestCase {
     $auditLoggerProperty->setValue($this->action, $this->auditLogger);
 
     // CPR access helper: reveal is a pass-through for these tests.
-    $cprAccess = $this->createMock(\Drupal\aabenforms_core\Service\CprAccess::class);
+    $cprAccess = $this->createMock(CprAccess::class);
     $cprAccess->method('reveal')->willReturnArgument(0);
     $cprAccessProperty = $reflectionClass->getProperty('cprAccess');
     $cprAccessProperty->setAccessible(TRUE);
