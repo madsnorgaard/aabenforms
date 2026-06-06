@@ -33,5 +33,19 @@ actions:
     configuration:
       event_type: foi_request_submitted
       additional_data_token: ''
-      message_template: 'FOI request received; case worker will process within 7 working days.'
+      message_template: 'FOI request received; routing to case worker.'
+    successors:
+      -
+        id: route_request
+        condition: ''
+  route_request:
+    label: 'Route FOI request to case worker'
+    plugin: aabenforms_foi_route
+    configuration:
+      caseworker_email: aktindsigt@example.dk
+      response_working_days: 7
+      requester_name_token: '[webform_submission:values:requester_name:raw]'
+      requester_email_token: '[webform_submission:values:requester_email:raw]'
+      request_text_token: '[webform_submission:values:request_text:raw]'
+      reference_token: '[webform_submission:sid]'
     successors: {  }

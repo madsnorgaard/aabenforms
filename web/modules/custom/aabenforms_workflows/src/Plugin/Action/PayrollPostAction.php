@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\aabenforms_workflows\Plugin\Action;
 
+use Drupal\aabenforms_workflows\Service\OrgChartServiceInterface;
 use Drupal\aabenforms_workflows\Service\PayrollService;
 use Drupal\Core\Action\Attribute\Action;
 use Drupal\Core\Form\FormStateInterface;
@@ -39,11 +40,19 @@ class PayrollPostAction extends AabenFormsActionBase {
   protected PayrollService $payroll;
 
   /**
+   * The org-chart directory, used for the per-employee policy limit.
+   *
+   * @var \Drupal\aabenforms_workflows\Service\OrgChartServiceInterface
+   */
+  protected OrgChartServiceInterface $orgChart;
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     $instance = parent::create($container, $configuration, $plugin_id, $plugin_definition);
     $instance->payroll = $container->get('aabenforms_workflows.payroll');
+    $instance->orgChart = $container->get('aabenforms_workflows.org_chart');
     return $instance;
   }
 
@@ -111,6 +120,26 @@ class PayrollPostAction extends AabenFormsActionBase {
       $amount_raw = $this->getTokenValue((string) $this->configuration['amount_token'], '0');
       $amount_cents = (int) round(((float) str_replace(',', '.', $amount_raw)) * 100);
       $claim_type = (string) ($this->configuration['claim_type'] ?? 'unspecified');
+
+      // Enforce the per-employee policy limit before forwarding money.
+      $limit_cents = $this->orgChart->tierLimitCents($employee_id);
+      if ($limit_cents > 0 && $amount_cents > $limit_cents) {
+        $name = (string) $this->configuration['result_token'];
+        if ($name !== '') {
+          $this->setTokenValue($name, [
+            'status' => PayrollService::STATUS_FAILURE,
+            'transaction_id' => '',
+            'reason_code' => 'AMOUNT_EXCEEDS_POLICY',
+            'message' => 'Beloeb overstiger den tilladte graense for medarbejderen.',
+          ]);
+        }
+        $this->recordStep(
+          label: 'Payroll forwarding blocked',
+          description: sprintf('%s: beloebet (%.2f kr.) overstiger graensen (%.2f kr.) og blev ikke sendt til loen.', $claim_type, $amount_cents / 100, $limit_cents / 100),
+          status: 'failed',
+        );
+        return;
+      }
 
       $result = $this->payroll->forward($employee_id, $claim_type, $amount_cents, [
         'submission_id' => $this->getSubmission($entity)?->id(),

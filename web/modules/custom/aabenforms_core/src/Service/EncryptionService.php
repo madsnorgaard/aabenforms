@@ -4,6 +4,7 @@ namespace Drupal\aabenforms_core\Service;
 
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\encrypt\EncryptionProfileManagerInterface;
+use Drupal\encrypt\EncryptServiceInterface;
 use Drupal\key\KeyRepositoryInterface;
 use Psr\Log\LoggerInterface;
 
@@ -42,6 +43,13 @@ class EncryptionService {
   protected KeyRepositoryInterface $keyRepository;
 
   /**
+   * The encrypt service.
+   *
+   * @var \Drupal\encrypt\EncryptServiceInterface
+   */
+  protected EncryptServiceInterface $encryptService;
+
+  /**
    * The logger.
    *
    * @var \Psr\Log\LoggerInterface
@@ -55,16 +63,20 @@ class EncryptionService {
    *   The encryption profile manager.
    * @param \Drupal\key\KeyRepositoryInterface $key_repository
    *   The key repository.
+   * @param \Drupal\encrypt\EncryptServiceInterface $encrypt_service
+   *   The encrypt service that performs encrypt/decrypt with a profile.
    * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory
    *   The logger factory.
    */
   public function __construct(
     EncryptionProfileManagerInterface $profile_manager,
     KeyRepositoryInterface $key_repository,
+    EncryptServiceInterface $encrypt_service,
     LoggerChannelFactoryInterface $logger_factory,
   ) {
     $this->profileManager = $profile_manager;
     $this->keyRepository = $key_repository;
+    $this->encryptService = $encrypt_service;
     $this->logger = $logger_factory->get('aabenforms_core');
   }
 
@@ -92,7 +104,7 @@ class EncryptionService {
         throw new \RuntimeException("Encryption profile '{$profile_id}' not found.");
       }
 
-      $encrypted = $profile->encrypt($plaintext);
+      $encrypted = $this->encryptService->encrypt($plaintext, $profile);
 
       $this->logger->debug('Encrypted data using profile: {profile}', [
         'profile' => $profile_id,
@@ -136,7 +148,7 @@ class EncryptionService {
         throw new \RuntimeException("Encryption profile '{$profile_id}' not found.");
       }
 
-      $plaintext = $profile->decrypt($encrypted);
+      $plaintext = $this->encryptService->decrypt($encrypted, $profile);
 
       $this->logger->debug('Decrypted data using profile: {profile}', [
         'profile' => $profile_id,

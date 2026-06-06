@@ -12,6 +12,13 @@ services:
     arguments:
       - '@encrypt.encryption_profile.manager'
       - '@key.repository'
+      - '@encryption'
+      - '@logger.factory'
+
+  aabenforms_core.cpr_access:
+    class: Drupal\aabenforms_core\Service\CprAccess
+    arguments:
+      - '@aabenforms_core.encryption_service'
       - '@logger.factory'
 
   aabenforms_core.audit_logger:

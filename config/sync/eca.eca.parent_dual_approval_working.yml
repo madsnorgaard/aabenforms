@@ -25,7 +25,43 @@ events:
       -
         id: parent2_mitid
         condition: ''
-conditions: {  }
+conditions:
+  gate_parent1_mitid_ok:
+    plugin: eca_scalar
+    configuration:
+      negate: false
+      left: '[parent1_mitid_valid_status]'
+      right: verified
+      operator: equal
+      type: value
+      case: false
+  gate_parent1_mitid_deny:
+    plugin: eca_scalar
+    configuration:
+      negate: true
+      left: '[parent1_mitid_valid_status]'
+      right: verified
+      operator: equal
+      type: value
+      case: false
+  gate_parent2_mitid_ok:
+    plugin: eca_scalar
+    configuration:
+      negate: false
+      left: '[parent2_mitid_valid_status]'
+      right: verified
+      operator: equal
+      type: value
+      case: false
+  gate_parent2_mitid_deny:
+    plugin: eca_scalar
+    configuration:
+      negate: true
+      left: '[parent2_mitid_valid_status]'
+      right: verified
+      operator: equal
+      type: value
+      case: false
 gateways: {  }
 actions:
   parent1_mitid:
@@ -38,7 +74,10 @@ actions:
     successors:
       -
         id: parent1_cpr
-        condition: ''
+        condition: gate_parent1_mitid_ok
+      -
+        id: deny_parent1
+        condition: gate_parent1_mitid_deny
   parent1_cpr:
     label: 'Parent 1: CPR Lookup'
     plugin: aabenforms_cpr_lookup
@@ -57,6 +96,7 @@ actions:
       event_type: parent1_approval
       additional_data_token: '[parent1_data:name]'
       message_template: 'Parent 1 authenticated'
+      status_token: parent1_mitid_valid_status
     successors:
       -
         id: mark_parent1_complete
@@ -81,7 +121,10 @@ actions:
     successors:
       -
         id: parent2_cpr
-        condition: ''
+        condition: gate_parent2_mitid_ok
+      -
+        id: deny_parent2
+        condition: gate_parent2_mitid_deny
   parent2_cpr:
     label: 'Parent 2: CPR Lookup'
     plugin: aabenforms_cpr_lookup
@@ -100,6 +143,7 @@ actions:
       event_type: parent2_approval
       additional_data_token: '[parent2_data:name]'
       message_template: 'Parent 2 authenticated'
+      status_token: parent2_mitid_valid_status
     successors:
       -
         id: mark_parent2_complete
@@ -121,4 +165,20 @@ actions:
       event_type: caseworker_review
       additional_data_token: 'Both parents approved'
       message_template: 'Assigned to case worker for review'
+    successors: {  }
+  deny_parent1:
+    label: 'Deny: Parent 1 MitID not verified'
+    plugin: aabenforms_workflow_deny
+    configuration:
+      event_type: parent1_denied
+      step_label: 'Foraelder 1: identitet ikke bekraeftet'
+      message: 'Foraelder 1s godkendelse blev ikke registreret, fordi identiteten ikke kunne bekraeftes med MitID.'
+    successors: {  }
+  deny_parent2:
+    label: 'Deny: Parent 2 MitID not verified'
+    plugin: aabenforms_workflow_deny
+    configuration:
+      event_type: parent2_denied
+      step_label: 'Foraelder 2: identitet ikke bekraeftet'
+      message: 'Foraelder 2s godkendelse blev ikke registreret, fordi identiteten ikke kunne bekraeftes med MitID.'
     successors: {  }

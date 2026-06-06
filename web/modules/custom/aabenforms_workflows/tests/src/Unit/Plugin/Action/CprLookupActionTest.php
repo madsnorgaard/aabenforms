@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\aabenforms_workflows\Unit\Plugin\Action;
 
+use Drupal\aabenforms_core\Service\CprAccess;
 use Drupal\aabenforms_core\Service\ServiceplatformenClient;
 use Drupal\aabenforms_core\Service\WorkflowExecutionCollector;
 use Drupal\aabenforms_workflows\Plugin\Action\CprLookupAction;
@@ -141,6 +142,14 @@ class CprLookupActionTest extends UnitTestCase {
     $configFactoryProperty = $reflectionClass->getProperty('configFactory');
     $configFactoryProperty->setAccessible(TRUE);
     $configFactoryProperty->setValue($this->action, $configFactory);
+
+    // CPR access helper: reveal is a pass-through for these tests (CPR is
+    // supplied as plaintext, not encrypted at rest).
+    $cprAccess = $this->createMock(CprAccess::class);
+    $cprAccess->method('reveal')->willReturnArgument(0);
+    $cprAccessProperty = $reflectionClass->getProperty('cprAccess');
+    $cprAccessProperty->setAccessible(TRUE);
+    $cprAccessProperty->setValue($this->action, $cprAccess);
   }
 
   /**
