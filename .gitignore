@@ -11,9 +11,15 @@
 /web/sites/*/settings.*.php
 /web/sites/*/services*.yml
 
-# Ignore encryption keys and profiles - secrets, never to git
+# Ignore encryption keys and profiles that embed secret material, never to git.
+# The aabenforms CPR key uses the env-provider (key material lives only in the
+# AABENFORMS_CPR_KEY environment variable, not in the YAML), so its key and
+# profile are secret-free and ARE committed - otherwise config:import deletes
+# them on deploy and CPR is silently stored unencrypted.
 /config/sync/key.key.*.yml
 /config/sync/encrypt.profile.*.yml
+!/config/sync/key.key.aabenforms_aes.yml
+!/config/sync/encrypt.profile.aabenforms_aes256.yml
 
 # Ignore Drupal's file directory
 /web/sites/*/files/
