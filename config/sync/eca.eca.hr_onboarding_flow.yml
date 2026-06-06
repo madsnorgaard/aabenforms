@@ -63,6 +63,7 @@ actions:
       event_type: hr_onboarding_submitted
       additional_data_token: '[webform_submission:values:new_hire_name:raw]'
       message_template: 'New hire request submitted by HR'
+      status_token: hr_employee_id_status
     successors:
       -
         id: lookup_manager
@@ -85,6 +86,7 @@ actions:
       event_type: hr_onboarding_manager_notified
       additional_data_token: '[hr_onboarding_manager_email]'
       message_template: 'Stub. Production would send approval email to manager via a generalized SendApprovalEmailAction.'
+      status_token: hr_onboarding_manager_email_status
     successors:
       -
         id: log_it_notified
@@ -96,6 +98,7 @@ actions:
       event_type: hr_onboarding_it_notified
       additional_data_token: '[webform_submission:values:it_distribution_email:raw]'
       message_template: 'Stub. Production would email IT distribution on manager approval.'
+      status_token: hr_onboarding_manager_email_status
     successors: {  }
   deny_internal:
     label: 'Deny: HR submitter identity not verified'

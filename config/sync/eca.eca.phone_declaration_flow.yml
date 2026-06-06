@@ -54,6 +54,7 @@ actions:
       event_type: phone_declaration_manager_notified
       additional_data_token: '[phone_declaration_manager_email]'
       message_template: 'Stub. Production would send approval email.'
+      status_token: phone_declaration_manager_email_status
     successors:
       -
         id: log_archived
