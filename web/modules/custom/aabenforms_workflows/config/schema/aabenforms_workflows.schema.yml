@@ -124,3 +124,32 @@ aabenforms_workflows.settings:
     allow_cvr_demo_mode:
       type: boolean
       label: 'Force CVR lookup to run in demo mode (otherwise auto-detected when no Serviceplatformen certificate is configured)'
+
+# Directory used to resolve managers, policy limits, and the account-to-
+# employee binding for internal and HR flows.
+aabenforms_workflows.org_chart:
+  type: config_object
+  label: 'Org chart directory'
+  mapping:
+    default_tier_limit_cents:
+      type: integer
+      label: 'Default per-claim limit in cents'
+    employees:
+      type: sequence
+      label: 'Employees keyed by employee id'
+      sequence:
+        type: mapping
+        label: 'Employee'
+        mapping:
+          name:
+            type: label
+            label: 'Name'
+          account_name:
+            type: string
+            label: 'Drupal account name bound to this employee'
+          manager_email:
+            type: email
+            label: 'Manager email'
+          tier_limit_cents:
+            type: integer
+            label: 'Per-claim limit in cents'

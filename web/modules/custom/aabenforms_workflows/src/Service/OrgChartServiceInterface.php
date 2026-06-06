@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace Drupal\aabenforms_workflows\Service;
 
 /**
- * Resolves an employee's manager from their employee identifier.
+ * Resolves an employee's manager and policy data from their identifier.
  *
- * Two implementations ship: StubOrgChartService (default) returns the
- * fallback email it's given so existing webform-driven approval flows
- * keep working. A site that wires LDAP / Active Directory / a real HR
- * system can decorate aabenforms_workflows.org_chart and replace
- * findManagerEmail() with a real lookup.
+ * The default implementation is ConfigOrgChartService, a directory backed
+ * by aabenforms_workflows.org_chart config. A site that wires LDAP / Active
+ * Directory / a real HR system decorates aabenforms_workflows.org_chart and
+ * replaces these methods with real lookups.
  */
 interface OrgChartServiceInterface {
 
@@ -21,13 +20,38 @@ interface OrgChartServiceInterface {
    * @param string $employee_id
    *   Implementation-specific identifier (CPR, employee number, email).
    * @param string $fallback
-   *   Email to return if no lookup is wired or the employee is unknown.
-   *   Lets the caller pass through a webform-supplied "manager_email"
-   *   field as a graceful degrade.
+   *   Legacy graceful-degrade value. The config-backed implementation
+   *   ignores it so a self-asserted webform "manager_email" field can no
+   *   longer route an approval; pass '' from trusted callers.
    *
    * @return string
-   *   The resolved manager email, or the fallback if not found.
+   *   The resolved manager email, or '' if the employee is unknown.
    */
   public function findManagerEmail(string $employee_id, string $fallback = ''): string;
+
+  /**
+   * Returns the per-claim policy limit (in cents) for an employee.
+   *
+   * @param string $employee_id
+   *   The employee identifier.
+   *
+   * @return int
+   *   The maximum allowed claim amount in cents, or the directory default.
+   */
+  public function tierLimitCents(string $employee_id): int;
+
+  /**
+   * Resolves the employee identifier bound to a Drupal account name.
+   *
+   * Used to bind a submission to the authenticated user rather than a
+   * self-asserted form field.
+   *
+   * @param string $account_name
+   *   The Drupal account (user) name.
+   *
+   * @return string
+   *   The employee identifier, or '' if the account maps to no employee.
+   */
+  public function employeeIdForAccountName(string $account_name): string;
 
 }

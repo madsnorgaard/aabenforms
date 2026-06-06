@@ -20,11 +20,42 @@ events:
       type: 'webform_submission hr_onboarding'
     successors:
       -
-        id: log_received
+        id: resolve_employee
         condition: ''
-conditions: {  }
+conditions:
+  gate_hr_employee_ok:
+    plugin: eca_scalar
+    configuration:
+      negate: false
+      left: '[hr_employee_id_status]'
+      right: verified
+      operator: equal
+      type: value
+      case: false
+  gate_hr_employee_deny:
+    plugin: eca_scalar
+    configuration:
+      negate: true
+      left: '[hr_employee_id_status]'
+      right: verified
+      operator: equal
+      type: value
+      case: false
 gateways: {  }
 actions:
+  resolve_employee:
+    label: 'Bind HR submitter identity from login'
+    plugin: aabenforms_resolve_employee
+    configuration:
+      submitted_employee_id_token: '[webform_submission:values:hr_submitter_email:raw]'
+      result_token: hr_employee_id
+    successors:
+      -
+        id: log_received
+        condition: gate_hr_employee_ok
+      -
+        id: deny_internal
+        condition: gate_hr_employee_deny
   log_received:
     label: 'Log: HR onboarding request received'
     plugin: aabenforms_audit_log
@@ -40,8 +71,8 @@ actions:
     label: 'Resolve manager email from org-chart'
     plugin: aabenforms_manager_lookup
     configuration:
-      employee_id_token: '[webform_submission:values:hr_submitter_email:raw]'
-      fallback_email_token: '[webform_submission:values:manager_email:raw]'
+      employee_id_token: '[hr_employee_id]'
+      fallback_email_token: ''
       result_token: hr_onboarding_manager_email
     successors:
       -
@@ -65,4 +96,12 @@ actions:
       event_type: hr_onboarding_it_notified
       additional_data_token: '[webform_submission:values:it_distribution_email:raw]'
       message_template: 'Stub. Production would email IT distribution on manager approval.'
+    successors: {  }
+  deny_internal:
+    label: 'Deny: HR submitter identity not verified'
+    plugin: aabenforms_workflow_deny
+    configuration:
+      event_type: hr_onboarding_denied
+      step_label: 'Adgang afvist'
+      message: 'Anmodningen blev ikke behandlet, fordi det ikke kunne bekraeftes, at du er logget ind som medarbejder.'
     successors: {  }
