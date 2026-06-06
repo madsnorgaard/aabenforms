@@ -4,6 +4,7 @@ namespace Drupal\aabenforms_workflows\Plugin\Action;
 
 use Drupal\aabenforms_core\Service\ServiceplatformenClient;
 use Drupal\Core\Action\Attribute\Action;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\eca\Attribute\EcaAction;
@@ -31,12 +32,35 @@ class CvrLookupAction extends AabenFormsActionBase {
   protected ServiceplatformenClient $serviceplatformenClient;
 
   /**
+   * The config factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  protected ConfigFactoryInterface $configFactory;
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     $instance = parent::create($container, $configuration, $plugin_id, $plugin_definition);
     $instance->serviceplatformenClient = $container->get('aabenforms_core.serviceplatformen_client');
+    $instance->configFactory = $container->get('config.factory');
     return $instance;
+  }
+
+  /**
+   * Whether to run CVR lookup in demo mode (no real Serviceplatformen call).
+   *
+   * True when the demo flag is set, or - the common case for a POC - when no
+   * Serviceplatformen client certificate is provisioned. Once a certificate is
+   * configured, real SF1530 lookups resume automatically.
+   */
+  protected function demoModeAllowed(): bool {
+    if ($this->configFactory->get('aabenforms_workflows.settings')->get('allow_cvr_demo_mode')) {
+      return TRUE;
+    }
+    $certs = $this->configFactory->get('aabenforms_core.settings')->get('serviceplatformen.certificates') ?? [];
+    return empty($certs['cert_path']) && empty($certs['key_path']);
   }
 
   /**
@@ -96,14 +120,30 @@ class CvrLookupAction extends AabenFormsActionBase {
   public function execute(): void {
     $cvr = $this->getTokenValue($this->configuration['cvr_token'], '');
 
+    // Clean CVR (remove spaces/hyphens).
+    $cvr = $cvr ? preg_replace('/[^0-9]/', '', $cvr) : '';
+
     if (empty($cvr)) {
-      $this->log('CVR lookup failed: No CVR number provided', [], 'warning');
+      $this->log('CVR lookup skipped: no CVR available to look up', [], 'warning');
       $this->setTokenValue($this->configuration['result_token'], NULL);
+      $this->recordStep('CVR Registry Lookup', 'Skipped - no CVR available to look up', 'skipped');
       return;
     }
 
-    // Clean CVR (remove spaces/hyphens).
-    $cvr = preg_replace('/[^0-9]/', '', $cvr);
+    if ($this->demoModeAllowed()) {
+      // No Serviceplatformen certificate is provisioned (the POC case). Do not
+      // call SF1530; record an honest, clearly-labelled demo step with test
+      // data so the flow continues without surfacing a connection error.
+      $demoCompany = [
+        'cvr' => $cvr,
+        'name' => 'Demovirksomhed ApS (testdata)',
+        'demo' => TRUE,
+      ];
+      $this->setTokenValue($this->configuration['result_token'], $demoCompany);
+      $this->log('CVR lookup ran in demo mode (no Serviceplatformen certificate).', [], 'info');
+      $this->recordStep('CVR Registry Lookup', 'Demo: CVR-opslag simuleret med testdata. Rigtige Serviceplatformen-opslag kraever klientcertifikat.', 'completed');
+      return;
+    }
 
     try {
       $this->log('Performing CVR lookup via SF1530 for: {cvr}', [
@@ -130,6 +170,7 @@ class CvrLookupAction extends AabenFormsActionBase {
           'cvr' => $cvr,
         ], 'warning');
         $this->setTokenValue($this->configuration['result_token'], NULL);
+        $this->recordStep('CVR Registry Lookup', 'No company found in the central business registry (SF1530)', 'failed');
         return;
       }
 
@@ -138,11 +179,15 @@ class CvrLookupAction extends AabenFormsActionBase {
       ]);
 
       $this->setTokenValue($this->configuration['result_token'], $companyData);
+      $this->recordStep('CVR Registry Lookup', 'Company data retrieved from the central business registry (SF1530)');
 
     }
     catch (\Exception $e) {
-      $this->handleError($e, 'CVR lookup via SF1530');
+      // Keep the technical detail in the server log, but never surface a raw
+      // cURL/SSL/Serviceplatformen error to the citizen.
+      $this->log('CVR lookup failed: {message}', ['message' => $e->getMessage()], 'error');
       $this->setTokenValue($this->configuration['result_token'], NULL);
+      $this->recordStep('CVR Registry Lookup', 'CVR-opslaget er midlertidigt utilgaengeligt. Prov igen senere.', 'failed');
     }
   }
 

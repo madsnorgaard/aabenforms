@@ -121,3 +121,6 @@ aabenforms_workflows.settings:
     allow_cpr_demo_mode:
       type: boolean
       label: 'Force CPR lookup to run in demo mode (otherwise auto-detected when no Serviceplatformen certificate is configured)'
+    allow_cvr_demo_mode:
+      type: boolean
+      label: 'Force CVR lookup to run in demo mode (otherwise auto-detected when no Serviceplatformen certificate is configured)'
