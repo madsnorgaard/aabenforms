@@ -75,6 +75,7 @@ actions:
       event_type: parent2_approval
       additional_data_token: '[parent2_data:name]'
       message_template: 'Parent 2 authenticated and approved'
+      status_token: parent2_mitid_valid_status
     successors:
       -
         id: mark_parent2_complete

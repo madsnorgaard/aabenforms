@@ -1,0 +1,12 @@
+default_tier_limit_cents: 200000
+employees:
+  E1001:
+    name: Administrator
+    account_name: admin
+    manager_email: leder@example.dk
+    tier_limit_cents: 500000
+  E1002:
+    name: 'Medarbejder Demo'
+    account_name: medarbejder
+    manager_email: leder@example.dk
+    tier_limit_cents: 300000

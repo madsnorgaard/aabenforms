@@ -20,11 +20,42 @@ events:
       type: 'webform_submission mileage_expense'
     successors:
       -
-        id: log_received
+        id: resolve_employee
         condition: ''
-conditions: {  }
+conditions:
+  gate_mileage_employee_ok:
+    plugin: eca_scalar
+    configuration:
+      negate: false
+      left: '[mileage_employee_id_status]'
+      right: verified
+      operator: equal
+      type: value
+      case: false
+  gate_mileage_employee_deny:
+    plugin: eca_scalar
+    configuration:
+      negate: true
+      left: '[mileage_employee_id_status]'
+      right: verified
+      operator: equal
+      type: value
+      case: false
 gateways: {  }
 actions:
+  resolve_employee:
+    label: 'Bind employee identity from login'
+    plugin: aabenforms_resolve_employee
+    configuration:
+      submitted_employee_id_token: '[webform_submission:values:employee_id:raw]'
+      result_token: mileage_employee_id
+    successors:
+      -
+        id: log_received
+        condition: gate_mileage_employee_ok
+      -
+        id: deny_internal
+        condition: gate_mileage_employee_deny
   log_received:
     label: 'Log: expense claim received'
     plugin: aabenforms_audit_log
@@ -40,8 +71,8 @@ actions:
     label: 'Resolve manager email from org-chart'
     plugin: aabenforms_manager_lookup
     configuration:
-      employee_id_token: '[webform_submission:values:employee_id:raw]'
-      fallback_email_token: '[webform_submission:values:manager_email:raw]'
+      employee_id_token: '[mileage_employee_id]'
+      fallback_email_token: ''
       result_token: mileage_expense_manager_email
     successors:
       -
@@ -62,8 +93,16 @@ actions:
     label: 'Forward expense claim to payroll'
     plugin: aabenforms_payroll_post
     configuration:
-      employee_id_token: '[webform_submission:values:employee_id:raw]'
+      employee_id_token: '[mileage_employee_id]'
       amount_token: '[webform_submission:values:amount:raw]'
       claim_type: mileage_expense
       result_token: mileage_expense_payroll_result
+    successors: {  }
+  deny_internal:
+    label: 'Deny: employee identity not verified'
+    plugin: aabenforms_workflow_deny
+    configuration:
+      event_type: mileage_expense_denied
+      step_label: 'Adgang afvist'
+      message: 'Udlaegget blev ikke behandlet, fordi det ikke kunne bekraeftes, at du er logget ind som medarbejder.'
     successors: {  }

@@ -57,6 +57,7 @@ actions:
       event_type: marriage_booking_submitted
       additional_data_token: ''
       message_template: 'Marriage booking received; both partners CPR-verified.'
+      status_token: partner2_data_status
     successors:
       -
         id: send_confirmation

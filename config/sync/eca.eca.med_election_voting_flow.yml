@@ -31,7 +31,25 @@ events:
       -
         id: tabulate_due
         condition: ''
-conditions: {  }
+conditions:
+  gate_voter_mitid_ok:
+    plugin: eca_scalar
+    configuration:
+      negate: false
+      left: '[voter_mitid_valid_status]'
+      right: verified
+      operator: equal
+      type: value
+      case: false
+  gate_voter_mitid_deny:
+    plugin: eca_scalar
+    configuration:
+      negate: true
+      left: '[voter_mitid_valid_status]'
+      right: verified
+      operator: equal
+      type: value
+      case: false
 gateways: {  }
 actions:
   validate_voter_mitid:
@@ -44,7 +62,10 @@ actions:
     successors:
       -
         id: record_ballot
-        condition: ''
+        condition: gate_voter_mitid_ok
+      -
+        id: deny_ballot
+        condition: gate_voter_mitid_deny
   record_ballot:
     label: 'Record voter ballot'
     plugin: aabenforms_record_ballot
@@ -58,4 +79,12 @@ actions:
     label: 'Cron: open/close due elections'
     plugin: aabenforms_tabulate_election
     configuration: {  }
+    successors: {  }
+  deny_ballot:
+    label: 'Deny: voter MitID not verified'
+    plugin: aabenforms_workflow_deny
+    configuration:
+      event_type: med_ballot_denied
+      step_label: 'Identitet ikke bekraeftet'
+      message: 'Din stemme blev ikke registreret, fordi din identitet ikke kunne bekraeftes med MitID. Log ind og proev igen.'
     successors: {  }

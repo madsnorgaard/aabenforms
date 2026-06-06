@@ -131,6 +131,57 @@ function aabenforms_core_update_11001(): string {
 }
 
 /**
+ * Ensure the env-backed CPR encryption key and profile exist.
+ *
+ * The key.key.* and encrypt.profile.* configs are gitignored (they can hold
+ * secrets), so they are not deployed via config sync. This update creates
+ * them, configured to read the key material from the AABENFORMS_CPR_KEY
+ * environment variable - which must be set on the environment (base64 of 32
+ * random bytes). Idempotent: skips anything already present.
+ */
+function aabenforms_core_update_11002(): string {
+  $changes = [];
+
+  $key_storage = \Drupal::entityTypeManager()->getStorage('key');
+  if (!$key_storage->load('aabenforms_aes')) {
+    $key_storage->create([
+      'id' => 'aabenforms_aes',
+      'label' => 'AabenForms AES-256 Key',
+      'description' => 'CPR field encryption key, read from the AABENFORMS_CPR_KEY environment variable.',
+      'key_type' => 'encryption',
+      'key_type_settings' => ['key_size' => 256],
+      'key_provider' => 'env',
+      'key_provider_settings' => [
+        'env_variable' => 'AABENFORMS_CPR_KEY',
+        'base64_encoded' => TRUE,
+        'strip_line_breaks' => TRUE,
+      ],
+      'key_input' => 'none',
+      'key_input_settings' => [],
+    ])->save();
+    $changes[] = 'created key.key.aabenforms_aes (env provider)';
+  }
+
+  $profile_storage = \Drupal::entityTypeManager()->getStorage('encryption_profile');
+  if (!$profile_storage->load('aabenforms_aes256')) {
+    $profile_storage->create([
+      'id' => 'aabenforms_aes256',
+      'label' => 'AabenForms AES-256',
+      'encryption_method' => 'real_aes',
+      'encryption_method_configuration' => ['mode' => 'cbc'],
+      'encryption_key' => 'aabenforms_aes',
+    ])->save();
+    $changes[] = 'created encrypt.profile.aabenforms_aes256';
+  }
+
+  if (getenv('AABENFORMS_CPR_KEY') === FALSE || getenv('AABENFORMS_CPR_KEY') === '') {
+    $changes[] = 'WARNING: AABENFORMS_CPR_KEY is not set; CPR will not be encrypted until it is';
+  }
+
+  return $changes ? implode('; ', $changes) : 'no changes - key and profile already present';
+}
+
+/**
  * Implements hook_uninstall().
  */
 function aabenforms_core_uninstall(): void {

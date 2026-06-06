@@ -22,7 +22,25 @@ events:
       -
         id: mitid_validate
         condition: ''
-conditions: {  }
+conditions:
+  gate_nominator_mitid_ok:
+    plugin: eca_scalar
+    configuration:
+      negate: false
+      left: '[nominator_mitid_valid_status]'
+      right: verified
+      operator: equal
+      type: value
+      case: false
+  gate_nominator_mitid_deny:
+    plugin: eca_scalar
+    configuration:
+      negate: true
+      left: '[nominator_mitid_valid_status]'
+      right: verified
+      operator: equal
+      type: value
+      case: false
 gateways: {  }
 actions:
   mitid_validate:
@@ -35,7 +53,10 @@ actions:
     successors:
       -
         id: cpr_lookup
-        condition: ''
+        condition: gate_nominator_mitid_ok
+      -
+        id: deny_nomination
+        condition: gate_nominator_mitid_deny
   cpr_lookup:
     label: 'Resolve nominator via CPR'
     plugin: aabenforms_cpr_lookup
@@ -54,4 +75,12 @@ actions:
       event_type: med_nomination_recorded
       additional_data_token: '[webform_submission:values:nominee_name:raw]'
       message_template: 'MED election nomination recorded'
+    successors: {  }
+  deny_nomination:
+    label: 'Deny: nominator MitID not verified'
+    plugin: aabenforms_workflow_deny
+    configuration:
+      event_type: med_nomination_denied
+      step_label: 'Identitet ikke bekraeftet'
+      message: 'Indstillingen blev ikke registreret, fordi din identitet ikke kunne bekraeftes med MitID. Log ind og proev igen.'
     successors: {  }

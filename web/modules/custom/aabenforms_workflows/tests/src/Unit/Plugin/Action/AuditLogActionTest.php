@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\aabenforms_workflows\Unit\Plugin\Action;
 
+use Drupal\aabenforms_core\Service\CprAccess;
 use Drupal\aabenforms_core\Service\AuditLogger;
 use Drupal\aabenforms_core\Service\WorkflowExecutionCollector;
 use Drupal\aabenforms_workflows\Plugin\Action\AuditLogAction;
@@ -117,6 +118,13 @@ class AuditLogActionTest extends UnitTestCase {
     $auditLoggerProperty = $reflectionClass->getProperty('auditLogger');
     $auditLoggerProperty->setAccessible(TRUE);
     $auditLoggerProperty->setValue($this->action, $this->auditLogger);
+
+    // CPR access helper: reveal is a pass-through for these tests.
+    $cprAccess = $this->createMock(CprAccess::class);
+    $cprAccess->method('reveal')->willReturnArgument(0);
+    $cprAccessProperty = $reflectionClass->getProperty('cprAccess');
+    $cprAccessProperty->setAccessible(TRUE);
+    $cprAccessProperty->setValue($this->action, $cprAccess);
   }
 
   /**
@@ -338,6 +346,94 @@ class AuditLogActionTest extends UnitTestCase {
   }
 
   /**
+   * A status token resolving to a failed outcome is logged as failure.
+   *
+   * @covers ::execute
+   * @covers ::resolveStatus
+   * @covers ::normalizeStatus
+   */
+  public function testStatusTokenReflectsFailure(): void {
+    // A prior CPR lookup that found nothing.
+    $this->tokenStorage['citizen_data_status'] = 'not_found';
+
+    $reflectionClass = new \ReflectionClass($this->action);
+    $configProperty = $reflectionClass->getProperty('configuration');
+    $configProperty->setAccessible(TRUE);
+    $config = $configProperty->getValue($this->action);
+    $config['status_token'] = 'citizen_data_status';
+    $configProperty->setValue($this->action, $config);
+
+    $this->auditLogger->expects($this->once())
+      ->method('log')
+      ->with(
+        $this->anything(),
+        $this->anything(),
+        $this->anything(),
+        'failure',
+        $this->anything()
+      );
+
+    $this->action->execute();
+  }
+
+  /**
+   * A status token resolving to a verified outcome is logged as success.
+   *
+   * @covers ::execute
+   * @covers ::resolveStatus
+   * @covers ::normalizeStatus
+   */
+  public function testStatusTokenReflectsSuccess(): void {
+    $this->tokenStorage['citizen_mitid_valid_status'] = 'verified';
+
+    $reflectionClass = new \ReflectionClass($this->action);
+    $configProperty = $reflectionClass->getProperty('configuration');
+    $configProperty->setAccessible(TRUE);
+    $config = $configProperty->getValue($this->action);
+    $config['status_token'] = 'citizen_mitid_valid_status';
+    $configProperty->setValue($this->action, $config);
+
+    $this->auditLogger->expects($this->once())
+      ->method('log')
+      ->with(
+        $this->anything(),
+        $this->anything(),
+        $this->anything(),
+        'success',
+        $this->anything()
+      );
+
+    $this->action->execute();
+  }
+
+  /**
+   * The fixed status is used (and normalised) when no status token is set.
+   *
+   * @covers ::execute
+   * @covers ::resolveStatus
+   */
+  public function testFixedStatusUsedWhenNoToken(): void {
+    $reflectionClass = new \ReflectionClass($this->action);
+    $configProperty = $reflectionClass->getProperty('configuration');
+    $configProperty->setAccessible(TRUE);
+    $config = $configProperty->getValue($this->action);
+    $config['status'] = 'denied';
+    $configProperty->setValue($this->action, $config);
+
+    $this->auditLogger->expects($this->once())
+      ->method('log')
+      ->with(
+        $this->anything(),
+        $this->anything(),
+        $this->anything(),
+        'denied',
+        $this->anything()
+      );
+
+    $this->action->execute();
+  }
+
+  /**
    * Tests default configuration.
    *
    * @covers ::defaultConfiguration
@@ -356,6 +452,12 @@ class AuditLogActionTest extends UnitTestCase {
 
     $this->assertArrayHasKey('additional_data_token', $defaults);
     $this->assertEquals('', $defaults['additional_data_token']);
+
+    $this->assertArrayHasKey('status', $defaults);
+    $this->assertEquals('success', $defaults['status']);
+
+    $this->assertArrayHasKey('status_token', $defaults);
+    $this->assertEquals('', $defaults['status_token']);
   }
 
 }

@@ -126,6 +126,7 @@ class CvrLookupAction extends AabenFormsActionBase {
     if (empty($cvr)) {
       $this->log('CVR lookup skipped: no CVR available to look up', [], 'warning');
       $this->setTokenValue($this->configuration['result_token'], NULL);
+      $this->setResultStatus('skipped');
       $this->recordStep('CVR Registry Lookup', 'Skipped - no CVR available to look up', 'skipped');
       return;
     }
@@ -140,6 +141,7 @@ class CvrLookupAction extends AabenFormsActionBase {
         'demo' => TRUE,
       ];
       $this->setTokenValue($this->configuration['result_token'], $demoCompany);
+      $this->setResultStatus('found');
       $this->log('CVR lookup ran in demo mode (no Serviceplatformen certificate).', [], 'info');
       $this->recordStep('CVR Registry Lookup', 'Demo: CVR-opslag simuleret med testdata. Rigtige Serviceplatformen-opslag kraever klientcertifikat.', 'completed');
       return;
@@ -170,6 +172,7 @@ class CvrLookupAction extends AabenFormsActionBase {
           'cvr' => $cvr,
         ], 'warning');
         $this->setTokenValue($this->configuration['result_token'], NULL);
+        $this->setResultStatus('not_found');
         $this->recordStep('CVR Registry Lookup', 'No company found in the central business registry (SF1530)', 'failed');
         return;
       }
@@ -179,6 +182,7 @@ class CvrLookupAction extends AabenFormsActionBase {
       ]);
 
       $this->setTokenValue($this->configuration['result_token'], $companyData);
+      $this->setResultStatus('found');
       $this->recordStep('CVR Registry Lookup', 'Company data retrieved from the central business registry (SF1530)');
 
     }
@@ -187,7 +191,26 @@ class CvrLookupAction extends AabenFormsActionBase {
       // cURL/SSL/Serviceplatformen error to the citizen.
       $this->log('CVR lookup failed: {message}', ['message' => $e->getMessage()], 'error');
       $this->setTokenValue($this->configuration['result_token'], NULL);
+      $this->setResultStatus('error');
       $this->recordStep('CVR Registry Lookup', 'CVR-opslaget er midlertidigt utilgaengeligt. Prov igen senere.', 'failed');
+    }
+  }
+
+  /**
+   * Writes an explicit scalar status companion token for downstream gating.
+   *
+   * The result_token holds the company array (or NULL); ECA conditions and the
+   * audit action read this `<result_token>_status` scalar (`found`,
+   * `not_found`, `skipped` or `error`) because comparing an array or NULL
+   * token is unreliable.
+   *
+   * @param string $status
+   *   One of 'found', 'not_found', 'skipped' or 'error'.
+   */
+  protected function setResultStatus(string $status): void {
+    $resultToken = (string) ($this->configuration['result_token'] ?? '');
+    if ($resultToken !== '') {
+      $this->setTokenValue($resultToken . '_status', $status);
     }
   }
 

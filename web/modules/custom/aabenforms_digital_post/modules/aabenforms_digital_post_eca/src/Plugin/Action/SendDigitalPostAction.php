@@ -7,6 +7,7 @@ namespace Drupal\aabenforms_digital_post_eca\Plugin\Action;
 use Drupal\aabenforms_digital_post\DigitalPost\DigitalPost;
 use Drupal\aabenforms_digital_post\DigitalPost\Recipient;
 use Drupal\aabenforms_digital_post\DigitalPost\Sender;
+use Drupal\aabenforms_core\Service\CprAccess;
 use Drupal\aabenforms_digital_post\Service\DigitalPostSenderInterface;
 use Drupal\aabenforms_workflows\Plugin\Action\AabenFormsActionBase;
 use Drupal\Core\Action\Attribute\Action;
@@ -54,13 +55,30 @@ class SendDigitalPostAction extends AabenFormsActionBase {
   protected ConfigFactoryInterface $configFactory;
 
   /**
+   * The CPR access helper (decrypts CPR stored at rest).
+   *
+   * @var \Drupal\aabenforms_core\Service\CprAccess
+   */
+  protected CprAccess $cprAccess;
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     $instance = parent::create($container, $configuration, $plugin_id, $plugin_definition);
     $instance->setSender($container->get('aabenforms_digital_post.sender'));
     $instance->setConfigFactory($container->get('config.factory'));
+    $instance->setCprAccess($container->get('aabenforms_core.cpr_access'));
     return $instance;
+  }
+
+  /**
+   * Setter injection for the CPR access helper.
+   *
+   * Public so unit tests can swap in a stub without reflection.
+   */
+  public function setCprAccess(CprAccess $cprAccess): void {
+    $this->cprAccess = $cprAccess;
   }
 
   /**
@@ -184,6 +202,12 @@ class SendDigitalPostAction extends AabenFormsActionBase {
   public function execute(): void {
     $recipientRaw = $this->resolveRecipient();
     $recipientType = (string) $this->configuration['recipient_type'];
+
+    // A CPR recipient read from a stored webform field is encrypted at rest;
+    // decrypt it before addressing the Digital Post. CVR is not encrypted.
+    if ($recipientType === Recipient::TYPE_CPR) {
+      $recipientRaw = $this->cprAccess->reveal($recipientRaw);
+    }
 
     if ($recipientRaw === '') {
       $this->recordStep(
