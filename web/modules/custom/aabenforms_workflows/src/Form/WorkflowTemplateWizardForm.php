@@ -6,6 +6,7 @@ use Drupal\Core\Url;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\aabenforms_workflows\Service\BpmnTemplateManager;
+use Drupal\aabenforms_workflows\Service\FlowGraphRenderer;
 use Drupal\aabenforms_workflows\Service\WorkflowTemplateMetadata;
 use Drupal\aabenforms_workflows\Service\WorkflowTemplateInstantiator;
 use Drupal\webform\Entity\Webform;
@@ -54,6 +55,13 @@ class WorkflowTemplateWizardForm extends FormBase {
   protected ModelerApi $modelerApi;
 
   /**
+   * The flow graph renderer.
+   *
+   * @var \Drupal\aabenforms_workflows\Service\FlowGraphRenderer
+   */
+  protected FlowGraphRenderer $graphRenderer;
+
+  /**
    * Constructs a WorkflowTemplateWizardForm object.
    *
    * @param \Drupal\aabenforms_workflows\Service\BpmnTemplateManager $template_manager
@@ -64,17 +72,21 @@ class WorkflowTemplateWizardForm extends FormBase {
    *   The template instantiator service.
    * @param \Drupal\modeler_api\Api $modeler_api
    *   The Modeler API service.
+   * @param \Drupal\aabenforms_workflows\Service\FlowGraphRenderer $graph_renderer
+   *   The flow graph renderer.
    */
   public function __construct(
     BpmnTemplateManager $template_manager,
     WorkflowTemplateMetadata $template_metadata,
     WorkflowTemplateInstantiator $instantiator,
     ModelerApi $modeler_api,
+    FlowGraphRenderer $graph_renderer,
   ) {
     $this->templateManager = $template_manager;
     $this->templateMetadata = $template_metadata;
     $this->instantiator = $instantiator;
     $this->modelerApi = $modeler_api;
+    $this->graphRenderer = $graph_renderer;
   }
 
   /**
@@ -85,8 +97,36 @@ class WorkflowTemplateWizardForm extends FormBase {
       $container->get('aabenforms_workflows.bpmn_template_manager'),
       $container->get('aabenforms_workflows.template_metadata'),
       $container->get('aabenforms_workflows.template_instantiator'),
-      $container->get('modeler_api.service')
+      $container->get('modeler_api.service'),
+      $container->get('aabenforms_workflows.flow_graph_renderer')
     );
+  }
+
+  /**
+   * Builds a read-only node-graph render element for a template's ECA flow.
+   *
+   * @param string|null $template_id
+   *   The template id; its flow is "<template_id>_flow".
+   *
+   * @return array|null
+   *   A render element, or NULL when no flow/graph is available.
+   */
+  protected function graphPreview(?string $template_id): ?array {
+    if (!is_string($template_id) || $template_id === '') {
+      return NULL;
+    }
+    $svg = $this->graphRenderer->renderForFlow($template_id . '_flow');
+    if ($svg === NULL) {
+      return NULL;
+    }
+    return [
+      '#type' => 'container',
+      '#attributes' => ['class' => ['aabenforms-flow-graph', 'aabenforms-wizard-graph']],
+      'svg' => [
+        '#markup' => $svg,
+        '#allowed_tags' => FlowGraphRenderer::allowedTags(),
+      ],
+    ];
   }
 
   /**
@@ -223,6 +263,11 @@ class WorkflowTemplateWizardForm extends FormBase {
         '#markup' => '<p>' . $preview['description'] . '</p>',
       ];
 
+      // Visual node-graph of the template's flow (start -> gated steps -> deny).
+      if ($graph = $this->graphPreview($selected_template)) {
+        $form['preview']['graph'] = $graph;
+      }
+
       if (!empty($preview['steps'])) {
         $steps_list = [];
         foreach ($preview['steps'] as $step) {
@@ -252,8 +297,14 @@ class WorkflowTemplateWizardForm extends FormBase {
     ];
 
     $form['help'] = [
-      '#markup' => '<p>' . $this->t('Customize your workflow visually using the BPMN editor. Add, remove, or modify workflow steps to match your exact needs.') . '</p>',
+      '#markup' => '<p>' . $this->t('This is your workflow as it will run - generated from the live ECA flow. Branch labels show the gating condition (for example MitID = verified).') . '</p>',
     ];
+
+    // Read-only node-graph preview of the flow - the same diagram shown on the
+    // template browser and the dashboard.
+    if ($graph = $this->graphPreview($template_id)) {
+      $form['flow_graph'] = $graph;
+    }
 
     // Load template BPMN XML.
     $bpmn_xml = $form_state->get('bpmn_xml');
@@ -262,59 +313,14 @@ class WorkflowTemplateWizardForm extends FormBase {
       $form_state->set('bpmn_xml', $bpmn_xml);
     }
 
-    // bpmn_io contrib's bpmn-modeler.js auto-instantiates
-    // window.modeler = new BpmnJS({container: '#bpmn-io .canvas'}) at
-    // script load. If that DOM is absent, every page using the library
-    // crashes with `Cannot read properties of null (reading 'appendChild')`.
-    // This hidden shim satisfies the auto-init; our own editor JS
-    // instantiates a separate BpmnJS against #bpmn-canvas below.
-    $form['bpmn_io_shim'] = [
-      '#markup' => '<div id="bpmn-io" hidden aria-hidden="true"><div class="canvas"></div></div>',
-    ];
-
-    // BPMN.io editor container.
-    $form['bpmn_editor'] = [
-      '#type' => 'container',
-      '#attributes' => [
-        'id' => 'bpmn-io-container',
-        'class' => ['bpmn-editor-wrapper'],
-      ],
-    ];
-
-    // Canvas for BPMN.io.
-    $form['bpmn_editor']['canvas'] = [
-      '#markup' => '<div id="bpmn-canvas" class="bpmn-canvas"></div>',
-    ];
-
-    // Hidden field to store BPMN XML.
+    // Carry the template BPMN through for instantiation. The accurate flow
+    // preview is the read-only node-graph above; in-place visual EDITING is
+    // handled by the React Flow editor (separate increment). The old bpmn-js
+    // canvas was removed - it rendered an empty, broken editor below the graph.
     $form['bpmn_xml'] = [
       '#type' => 'hidden',
       '#default_value' => $bpmn_xml,
-      '#attributes' => [
-        'id' => 'bpmn-xml-data',
-      ],
-    ];
-
-    // Validation status.
-    $form['validation_status'] = [
-      '#type' => 'container',
-      '#attributes' => [
-        'id' => 'bpmn-validation-status',
-        'class' => ['bpmn-validation-status'],
-      ],
-      '#markup' => '<div class="validation-message"></div>',
-    ];
-
-    // Attach BPMN.io libraries and custom palette.
-    // bpmn_io/core gives us BpmnJS without the modeler_api-coupled wrapper
-    // (bpmn_io/ui) which crashes on standalone pages.
-    $form['#attached']['library'][] = 'bpmn_io/core';
-    $form['#attached']['library'][] = 'aabenforms_workflows/bpmn_editor';
-    $form['#attached']['drupalSettings']['aabenforms_workflows']['bpmn'] = [
-      'xml' => $bpmn_xml,
-      'template_id' => $template_id,
-      'auto_save_url' => Url::fromRoute('aabenforms_workflows.wizard_autosave')->toString(),
-      'validate_url' => Url::fromRoute('aabenforms_workflows.wizard_validate')->toString(),
+      '#attributes' => ['id' => 'bpmn-xml-data'],
     ];
   }
 
