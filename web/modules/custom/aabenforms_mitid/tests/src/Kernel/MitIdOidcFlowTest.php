@@ -3,6 +3,7 @@
 namespace Drupal\Tests\aabenforms_mitid\Kernel;
 
 use Drupal\aabenforms_mitid\Service\MitIdOidcClient;
+use Drupal\aabenforms_mitid\Service\MitIdTokenVerifier;
 use Drupal\KernelTests\KernelTestBase;
 use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
@@ -89,13 +90,34 @@ class MitIdOidcFlowTest extends KernelTestBase {
     $handlerStack = HandlerStack::create($this->mockHandler);
     $httpClient = new Client(['handler' => $handlerStack]);
 
+    // Stub the signature verifier: RS256/JWKS verification is covered by
+    // MitIdTokenVerifierTest. This flow test exercises code exchange + session
+    // creation with a mock id_token, so bypass the crypto rather than reach for
+    // a real JWKS endpoint.
+    $tokenVerifier = new class(
+      $this->container->get('config.factory'),
+      $httpClient,
+      $this->container->get('cache.default'),
+      $this->container->get('logger.factory'),
+    ) extends MitIdTokenVerifier {
+
+      /**
+       * {@inheritdoc}
+       */
+      public function verify(string $idToken): array {
+        return [];
+      }
+
+    };
+
     // Create OIDC client with mocked HTTP client.
     $this->oidcClient = new MitIdOidcClient(
       $this->container->get('config.factory'),
       $httpClient,
       $this->container->get('logger.factory'),
       $this->container->get('aabenforms_mitid.cpr_extractor'),
-      $this->sessionManager
+      $this->sessionManager,
+      $tokenVerifier
     );
   }
 

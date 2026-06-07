@@ -60,6 +60,13 @@ class MitIdOidcClient {
   protected MitIdSessionManager $sessionManager;
 
   /**
+   * The id_token signature verifier.
+   *
+   * @var \Drupal\aabenforms_mitid\Service\MitIdTokenVerifier
+   */
+  protected MitIdTokenVerifier $tokenVerifier;
+
+  /**
    * Constructs a MitIdOidcClient.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -72,6 +79,8 @@ class MitIdOidcClient {
    *   The CPR extractor.
    * @param \Drupal\aabenforms_mitid\Service\MitIdSessionManager $session_manager
    *   The session manager.
+   * @param \Drupal\aabenforms_mitid\Service\MitIdTokenVerifier $token_verifier
+   *   The id_token signature verifier.
    */
   public function __construct(
     ConfigFactoryInterface $config_factory,
@@ -79,12 +88,14 @@ class MitIdOidcClient {
     LoggerChannelFactoryInterface $logger_factory,
     MitIdCprExtractor $cpr_extractor,
     MitIdSessionManager $session_manager,
+    MitIdTokenVerifier $token_verifier,
   ) {
     $this->configFactory = $config_factory;
     $this->httpClient = $http_client;
     $this->logger = $logger_factory->get('aabenforms_mitid');
     $this->cprExtractor = $cpr_extractor;
     $this->sessionManager = $session_manager;
+    $this->tokenVerifier = $token_verifier;
   }
 
   /**
@@ -280,9 +291,10 @@ class MitIdOidcClient {
    *   If validation fails.
    */
   public function validateIdToken(string $id_token): array {
-    if (!$this->cprExtractor->validateToken($id_token)) {
-      throw new \RuntimeException('ID token validation failed');
-    }
+    // Cryptographically verify the id_token before trusting ANY claim: RS256
+    // signature against the issuer JWKS, plus iss/aud/exp. Fail closed - a
+    // forged or tampered token must never reach claim extraction.
+    $this->tokenVerifier->verify($id_token);
 
     return $this->cprExtractor->extractPersonData($id_token);
   }
