@@ -138,3 +138,23 @@
     flex-shrink: 0;
   }
 }
+
+/* Read-only node-graph preview inside the wizard (matches the template cards). */
+.aabenforms-wizard-graph {
+  margin: 12px 0;
+  padding: 12px;
+  max-height: 320px;
+  overflow: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  background-color: #fff;
+  background-image: radial-gradient(#e3e6ea 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+.aabenforms-wizard-graph svg {
+  display: block;
+  width: auto;
+  height: 240px;
+  max-width: none;
+}

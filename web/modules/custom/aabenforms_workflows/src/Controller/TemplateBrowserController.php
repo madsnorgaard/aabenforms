@@ -6,6 +6,7 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Link;
 use Drupal\Core\Url;
 use Drupal\aabenforms_workflows\Service\BpmnTemplateManager;
+use Drupal\aabenforms_workflows\Service\FlowGraphRenderer;
 use Drupal\aabenforms_workflows\Service\WorkflowTemplateInstantiator;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -32,19 +33,30 @@ class TemplateBrowserController extends ControllerBase {
   protected WorkflowTemplateInstantiator $instantiator;
 
   /**
+   * The flow graph renderer.
+   *
+   * @var \Drupal\aabenforms_workflows\Service\FlowGraphRenderer
+   */
+  protected FlowGraphRenderer $graphRenderer;
+
+  /**
    * Constructs a TemplateBrowserController object.
    *
    * @param \Drupal\aabenforms_workflows\Service\BpmnTemplateManager $template_manager
    *   The BPMN template manager service.
    * @param \Drupal\aabenforms_workflows\Service\WorkflowTemplateInstantiator $instantiator
    *   The template instantiator service.
+   * @param \Drupal\aabenforms_workflows\Service\FlowGraphRenderer $graph_renderer
+   *   The flow graph renderer.
    */
   public function __construct(
     BpmnTemplateManager $template_manager,
     WorkflowTemplateInstantiator $instantiator,
+    FlowGraphRenderer $graph_renderer,
   ) {
     $this->templateManager = $template_manager;
     $this->instantiator = $instantiator;
+    $this->graphRenderer = $graph_renderer;
   }
 
   /**
@@ -53,7 +65,8 @@ class TemplateBrowserController extends ControllerBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('aabenforms_workflows.bpmn_template_manager'),
-      $container->get('aabenforms_workflows.template_instantiator')
+      $container->get('aabenforms_workflows.template_instantiator'),
+      $container->get('aabenforms_workflows.flow_graph_renderer')
     );
   }
 
@@ -157,10 +170,20 @@ class TemplateBrowserController extends ControllerBase {
         ucfirst(str_replace('_', ' ', $template['category'])) .
         '</span>';
 
-      // Generate BPMN preview placeholder.
-      $preview_url = Url::fromRoute('aabenforms_workflows.template_preview', [
-        'template_id' => $template_id,
-      ])->toString();
+      // Render the node-graph straight from the template's ECA flow (every
+      // template X has a flow X_flow). Falls back to the legacy BPMN preview
+      // when no flow exists yet.
+      $graph_svg = $this->graphRenderer->renderForFlow($template_id . '_flow');
+      if ($graph_svg !== NULL) {
+        $preview_url = Url::fromRoute('aabenforms_workflows.flow_graph', [
+          'eca' => $template_id . '_flow',
+        ])->toString();
+      }
+      else {
+        $preview_url = Url::fromRoute('aabenforms_workflows.template_preview', [
+          'template_id' => $template_id,
+        ])->toString();
+      }
 
       $item = [
         '#theme' => 'workflow_template_card',
@@ -170,6 +193,7 @@ class TemplateBrowserController extends ControllerBase {
         '#category_badge' => $category_badge,
         '#description' => $description,
         '#preview_url' => $preview_url,
+        '#graph_svg' => $graph_svg,
         '#use_link' => $use_link,
       ];
 

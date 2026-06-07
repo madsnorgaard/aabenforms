@@ -53,6 +53,25 @@
   border-bottom: 1px solid #e0e0e0;
 }
 
+/* Inline node-graph preview rendered from the ECA flow. */
+.template-card__graph {
+  display: block;
+  height: 200px;
+  padding: 12px;
+  overflow: auto;
+  background-image: radial-gradient(#e3e6ea 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+/* Size the diagram to the thumbnail height; wider flows scroll horizontally
+   at a readable node size rather than shrinking to dots. */
+.template-card__graph svg {
+  display: block;
+  width: auto;
+  height: 168px;
+  max-width: none;
+}
+
 .bpmn-preview-thumbnail {
   position: relative;
   height: 200px;
