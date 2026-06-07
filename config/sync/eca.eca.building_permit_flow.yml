@@ -64,7 +64,7 @@ actions:
     label: 'CPR registry lookup'
     plugin: aabenforms_cpr_lookup
     configuration:
-      cpr_token: '[webform_submission:values:cpr:raw]'
+      cpr_token: '[building_session:cpr]'
       result_token: citizen_data
       use_cache: true
     successors:
@@ -87,7 +87,7 @@ actions:
     label: 'Send confirmation via Digital Post'
     plugin: aabenforms_digital_post_send
     configuration:
-      recipient_token: '[webform_submission:values:cpr:raw]'
+      recipient_token: '[building_session:cpr]'
       recipient_type: cpr
       sender_cvr_token: ''
       subject_template: 'Modtaget: ansøgning om byggetilladelse'
