@@ -7,8 +7,31 @@
  * Provides ECA workflow integration and pre-built templates.
  */
 
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
+
+/**
+ * Implements hook_entity_operation().
+ *
+ * Adds a "Flow diagram" link to every ECA flow on the collection page, so the
+ * read-only node-graph is reachable from where admins already manage flows.
+ */
+function aabenforms_workflows_entity_operation(EntityInterface $entity): array {
+  if ($entity->getEntityTypeId() !== 'eca') {
+    return [];
+  }
+  if (!\Drupal::currentUser()->hasPermission('administer workflows')) {
+    return [];
+  }
+  return [
+    'flow_diagram' => [
+      'title' => t('Flow diagram'),
+      'weight' => 50,
+      'url' => Url::fromRoute('aabenforms_workflows.flow_graph', ['eca' => $entity->id()]),
+    ],
+  ];
+}
 
 /**
  * Wizard-created workflow configs are preserved across drush cim.

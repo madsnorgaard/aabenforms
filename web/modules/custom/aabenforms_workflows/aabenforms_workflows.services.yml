@@ -107,3 +107,7 @@ services:
       - '@config.storage'
     tags:
       - { name: event_subscriber }
+  aabenforms_workflows.eca_graph_builder:
+    class: Drupal\aabenforms_workflows\Service\EcaGraphBuilder
+    arguments:
+      - '@entity_type.manager'
