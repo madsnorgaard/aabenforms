@@ -304,7 +304,19 @@ class SendDigitalPostAction extends AabenFormsActionBase {
       }
     }
 
-    // Strategy 2: ECA token data registry lookup.
+    // Strategy 2: resolve a bracketed token via ECA token replacement. This
+    // handles session-backed sub-keys like [building_session:cpr], where the
+    // token environment holds DataType objects (not plain strings/arrays) that
+    // getTokenData() cannot return directly - the recipient CPR comes from the
+    // VERIFIED MitID session, never the spoofable submitted form value.
+    if (str_contains($token, '[') && method_exists($this->tokenService, 'replaceClear')) {
+      $replaced = $this->tokenService->replaceClear($token, []);
+      if (is_string($replaced) && trim($replaced) !== '') {
+        return trim($replaced);
+      }
+    }
+
+    // Strategy 3: flat ECA token data registry lookup (plain string/array).
     $key = trim($token, '[]');
     $value = $this->tokenService->getTokenData($key);
     if (is_string($value)) {

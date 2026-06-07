@@ -2,7 +2,9 @@
 
 namespace Drupal\aabenforms_mitid\Controller;
 
+use Drupal\aabenforms_core\Service\AuditLogger;
 use Drupal\aabenforms_mitid\Service\MitIdOidcClient;
+use Drupal\aabenforms_mitid\Service\MitIdSessionManager;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Routing\TrustedRedirectResponse;
 use Drupal\Core\Url;
@@ -24,13 +26,33 @@ class MitIdController extends ControllerBase {
   protected MitIdOidcClient $oidcClient;
 
   /**
+   * The MitID session manager.
+   *
+   * @var \Drupal\aabenforms_mitid\Service\MitIdSessionManager
+   */
+  protected MitIdSessionManager $sessionManager;
+
+  /**
+   * The audit logger.
+   *
+   * @var \Drupal\aabenforms_core\Service\AuditLogger
+   */
+  protected AuditLogger $auditLogger;
+
+  /**
    * Constructs a MitIdController.
    *
    * @param \Drupal\aabenforms_mitid\Service\MitIdOidcClient $oidc_client
    *   The OIDC client service.
+   * @param \Drupal\aabenforms_mitid\Service\MitIdSessionManager $session_manager
+   *   The MitID session manager.
+   * @param \Drupal\aabenforms_core\Service\AuditLogger $audit_logger
+   *   The audit logger.
    */
-  public function __construct(MitIdOidcClient $oidc_client) {
+  public function __construct(MitIdOidcClient $oidc_client, MitIdSessionManager $session_manager, AuditLogger $audit_logger) {
     $this->oidcClient = $oidc_client;
+    $this->sessionManager = $session_manager;
+    $this->auditLogger = $audit_logger;
   }
 
   /**
@@ -38,7 +60,9 @@ class MitIdController extends ControllerBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('aabenforms_mitid.oidc_client')
+      $container->get('aabenforms_mitid.oidc_client'),
+      $container->get('aabenforms_mitid.session_manager'),
+      $container->get('aabenforms_core.audit_logger')
     );
   }
 
@@ -234,26 +258,35 @@ class MitIdController extends ControllerBase {
    *   Session data or error.
    */
   public function getSession(string $session_id): JsonResponse {
-    $sessionManager = \Drupal::service('aabenforms_mitid.session_manager');
-    $session = $sessionManager->getSession($session_id);
+    $session = $this->sessionManager->getSession($session_id);
 
     if (!$session) {
+      // Audit the miss too - probing for valid session ids is exactly what an
+      // attacker would do against a bearer-capability endpoint.
+      $this->auditLogger->logWorkflowAccess($session_id, 'session_data_read', 'not_found', []);
       return new JsonResponse(['error' => 'Session not found or expired'], 404);
     }
 
-    $address = $sessionManager->getAddressFromSession($session_id);
+    // This endpoint is reachable by anyone presenting the (unguessable, 15-min)
+    // workflow_id - the capability the citizen received at login. Record every
+    // PII read so disclosure is auditable, and never put the full CPR on the
+    // wire: the SPA only needs it for display (masked), and citizen flows read
+    // the real CPR server-side from this same MitID session, not from the
+    // response. mitid_uuid/auth_time/issuer/tokens stay server-side only.
+    $cpr = (string) ($session['cpr'] ?? '');
+    $this->auditLogger->logWorkflowAccess($session_id, 'session_data_read', 'success', [
+      'assurance_level' => $session['assurance_level'] ?? 'unknown',
+    ]);
 
-    // Return session data in JSON:API-like format for frontend compatibility.
-    // Additive shape: name/cpr/email/expiry have always been here; the demo
-    // route consumes given_name/family_name/birthdate/address/assurance_level
-    // when present. mitid_uuid/auth_time/issuer remain server-side only.
+    $address = $this->sessionManager->getAddressFromSession($session_id);
+
     return new JsonResponse([
       'data' => [
         'type' => 'mitid-session',
         'id' => $session_id,
         'attributes' => [
           'name' => $session['name'] ?? $session['given_name'] ?? '',
-          'cpr' => $session['cpr'] ?? '',
+          'cpr' => $this->maskCpr($cpr),
           'email' => $session['email'] ?? '',
           'expiry' => $session['expires_at'] ?? '',
           'given_name' => $session['given_name'] ?? '',
@@ -264,6 +297,23 @@ class MitIdController extends ControllerBase {
         ],
       ],
     ]);
+  }
+
+  /**
+   * Masks a CPR to DDMMYY-XXXX for display, never exposing the serial.
+   *
+   * @param string $cpr
+   *   The full CPR, or empty.
+   *
+   * @return string
+   *   The masked CPR, or empty when none was present.
+   */
+  protected function maskCpr(string $cpr): string {
+    $digits = preg_replace('/\D/', '', $cpr);
+    if (strlen($digits) < 6) {
+      return '';
+    }
+    return substr($digits, 0, 6) . '-XXXX';
   }
 
 }
