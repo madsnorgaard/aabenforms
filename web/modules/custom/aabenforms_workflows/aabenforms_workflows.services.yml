@@ -111,3 +111,7 @@ services:
     class: Drupal\aabenforms_workflows\Service\EcaGraphBuilder
     arguments:
       - '@entity_type.manager'
+  aabenforms_workflows.flow_graph_renderer:
+    class: Drupal\aabenforms_workflows\Service\FlowGraphRenderer
+    arguments:
+      - '@aabenforms_workflows.eca_graph_builder'

@@ -211,6 +211,7 @@ function aabenforms_workflows_theme(array $existing, string $type, string $theme
         'category_badge' => NULL,
         'description' => NULL,
         'preview_url' => NULL,
+        'graph_svg' => NULL,
         'use_link' => NULL,
       ],
       'template' => 'workflow-template-card',

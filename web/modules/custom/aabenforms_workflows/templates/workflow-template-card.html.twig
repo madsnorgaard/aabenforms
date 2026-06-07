@@ -9,19 +9,26 @@
  * - category: Template category.
  * - category_badge: HTML for category badge.
  * - description: Template description.
- * - preview_url: URL for BPMN preview.
+ * - preview_url: URL for the full flow diagram (or legacy BPMN preview).
+ * - graph_svg: Inline SVG node-graph rendered from the ECA flow (or empty).
  * - use_link: Link render array for "Use This Template" button.
  */
 #}
 <div class="template-card" data-template-id="{{ template_id }}">
   <div class="template-card__preview">
-    <div class="bpmn-preview-thumbnail" data-preview-url="{{ preview_url }}">
-      <div class="bpmn-preview-loading">
-        <span class="loading-spinner"></span>
-        <span class="loading-text">Loading preview...</span>
+    {% if graph_svg %}
+      <a href="{{ preview_url }}" class="template-card__graph" title="{{ 'View full diagram'|t }}">
+        {{ graph_svg|raw }}
+      </a>
+    {% else %}
+      <div class="bpmn-preview-thumbnail" data-preview-url="{{ preview_url }}">
+        <div class="bpmn-preview-loading">
+          <span class="loading-spinner"></span>
+          <span class="loading-text">Loading preview...</span>
+        </div>
+        <div class="bpmn-preview-canvas" id="preview-{{ template_id }}"></div>
       </div>
-      <div class="bpmn-preview-canvas" id="preview-{{ template_id }}"></div>
-    </div>
+    {% endif %}
   </div>
 
   <div class="template-card__content">
