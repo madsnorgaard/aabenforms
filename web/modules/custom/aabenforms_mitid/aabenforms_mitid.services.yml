@@ -13,6 +13,14 @@ services:
       - '@logger.factory'
       - '@aabenforms_core.audit_logger'
 
+  aabenforms_mitid.token_verifier:
+    class: Drupal\aabenforms_mitid\Service\MitIdTokenVerifier
+    arguments:
+      - '@config.factory'
+      - '@http_client'
+      - '@cache.default'
+      - '@logger.factory'
+
   aabenforms_mitid.oidc_client:
     class: Drupal\aabenforms_mitid\Service\MitIdOidcClient
     arguments:
@@ -21,3 +29,4 @@ services:
       - '@logger.factory'
       - '@aabenforms_mitid.cpr_extractor'
       - '@aabenforms_mitid.session_manager'
+      - '@aabenforms_mitid.token_verifier'
