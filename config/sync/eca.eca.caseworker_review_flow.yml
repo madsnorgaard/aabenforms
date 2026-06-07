@@ -20,29 +20,18 @@ events:
       type: 'webform_submission parent_request_form'
     successors:
       -
-        id: check_both_complete
-        condition: ''
-conditions:
-  check_both_complete:
-    plugin: eca_scalar
-    configuration:
-      operator: '=='
-      left_value: '[webform_submission:data:parent1_status][webform_submission:data:parent2_status]'
-      right_value: completecomplete
-    successors:
-      -
-        id: check_caseworker_pending
-        condition: 'true'
-  check_caseworker_pending:
-    plugin: eca_scalar
-    configuration:
-      operator: '=='
-      left_value: '[webform_submission:data:caseworker_status]'
-      right_value: pending
-    successors:
-      -
         id: caseworker_audit
-        condition: 'true'
+        condition: gate_ready_for_caseworker
+conditions:
+  gate_ready_for_caseworker:
+    plugin: eca_scalar
+    configuration:
+      negate: false
+      left: '[webform_submission:values:parent1_status][webform_submission:values:parent2_status][webform_submission:values:caseworker_status]'
+      right: completecompletepending
+      operator: equal
+      type: value
+      case: false
 gateways: {  }
 actions:
   caseworker_audit:
