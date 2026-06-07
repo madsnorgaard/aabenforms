@@ -287,13 +287,13 @@ class WorkflowTemplateWizardForm extends FormBase {
   }
 
   /**
-   * Builds Step 2: Visual Workflow Editor.
+   * Builds Step 2: Flow Preview (read-only node-graph of the template's flow).
    */
   protected function buildStepVisualEditor(array &$form, FormStateInterface $form_state): void {
     $template_id = $form_state->getValue('template_id');
 
     $form['step_title'] = [
-      '#markup' => '<h2>' . $this->t('Step 2: Visual Workflow Editor') . '</h2>',
+      '#markup' => '<h2>' . $this->t('Step 2: Flow Preview') . '</h2>',
     ];
 
     $form['help'] = [
@@ -650,7 +650,7 @@ class WorkflowTemplateWizardForm extends FormBase {
   protected function getProgressSteps(int $current_step): array {
     $steps = [
       1 => $this->t('Select Template'),
-      2 => $this->t('Visual Editor'),
+      2 => $this->t('Flow Preview'),
       3 => $this->t('Configure Webform'),
       4 => $this->t('Configure Actions'),
       5 => $this->t('Data Visibility'),
