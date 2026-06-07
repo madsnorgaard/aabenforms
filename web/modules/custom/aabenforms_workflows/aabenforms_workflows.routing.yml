@@ -18,6 +18,21 @@ aabenforms_workflows.election_results:
       id:
         type: string
 
+aabenforms_workflows.flow_graph:
+  path: '/admin/aabenforms/flow/{eca}/graph'
+  defaults:
+    _controller: '\Drupal\aabenforms_workflows\Controller\FlowGraphController::view'
+    _title: 'Flow diagram'
+  requirements:
+    _permission: 'administer workflows'
+
+aabenforms_workflows.flow_graph_json:
+  path: '/admin/aabenforms/flow/{eca}/graph.json'
+  defaults:
+    _controller: '\Drupal\aabenforms_workflows\Controller\FlowGraphController::json'
+  requirements:
+    _permission: 'administer workflows'
+
 aabenforms_workflows.template_browser:
   path: '/admin/aabenforms/workflow-templates'
   defaults:
