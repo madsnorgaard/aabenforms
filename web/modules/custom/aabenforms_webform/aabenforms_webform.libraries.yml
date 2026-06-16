@@ -1,3 +1,15 @@
+# Vendored Klimadatastyrelsen Adressevælger widget (DAWA successor).
+# See js/vendor/adressevaelger/SOURCE.md for provenance.
+adressevaelger:
+  version: 1.x
+  js:
+    js/vendor/adressevaelger/adressevaelger.iife.js: { minified: true, preprocess: false }
+  css:
+    component:
+      js/vendor/adressevaelger/adressevaelger.css: { minified: true }
+
+# Integration glue: binds the widget to the dawa_address composite element and
+# populates its subfields from the selected address record.
 dawa_address:
   version: 1.x
   js:
@@ -5,3 +17,4 @@ dawa_address:
   dependencies:
     - core/drupal
     - core/once
+    - aabenforms_webform/adressevaelger

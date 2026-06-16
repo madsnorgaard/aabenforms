@@ -3,13 +3,16 @@
 namespace Drupal\aabenforms_webform\Plugin\WebformElement;
 
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
 use Drupal\webform\Plugin\WebformElement\WebformCompositeBase;
 use Drupal\webform\WebformSubmissionInterface;
 
 /**
  * Provides a 'dawa_address' webform element for Danish addresses.
  *
- * Integrates with DAWA (Danmarks Adressers Web API) for autocomplete.
+ * Integrates with the Klimadatastyrelsen Adressevælger service (the successor to
+ * DAWA, which is decommissioned 17 August 2026) for autocomplete. The element id
+ * is kept as 'dawa_address' for backward compatibility.
  *
  * @WebformElement(
  *   id = "dawa_address",
@@ -152,11 +155,15 @@ class DawaAddressElement extends WebformCompositeBase {
   public function prepare(array &$element, ?WebformSubmissionInterface $webform_submission = NULL) {
     parent::prepare($element, $webform_submission);
 
-    // Attach DAWA JavaScript library.
+    // Attach the Adressevælger widget + integration library.
     $element['#attached']['library'][] = 'aabenforms_webform/dawa_address';
 
-    // Add DAWA API endpoint to drupalSettings.
-    $element['#attached']['drupalSettings']['aabenforms_webform']['dawa_api_url'] = 'https://api.dataforsyningen.dk/autocomplete';
+    // Point the widget at the in-app proxy; the access token is injected
+    // server-side by the proxy, so only a placeholder is exposed to the client.
+    $element['#attached']['drupalSettings']['aabenforms_webform']['adressevaelger'] = [
+      'proxyUrl' => Url::fromUserInput('/aabenforms/adressevaelger')->toString(),
+      'token' => 'proxy',
+    ];
   }
 
   /**
