@@ -16,7 +16,7 @@
  * - Neighbor notification
  * - Audit logging (GDPR)
  * - Email notifications
- * - DAWA address validation
+ * - Address validation
  * - Approval email
  * - Document upload
  */
@@ -225,13 +225,13 @@
       }
     };
 
-    actions['create.dawa-validation'] = {
+    actions['create.address-validation'] = {
       group: 'danish-lookup',
-      className: 'danish-icon-dawa',
-      title: translate('DAWA Address Validation'),
+      className: 'danish-icon-address',
+      title: translate('Address Validation'),
       action: {
-        dragstart: createTask('dawa_validation', 'Adressevalidering', 'dawa'),
-        click: createTask('dawa_validation', 'Adressevalidering', 'dawa')
+        dragstart: createTask('address_validation', 'Adressevalidering', 'address'),
+        click: createTask('address_validation', 'Adressevalidering', 'address')
       }
     };
 

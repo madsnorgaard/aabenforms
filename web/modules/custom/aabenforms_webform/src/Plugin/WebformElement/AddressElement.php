@@ -8,23 +8,22 @@ use Drupal\webform\Plugin\WebformElement\WebformCompositeBase;
 use Drupal\webform\WebformSubmissionInterface;
 
 /**
- * Provides a 'dawa_address' webform element for Danish addresses.
+ * Provides an 'address' webform element for Danish addresses.
  *
- * Integrates with the Klimadatastyrelsen Adressevælger service (the successor to
- * DAWA, which is decommissioned 17 August 2026) for autocomplete. The element id
- * is kept as 'dawa_address' for backward compatibility.
+ * Autocomplete is powered by the Klimadatastyrelsen Adressevælger service via
+ * an in-app proxy.
  *
  * @WebformElement(
- *   id = "dawa_address",
- *   label = @Translation("DAWA Address"),
- *   description = @Translation("Danish address with autocomplete via DAWA API."),
+ *   id = "address",
+ *   label = @Translation("Address"),
+ *   description = @Translation("Danish address with Adressevælger autocomplete."),
  *   category = @Translation("Danish Elements"),
  *   multiline = TRUE,
  *   composite = TRUE,
  *   states_wrapper = TRUE,
  * )
  */
-class DawaAddressElement extends WebformCompositeBase {
+class AddressElement extends WebformCompositeBase {
 
   /**
    * {@inheritdoc}
@@ -83,8 +82,8 @@ class DawaAddressElement extends WebformCompositeBase {
       '#title' => t('Search address'),
       '#placeholder' => t('Start typing street name...'),
       '#attributes' => [
-        'class' => ['dawa-address-search'],
-        'data-dawa-autocomplete' => 'true',
+        'class' => ['address-search'],
+        'data-address-autocomplete' => 'true',
         'autocomplete' => 'off',
       ],
     ];
@@ -95,7 +94,7 @@ class DawaAddressElement extends WebformCompositeBase {
       '#title' => t('Street address'),
       '#required' => !empty($element['#required']),
       '#attributes' => [
-        'class' => ['dawa-address-street'],
+        'class' => ['address-street'],
         'readonly' => 'readonly',
       ],
     ];
@@ -107,7 +106,7 @@ class DawaAddressElement extends WebformCompositeBase {
       '#maxlength' => 4,
       '#required' => !empty($element['#required']),
       '#attributes' => [
-        'class' => ['dawa-address-postal-code'],
+        'class' => ['address-postal-code'],
         'readonly' => 'readonly',
         'pattern' => '\d{4}',
       ],
@@ -119,30 +118,30 @@ class DawaAddressElement extends WebformCompositeBase {
       '#title' => t('City'),
       '#required' => !empty($element['#required']),
       '#attributes' => [
-        'class' => ['dawa-address-city'],
+        'class' => ['address-city'],
         'readonly' => 'readonly',
       ],
     ];
 
     // Hidden fields for structured data.
-    $elements['dawa_id'] = [
+    $elements['address_id'] = [
       '#type' => 'hidden',
       '#attributes' => [
-        'class' => ['dawa-address-id'],
+        'class' => ['address-id'],
       ],
     ];
 
     $elements['x_coordinate'] = [
       '#type' => 'hidden',
       '#attributes' => [
-        'class' => ['dawa-address-x'],
+        'class' => ['address-x'],
       ],
     ];
 
     $elements['y_coordinate'] = [
       '#type' => 'hidden',
       '#attributes' => [
-        'class' => ['dawa-address-y'],
+        'class' => ['address-y'],
       ],
     ];
 
@@ -156,7 +155,7 @@ class DawaAddressElement extends WebformCompositeBase {
     parent::prepare($element, $webform_submission);
 
     // Attach the Adressevælger widget + integration library.
-    $element['#attached']['library'][] = 'aabenforms_webform/dawa_address';
+    $element['#attached']['library'][] = 'aabenforms_webform/address';
 
     // Point the widget at the in-app proxy; the access token is injected
     // server-side by the proxy, so only a placeholder is exposed to the client.
@@ -193,8 +192,8 @@ class DawaAddressElement extends WebformCompositeBase {
       $form_state->setError($element, t('Postal code must be 4 digits.'));
     }
 
-    // Validate DAWA ID if require_valid_address is enabled.
-    if (!empty($element['#require_valid_address']) && empty($value['dawa_id'])) {
+    // Validate the address id if require_valid_address is enabled.
+    if (!empty($element['#require_valid_address']) && empty($value['address_id'])) {
       $form_state->setError($element, t('Please select an address from the autocomplete suggestions.'));
     }
   }
@@ -214,7 +213,7 @@ class DawaAddressElement extends WebformCompositeBase {
 
     $form['element']['require_valid_address'] = [
       '#type' => 'checkbox',
-      '#title' => $this->t('Require valid DAWA address'),
+      '#title' => $this->t('Require valid address'),
       '#description' => $this->t('User must select from autocomplete suggestions (prevents free-text entry).'),
       '#return_value' => TRUE,
     ];

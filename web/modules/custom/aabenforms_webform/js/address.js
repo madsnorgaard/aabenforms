@@ -1,11 +1,10 @@
 /**
  * @file
- * Binds the Klimadatastyrelsen Adressevælger widget to the dawa_address
- * composite element and populates its subfields from the selected record.
+ * Binds the Klimadatastyrelsen Adressevælger widget to the 'address' composite
+ * element and populates its subfields from the selected record.
  *
  * Requests are routed through the in-app proxy (apiUrl below) so the access
- * token stays server-side. Adressevælger is the successor to DAWA, which is
- * decommissioned 17 August 2026.
+ * token stays server-side.
  */
 
 (function (Drupal, once) {
@@ -55,7 +54,7 @@
     };
   }
 
-  Drupal.behaviors.dawaAddress = {
+  Drupal.behaviors.aabenformsAddress = {
     attach: function (context) {
       var config = (drupalSettings.aabenforms_webform && drupalSettings.aabenforms_webform.adressevaelger) || {};
       var apiUrl = config.proxyUrl || '/aabenforms/adressevaelger';
@@ -64,16 +63,16 @@
       // placeholder is sufficient here.
       var token = config.token || 'proxy';
 
-      once('dawa-autocomplete', '.dawa-address-search', context).forEach(function (searchField) {
-        var container = searchField.closest('.webform-composite-dawa-address') || searchField.closest('fieldset');
+      once('address-autocomplete', '.address-search', context).forEach(function (searchField) {
+        var container = searchField.closest('.webform-composite-address') || searchField.closest('fieldset');
         if (!container) { return; }
 
-        var streetField = container.querySelector('.dawa-address-street');
-        var postalCodeField = container.querySelector('.dawa-address-postal-code');
-        var cityField = container.querySelector('.dawa-address-city');
-        var idField = container.querySelector('.dawa-address-id');
-        var xField = container.querySelector('.dawa-address-x');
-        var yField = container.querySelector('.dawa-address-y');
+        var streetField = container.querySelector('.address-street');
+        var postalCodeField = container.querySelector('.address-postal-code');
+        var cityField = container.querySelector('.address-city');
+        var idField = container.querySelector('.address-id');
+        var xField = container.querySelector('.address-x');
+        var yField = container.querySelector('.address-y');
 
         // The widget's stylesheet targets `.autocomplete-container input`.
         if (searchField.parentNode && !searchField.parentNode.classList.contains('autocomplete-container')) {

@@ -62,7 +62,7 @@
 .danish-icon-mitid,
 .danish-icon-cpr,
 .danish-icon-cvr,
-.danish-icon-dawa,
+.danish-icon-address,
 .danish-icon-payment,
 .danish-icon-sms,
 .danish-icon-email,
@@ -93,7 +93,7 @@
   content: "🏢";
 }
 
-.danish-icon-dawa::before {
+.danish-icon-address::before {
   content: "📍";
 }
 
