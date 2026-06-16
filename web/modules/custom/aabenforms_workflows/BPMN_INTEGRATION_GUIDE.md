@@ -39,7 +39,7 @@ Custom palette with 16 specialized task types for Danish government workflows:
 #### Lookups
 - **CPR Lookup** - Person data (Serviceplatformen SF1520)
 - **CVR Lookup** - Company data (Serviceplatformen SF1530)
-- **DAWA Validation** - Address validation (Danish Address Web API)
+- **Address Validation** - Address validation (Denmark Address Register)
 
 #### Transactions
 - **Payment** - Payment processing

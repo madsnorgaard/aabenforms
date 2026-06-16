@@ -3,7 +3,7 @@
 # This file adds Danish government mock services to your DDEV environment:
 # - Keycloak (MitID + UNI-Login mock)
 # - WireMock (Serviceplatformen mock: SF1520, SF1530, SF1601)
-# - Prism (DAWA address API mock)
+# - Prism (Adressevælger address API mock)
 #
 # Usage:
 #   ddev start        # Automatically starts all services
@@ -75,21 +75,21 @@ services:
     #   timeout: 5s
     #   retries: 5
 
-  # Prism - DAWA Address API Mock (OpenAPI-based)
+  # Prism - Address API Mock (OpenAPI-based)
   # DISABLED for now - will add once OpenAPI spec is ready
   # prism:
   #   container_name: ddev-${DDEV_SITENAME}-prism
   #   image: stoplight/prism:4
   #   restart: unless-stopped
   #   volumes:
-  #     - ./mocks/prism/dawa-openapi.yaml:/tmp/dawa-openapi.yaml
+  #     - ./mocks/prism/adressevaelger-openapi.yaml:/tmp/adressevaelger-openapi.yaml
   #   command:
   #     - mock
   #     - -h
   #     - 0.0.0.0
   #     - --port
   #     - "4010"
-  #     - /tmp/dawa-openapi.yaml
+  #     - /tmp/adressevaelger-openapi.yaml
   #   ports:
   #     - "8082:4010"
   #   networks:

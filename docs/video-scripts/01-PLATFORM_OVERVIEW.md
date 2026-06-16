@@ -102,7 +102,7 @@
 | Feature | Status |
 |---------|--------|
 | MitID sign-in (Keycloak mock IdP) | Working |
-| CPR / CVR / DAWA webform validation | Working |
+| CPR / CVR / Adressevælger webform validation | Working |
 | Field-level CPR encryption + audit log | Working |
 | ECA workflow engine + Workflow Modeler | Working |
 | Payment processing | Demo mock |

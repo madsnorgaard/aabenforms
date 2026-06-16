@@ -288,7 +288,7 @@ Each template:
    - Physical mail fallback
    - Delivery receipts
 
-4. **aabenforms_dawa** (DAWA - Address Autocomplete)
+4. **aabenforms_webform** (Adressevælger - Address Autocomplete)
    - Address validation
    - Geolocation
    - Direct integration (no auth)

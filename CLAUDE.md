@@ -125,7 +125,7 @@ web/modules/custom/
 │   └── workflows/                # .bpmn template source files
 │
 ├── aabenforms_webform/           # Custom webform elements with server-side
-│   └──                          #   validation: CPR (modulus-11), CVR, DAWA address
+│   └──                          #   validation: CPR (modulus-11), CVR, Adressevælger address
 │
 ├── aabenforms_mitid/             # MitID OIDC sign-in (against a Keycloak mock IdP)
 │   └──                          #   Fails closed by default; demo mode gated by
@@ -139,14 +139,14 @@ web/modules/custom/
 
 Planned, not yet implemented (do not assume these exist): `aabenforms_nemlogin`
 (+ `_keycloak`), `aabenforms_digital_post_webform`, `aabenforms_digital_post_beskedfordeler`,
-`aabenforms_digital_post_os2web_key`, `aabenforms_cpr`, `aabenforms_cvr`, `aabenforms_dawa`,
+`aabenforms_digital_post_os2web_key`, `aabenforms_cpr`, `aabenforms_cvr`, `aabenforms_webform`,
 `aabenforms_gdpr`, `aabenforms_sbsys`, `aabenforms_get_organized`. See the GitHub issue
 backlog (#72-#92) for status.
 
 Notes on the "standalone module" framing:
 - CPR (SF1520) and CVR (SF1530) lookup are ECA action plugins inside `aabenforms_workflows`
   plus a Serviceplatformen client in `aabenforms_core` - not standalone modules.
-- DAWA address autocomplete is a webform element in `aabenforms_webform` - not a module.
+- Adressevælger address autocomplete is a webform element in `aabenforms_webform` - not a module.
 - Field-level CPR encryption and GDPR audit logging are built into `aabenforms_core`. There
   is no retention / right-to-erasure subsystem yet (planned, issue #91).
 
@@ -195,8 +195,8 @@ aabenforms_core (no aabenforms dependencies)
 - **CPR (SF1520) / CVR (SF1530) lookup**: action plugins in `aabenforms_workflows` plus a
   Serviceplatformen client in `aabenforms_core`. Run against test/WireMock; live access needs
   client certificates (planned, issue #76).
-- **DAWA / CPR / CVR webform elements**: custom elements in `aabenforms_webform` with
-  server-side validation (CPR modulus-11, CVR, DAWA).
+- **Adressevælger / CPR / CVR webform elements**: custom elements in `aabenforms_webform` with
+  server-side validation (CPR modulus-11, CVR, Adressevælger).
 - **Field-level CPR encryption + audit logging**: built into `aabenforms_core`.
 - **aabenforms_digital_post** (SF1601): runs in `fake_db` / `wiremock` test modes. No live
   MeMo/SOAP and no idempotency yet (planned, issues #73, #77).
@@ -206,7 +206,7 @@ aabenforms_core (no aabenforms dependencies)
 - Real SF1601 MeMo builder + SOAP transport (#77)
 - Beskedfordeler SF1461/SF1462 delivery receipts (#78)
 - MitID / NemLog-in token validation + production registration (#79)
-- DAWA + Datafordeler (BBR/Matriklen) server-side validation (#80)
+- Adressevælger + Datafordeler (BBR/Matriklen) server-side validation (#80)
 - Case-handoff / ESDH adapters and SF1470 journaling (#84-#86)
 - GDPR retention + right-to-erasure subsystem (#91)
 

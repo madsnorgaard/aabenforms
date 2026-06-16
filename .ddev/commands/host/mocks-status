@@ -32,8 +32,8 @@ else
 fi
 echo ""
 
-# Check Prism (DAWA Mock)
-echo "🏠 Prism (DAWA Address API):"
+# Check Prism (Adressevælger Mock)
+echo "🏠 Prism (Address API):"
 if curl -s http://localhost:8082 > /dev/null 2>&1; then
   echo "   ✅ Running on http://localhost:8082"
   echo "   📊 OpenAPI Docs: http://localhost:8082"

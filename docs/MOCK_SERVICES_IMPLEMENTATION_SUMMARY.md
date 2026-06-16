@@ -44,7 +44,7 @@ Create a **complete Danish government mock services stack** for local DDEV devel
 **Services Configured**:
 - Keycloak (MitID + UNI-Login mock) - Port 8080
 - WireMock (Serviceplatformen mock) - Port 8081
-- Prism (DAWA address API mock) - Port 8082
+- Prism (Adressevælger address API mock) - Port 8082
 
 **DDEV Commands**:
 ```bash
@@ -246,7 +246,7 @@ export default defineNuxtConfig({
 | **SAML 2.0** | OASIS | Keycloak (future: UNI-Login) |
 | **JWT** | RFC 7519 | Keycloak token signing |
 | **SOAP 1.2** | W3C | WireMock |
-| **OpenAPI 3.0** | Linux Foundation | Prism (future: DAWA) |
+| **OpenAPI 3.0** | Linux Foundation | Prism (future: Adressevælger) |
 | **eIDAS** | EU 910/2014 | ACR mapping (low/substantial/high) |
 
 ### Danish Standards Supported
@@ -302,7 +302,7 @@ export default defineNuxtConfig({
    - SF1601 (Digital Post) - Add delivery status responses
    - Add all 10 test personas to SF1520
 
-2. **Add DAWA mock**:
+2. **Add Adressevælger mock**:
    - Create OpenAPI spec
    - Add realistic Danish address database
    - Autocomplete functionality

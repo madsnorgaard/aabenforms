@@ -76,13 +76,13 @@
 
 **Process Flow**:
 1. Citizen submits new address
-2. DAWA validates address exists
+2. Adressevælger validates address exists
 3. CPR lookup verifies current registered address
 4. Update internal records
 5. Confirmation sent via Digital Post
 
 **ECA Actions Used**:
-- DAWA validation (custom action)
+- Adressevælger validation (custom action)
 - `aabenforms_cpr_lookup`
 - Digital Post notification (custom action)
 
