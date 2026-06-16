@@ -21,7 +21,7 @@ Real today:
 - ECA workflow engine with a visual Workflow Modeler (`drupal/modeler`) and execution replay with token inspection
 - 18 municipal ECA flows (building and parking permits, marriage and association booking, citizen service, FOI, address and phone change, company verification, dual-parent approval, HR onboarding, mileage, MED election, caseworker review)
 - MitID OIDC sign-in against a Keycloak mock IdP; CPR (SF1520) and CVR (SF1530) lookup clients
-- Custom Danish webform elements with server-side validation: CPR (format and modulus-11), CVR, DAWA address autocomplete
+- Custom Danish webform elements with server-side validation: CPR (format and modulus-11), CVR, Adressevælger address autocomplete
 - Field-level CPR encryption and audit logging (in `aabenforms_core`)
 - Digital Post (SF1601) in `fake_db` and `wiremock` test modes
 
@@ -57,7 +57,7 @@ Local URLs: site at https://aabenforms.ddev.site, JSON:API at `/jsonapi`, mail a
 | `aabenforms_core` | Active | Base services: Serviceplatformen client (SF1520/SF1530), AES-256 field encryption, audit logging, tenant resolver, workflow execution collector |
 | `aabenforms_workflows` | Active | ECA action plugins, the approval system, and the template wizard. Some actions (payment, SMS, GIS, payroll, calendar) are demo mocks |
 | `aabenforms_mitid` | Active | MitID OIDC sign-in, session management, CPR claim extraction |
-| `aabenforms_webform` | Active | Custom webform elements: CPR, CVR, DAWA address |
+| `aabenforms_webform` | Active | Custom webform elements: CPR, CVR, Adressevælger address |
 | `aabenforms_tenant` | Active | Domain-based multi-tenancy (logical, single database) |
 | `aabenforms_digital_post` (+ `_eca`) | Partial | SF1601 Digital Post in `fake_db`/`wiremock`; real MeMo and SOAP transport are planned (issue #77) |
 | `aabenforms_nemlogin`, `aabenforms_sbsys`, `aabenforms_get_organized` | Planned | NemLog-in Erhverv and ESDH/case-system integrations (issues #79, #84-#86) |
@@ -78,7 +78,7 @@ A security pass in June 2026 fixed issues found by a local pressure test, where 
 The backlog is in [GitHub issues](https://github.com/madsnorgaard/aabenforms/issues), grouped by label:
 
 - Security ([`security`](https://github.com/madsnorgaard/aabenforms/labels/security)): circuit breaker #72, Digital Post idempotency #73, replay redaction #74, permission registration #75, consent-gate test #54
-- Productionise integrations ([`integration`](https://github.com/madsnorgaard/aabenforms/labels/integration)): Serviceplatformen certs #76, live Digital Post #77, Beskedfordeler #78, MitID production #79, DAWA + Datafordeler #80
+- Productionise integrations ([`integration`](https://github.com/madsnorgaard/aabenforms/labels/integration)): Serviceplatformen certs #76, live Digital Post #77, Beskedfordeler #78, MitID production #79, Adressevælger + Datafordeler #80
 - Replace mocks ([`mocks`](https://github.com/madsnorgaard/aabenforms/labels/mocks)): payment #81, SMS #82, GIS/BBR #83
 - Case-system / ESDH handoff ([`esdh`](https://github.com/madsnorgaard/aabenforms/labels/esdh)): handoff module #84, SF1470 journaling #85, ESDH adapters #86
 - Advanced flows ([`flows`](https://github.com/madsnorgaard/aabenforms/labels/flows)): SLA and escalation #87, task inbox and gateways #88, appeals and letters #89, persistent history and templates #90

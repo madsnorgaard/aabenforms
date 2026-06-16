@@ -250,7 +250,7 @@ mkdir -p web/modules/custom/aabenforms_webform/src/Element
 # Module will provide:
 # - CprField element (10-digit validation)
 # - CvrField element (8-digit validation)
-# - DawaAddress element (autocomplete)
+# - Address element (autocomplete)
 ```
 
 ### Option 2: Create First Production Workflow
@@ -417,4 +417,4 @@ ddev drush cr
 
 **Ready to build! **
 
-**Next**: Let's create the aabenforms_webform module with Danish field types (CPR, CVR, DAWA).
+**Next**: Let's create the aabenforms_webform module with Danish field types (CPR, CVR, Adressevælger).

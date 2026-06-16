@@ -1,6 +1,6 @@
 # ÅbenForms Mock Services - DDEV Integration Guide
 
-**Purpose**: Use Danish government mock services (MitID, Serviceplatformen, DAWA) in local DDEV development
+**Purpose**: Use Danish government mock services (MitID, Serviceplatformen, Adressevælger) in local DDEV development
 **Target**: Both Drupal backend and Nuxt 3 frontend developers
 **Approach**: Standards-based (Keycloak, WireMock, Prism) with realistic Danish test data
 
@@ -35,7 +35,7 @@ WireMock (Serviceplatformen):
    Admin UI: http://localhost:8081/__admin
    Loaded mappings: 12
 
- Prism (DAWA Address API):
+ Prism (Address API):
    Running on http://localhost:8082
    OpenAPI Docs: http://localhost:8082
 ```
@@ -51,7 +51,7 @@ curl -X POST http://localhost:8081/sf1520 \
   -H "Content-Type: text/xml" \
   --data '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns="http://kombit.dk/xml/schemas/RequestPersonBaseDataExtended/1/"><soapenv:Body><ns:GetPersonBaseDataExtended><ns:CPRNumber>0101904521</ns:CPRNumber></ns:GetPersonBaseDataExtended></soapenv:Body></soapenv:Envelope>'
 
-# Test DAWA address autocomplete
+# Test Adressevælger address autocomplete
 curl http://localhost:8082/adresser/autocomplete?q=frederiksberg
 ```
 
@@ -84,7 +84,7 @@ curl http://localhost:8082/adresser/autocomplete?q=frederiksberg
 │  │                                              │  │
 │  │  ┌──────────────┐                          │  │
 │  │  │  Prism       │                          │  │
-│  │  │  (DAWA)      │                          │  │
+│  │  │  (Adressevælger)      │                          │  │
 │  │  │  :8082       │                          │  │
 │  │  └──────────────┘                          │  │
 │  └─────────────────────────────────────────────┘  │
@@ -143,7 +143,7 @@ SF1601 (Digital Post): POST http://localhost:8081/sf1601
 
 ---
 
-### Prism (DAWA Mock)
+### Prism (Adressevælger Mock)
 
 **URL**: http://localhost:8082
 **OpenAPI Docs**: http://localhost:8082
@@ -249,9 +249,9 @@ $config['aabenforms_cvr.settings']['mock_mode'] = TRUE;
 $config['aabenforms_digital_post.settings']['serviceplatformen_url'] = 'http://localhost:8081/sf1601';
 $config['aabenforms_digital_post.settings']['mock_mode'] = TRUE;
 
-// DAWA Mock (Prism)
-$config['aabenforms_dawa.settings']['api_url'] = 'http://localhost:8082';
-$config['aabenforms_dawa.settings']['mock_mode'] = TRUE;
+// Adressevælger Mock (Prism)
+$config['aabenforms_adressevaelger.settings']['api_url'] = 'http://localhost:8082';
+$config['aabenforms_adressevaelger.settings']['mock_mode'] = TRUE;
 ```
 
 ### 2. Test MitID Login Flow

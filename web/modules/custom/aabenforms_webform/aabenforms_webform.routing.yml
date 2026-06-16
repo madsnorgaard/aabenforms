@@ -1,0 +1,13 @@
+# Server-side proxy for the Klimadatastyrelsen Adressevælger API. Forwards
+# address autocomplete/lookup requests to the upstream service, injecting the
+# access token server-side so it never reaches the browser. Address data is
+# public; the endpoint is read-only and safe for anonymous form fillers.
+aabenforms_webform.adressevaelger_proxy:
+  path: '/aabenforms/adressevaelger/{type}/{op}'
+  defaults:
+    _controller: '\Drupal\aabenforms_webform\Controller\AdressevaelgerProxyController::proxy'
+  requirements:
+    _access: 'TRUE'
+    type: 'adresser|husnumre'
+  options:
+    no_cache: 'TRUE'

@@ -269,7 +269,7 @@ gh run watch             # Watch current run
 
 - [MitID Test Tool](https://pp.mitid.dk/test-tool/)
 - [Serviceplatformen Docs](https://digitaliser.dk/group/42063)
-- [DAWA API](https://dawadocs.dataforsyningen.dk/)
+- [Adressevælger](https://github.com/Klimadatastyrelsen/adressevaelger)
 - [ECA Documentation](https://www.drupal.org/docs/contributed-modules/eca)
 
 ---

@@ -76,8 +76,8 @@ Perfect starter workflow for Danish municipalities looking to digitize citizen s
       <bpmn:outgoing>Flow_3</bpmn:outgoing>
     </bpmn:exclusiveGateway>
 
-    <!-- Validate Address with DAWA -->
-    <bpmn:serviceTask id="Task_ValidateAddress" name="Validate Address (DAWA)">
+    <!-- Validate Address with Adressevælger -->
+    <bpmn:serviceTask id="Task_ValidateAddress" name="Validate Address">
       
       <bpmn:extensionElements>
         <aabenforms:ecaAction plugin="aabenforms_validate_zoning">
@@ -86,7 +86,7 @@ Perfect starter workflow for Danish municipalities looking to digitize citizen s
         </aabenforms:ecaAction>
       </bpmn:extensionElements>
       <bpmn:extensionElements>
-        <eca:action xmlns:eca="http://aabenforms.dk/eca">aabenforms_dawa_validate</eca:action>
+        <eca:action xmlns:eca="http://aabenforms.dk/eca">aabenforms_address_validate</eca:action>
         <eca:config xmlns:eca="http://aabenforms.dk/eca">
           <eca:address_field>address</eca:address_field>
         </eca:config>

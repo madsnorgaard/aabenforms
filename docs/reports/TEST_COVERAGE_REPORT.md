@@ -182,7 +182,7 @@
 
 4. **Add Webform Element Tests** (Expected +5% coverage):
    - Test CPR field validation with edge cases
-   - Test DAWA address autocomplete
+   - Test Adressevælger address autocomplete
    - Test multi-step form workflows
 
 5. **Add Service Integration Tests** (Expected +7% coverage):

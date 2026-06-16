@@ -1,5 +1,5 @@
 name: 'ÅbenForms Municipality'
-description: 'Complete municipality setup with Danish government integrations (MitID, CPR, DAWA, Digital Post, SBSYS)'
+description: 'Complete municipality setup with Danish government integrations (MitID, CPR, Address, Digital Post, SBSYS)'
 type: 'ÅbenForms'
 recipes:
   # Start with base platform
@@ -20,7 +20,6 @@ install:
   # Danish government integrations
   - aabenforms_mitid     # MitID authentication
   - aabenforms_cpr       # CPR lookup (SF1520)
-  - aabenforms_dawa      # Address autocomplete
   - aabenforms_digital_post  # Digital Post (SF1601)
   - aabenforms_sbsys     # SBSYS case management
 
@@ -33,7 +32,6 @@ config:
     # Import all Danish integration configs
     aabenforms_mitid: '*'
     aabenforms_cpr: '*'
-    aabenforms_dawa: '*'
     aabenforms_digital_post: '*'
     aabenforms_sbsys: '*'
 

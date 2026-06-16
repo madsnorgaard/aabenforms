@@ -390,7 +390,7 @@ Two independent, divergent representations of each workflow:
 
 - **BPMN templates** (13 files under `web/modules/custom/aabenforms_workflows/workflows/*.bpmn`):
   consumed ONLY by the wizard path (BpmnTemplateManager + WorkflowTemplateInstantiator). Encode the
-  rich intent: MitID auth, CPR/CVR verification, DAWA, caseworker review, SBSYS/journaling, SF1601.
+  rich intent: MitID auth, CPR/CVR verification, Adressevælger, caseworker review, SBSYS/journaling, SF1601.
 - **ECA YAML flows** (18 hand-authored `config/sync/eca.eca.*.yml`): what actually runs. Confirmed
   the active DB config set is exactly those 18; NO wizard-generated `eca.eca.<template>_<timestamp>`
   entities exist. Implements a much thinner (sometimes entirely different) action chain than the BPMN.

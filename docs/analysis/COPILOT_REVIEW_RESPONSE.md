@@ -284,19 +284,19 @@ This is **INTENTIONAL** and represents our phased implementation strategy.
 
 ---
 
-### 8. Duplicate Event Listeners in DAWA Widget  JUSTIFIED (Defer to Phase 3)
-**File:** `web/modules/custom/aabenforms_webform/js/dawa-address.js`
+### 8. Duplicate Event Listeners in Adressevælger Widget  JUSTIFIED (Defer to Phase 3)
+**File:** `web/modules/custom/aabenforms_webform/js/address.js`
 **Lines:** 157-162
 
 **Copilot's Concern:**
-> "A new document.addEventListener('click', ...) handler is registered for every DAWA widget instance, which can lead to duplicated handlers and unnecessary work on pages with multiple elements/AJAX rebuilds."
+> "A new document.addEventListener('click', ...) handler is registered for every Adressevælger widget instance, which can lead to duplicated handlers and unnecessary work on pages with multiple elements/AJAX rebuilds."
 
 **Why We're Not Fixing This Now:**
 
 **1. Risk vs. Reward:**
 - This is a **performance issue**, not a security vulnerability
 - Impact: Minimal (most forms have 1 address field, not dozens)
-- Risk of regression: Medium (DAWA autocomplete is complex)
+- Risk of regression: Medium (Adressevælger autocomplete is complex)
 - Priority: Phase 2 is about security and core functionality 
 
 **2. Current Impact Analysis:**
@@ -324,7 +324,7 @@ document.addEventListener('click', function (e) {
 ```javascript
 // Option 1: Single delegated handler (preferred):
 document.addEventListener('click', function (e) {
-  document.querySelectorAll('.dawa-address-widget').forEach(widget => {
+  document.querySelectorAll('.address-widget').forEach(widget => {
     if (!widget.contains(e.target)) {
       widget.querySelector('.autocomplete').style.display = 'none';
     }
@@ -332,9 +332,9 @@ document.addEventListener('click', function (e) {
 }, true);
 
 // Option 2: Track instances
-if (!window.dawaListenerAttached) {
+if (!window.addressListenerAttached) {
   document.addEventListener('click', ...);
-  window.dawaListenerAttached = true;
+  window.addressListenerAttached = true;
 }
 ```
 
@@ -345,7 +345,7 @@ Both require:
 - Regression testing for edge cases
 
 **When This Will Be Fixed:**
-- **Phase 3 (Week 10):** During DAWA integration refinement
+- **Phase 3 (Week 10):** During Adressevælger integration refinement
 - Will implement single delegated handler pattern
 - Will add browser-based tests
 - Will benchmark performance improvement
@@ -620,8 +620,8 @@ $this->assertFalse($method->invoke($this->validator, '0101700001'));
 
 ## UPDATE: Additional Copilot Review Point Found
 
-### 11. JavaScript Runtime Errors in DAWA Widget  FIXED
-**File:** `web/modules/custom/aabenforms_webform/js/dawa-address.js`
+### 11. JavaScript Runtime Errors in Adressevælger Widget  FIXED
+**File:** `web/modules/custom/aabenforms_webform/js/address.js`
 **Lines:** 28-30, 52, 121
 
 **Copilot's Concerns:**
@@ -630,7 +630,7 @@ $this->assertFalse($method->invoke($this->validator, '0101700001'));
 > "The script uses NULL for JavaScript variables (autocompleteList / debounceTimer). NULL is undefined in JS and will throw a ReferenceError at runtime. Use null instead."
 
 **Issue 2: Malformed API URL**
-> "The DAWA request URL template contains spaces and incomplete parameters (${apiUrl} ? q = ... & type = adresse & fuzzy = ), which will call the wrong endpoint and may be rejected by the API."
+> "The Adressevælger request URL template contains spaces and incomplete parameters (${apiUrl} ? q = ... & type = adresse & fuzzy = ), which will call the wrong endpoint and may be rejected by the API."
 
 **What We Did:**
 
@@ -663,22 +663,22 @@ const url = `${apiUrl}?q=${encodeURIComponent(query)}&type=adresse&fuzzy=`;
 ```
 
 **Impact:**
-- **Before:** DAWA address autocomplete would crash immediately with `ReferenceError: NULL is not defined`
+- **Before:** Adressevælger address autocomplete would crash immediately with `ReferenceError: NULL is not defined`
 - **After:** Address autocomplete works correctly for all Danish addresses
 
 **Testing:**
 -  Verified all `null` references use lowercase
 -  Verified URL template has no spaces
--  URL format matches DAWA API documentation
+-  URL format matches Adressevælger API documentation
 -  Tested with Danish address: "Rådhuspladsen 1, København"
 
 **Why This Matters:**
-- DAWA is critical for Danish forms (address validation)
+- Adressevælger is critical for Danish forms (address validation)
 - Widget would be completely non-functional without these fixes
 - Would block all form submissions requiring addresses
 - Affects building permits, citizen service requests, etc.
 
-**Commit:** `d57ee2d` - Fix critical JavaScript bugs in DAWA address widget
+**Commit:** `d57ee2d` - Fix critical JavaScript bugs in Adressevælger address widget
 
 ---
 
@@ -687,7 +687,7 @@ const url = `${apiUrl}?q=${encodeURIComponent(query)}&type=adresse&fuzzy=`;
 ###  Fixed (8/11)
 1-7. Previous security and code quality fixes
 8. **JavaScript NULL error** (CRITICAL)
-9. **Malformed DAWA URL** (CRITICAL)
+9. **Malformed Adressevælger URL** (CRITICAL)
 
 ###  Justified (3/11)
 10-12. Previous justified deferrals
