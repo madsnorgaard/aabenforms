@@ -12,7 +12,7 @@ Pre-pilot POC. There are no real municipality deployments. Live demo at https://
 
 The full template set is: address_change, association_booking, building_permit, citizen_service_application, company_verification, contact_form, foi_request, hr_onboarding, marriage_booking, med_election_nomination, mileage_expense, parking_permit, phone_declaration.
 
-Several action plugins referenced below are demo mocks, not production integrations. Payment, SMS, GIS/zoning, payroll and calendar/booking actions return simulated results and must not be treated as working production features. Real (against test or mock endpoints) actions are: the ECA workflow engine and Workflow Modeler, MitID OIDC sign-in (Keycloak mock), CPR (SF1520) and CVR (SF1530) lookup clients, the custom CPR/CVR/DAWA webform elements with server-side validation, field-level CPR encryption with audit logging, and Digital Post (SF1601) in its `fake_db`/`wiremock` test modes.
+Several action plugins referenced below are demo mocks, not production integrations. Payment, SMS, GIS/zoning, payroll and calendar/booking actions return simulated results and must not be treated as working production features. Real (against test or mock endpoints) actions are: the ECA workflow engine and Workflow Modeler, MitID OIDC sign-in (Keycloak mock), CPR (SF1520) and CVR (SF1530) lookup clients, the custom CPR/CVR/Adressevælger webform elements with server-side validation, field-level CPR encryption with audit logging, and Digital Post (SF1601) in its `fake_db`/`wiremock` test modes.
 
 ---
 
@@ -66,10 +66,10 @@ applicant_name: Text (required)
 applicant_cpr: CPR Field (required, encrypted)
 applicant_email: Email (required)
 applicant_phone: Telephone (required)
-applicant_address: DAWA Address (required)
+applicant_address: Address (required)
 
 # Application Details
-property_address: DAWA Address (required)
+property_address: Address (required)
 permit_type: Select (required)
   - new_construction: "Ny Bygning"
   - renovation: "Renovering"
@@ -98,7 +98,7 @@ expected_completion_date: Date (required)
    ↓
 3. Verify Identity (CPR Lookup via SF1520)
    ↓
-4. Validate Address (DAWA)
+4. Validate Address (Adressevælger)
    ↓
 5. Validate Documents (format, completeness)
    ↓
@@ -136,7 +136,7 @@ expected_completion_date: Date (required)
 **Danish Services**:
 - **MitID**: Citizen authentication (OIDC, against a Keycloak mock IdP today)
 - **SF1520**: CPR person lookup (Serviceplatformen, test/mock endpoint)
-- **DAWA**: Address validation (open API; implemented as a webform element)
+- **Adressevælger**: Address validation (open API; implemented as a webform element)
 - **SF1601**: Digital Post notifications (Serviceplatformen; test/mock modes only today)
 
 **Case / ESDH systems** (planned, not yet implemented):
@@ -160,7 +160,7 @@ Auto-assign: Building Department
 1. Citizen submits application online
 2. MitID authentication (High)
 3. CPR verification (SF1520 test endpoint)
-4. DAWA validates property address exists
+4. Adressevælger validates property address exists
 5. System checks uploaded documents (PDF format, max 20MB)
 6. Case assigned to building inspector
 7. Inspector reviews within the configured SLA
@@ -371,7 +371,7 @@ Verify company registration and director authorization using CVR and CPR lookups
 # Company Information
 company_name: Text (required)
 cvr_number: CVR Field (required, format: 12345678)
-company_address: DAWA Address (optional)
+company_address: Address (optional)
 
 # Person Information
 person_name: Text (required)
@@ -545,7 +545,7 @@ Referenvenummer: VER-2026-12345
 
 ### Description
 
-Process address change notifications with parallel system updates. Validates address with DAWA, authenticates citizen, updates multiple municipal systems simultaneously.
+Process address change notifications with parallel system updates. Validates address with Adressevælger, authenticates citizen, updates multiple municipal systems simultaneously.
 
 ### Use Cases
 
@@ -571,8 +571,8 @@ email: Email (required)
 phone: Telephone (required)
 
 # Address Change
-old_address: DAWA Address (required, auto-filled)
-new_address: DAWA Address (required)
+old_address: Address (required, auto-filled)
+new_address: Address (required)
 move_date: Date (required)
 
 # Additional
@@ -590,7 +590,7 @@ forward_mail: Checkbox (optional)
    ↓
 3. CPR Lookup (verify identity, get current address)
    ↓
-4. DAWA Validation (verify new address exists and is valid)
+4. Address Validation (verify new address exists and is valid)
    ↓
 5. PARALLEL GATEWAY: Update Systems Simultaneously
    ├─ Update Citizen Portal
@@ -612,7 +612,7 @@ forward_mail: Checkbox (optional)
 | Parameter | Default | Options | Description |
 |-----------|---------|---------|-------------|
 | `update_systems` | All | Selectable | Which systems to update |
-| `validation_strict` | Yes | Yes, No | Strict DAWA validation |
+| `validation_strict` | Yes | Yes, No | Strict Adressevælger validation |
 | `effective_date` | Immediate | Immediate, Scheduled | When change takes effect |
 | `notify_related` | Yes | Yes, No | Notify related services (school, etc.) |
 
@@ -648,7 +648,7 @@ Note: the municipal-system update steps below are illustrative. In the current P
 **Required**:
 - **MitID**: Authentication
 - **SF1520**: CPR lookup
-- **DAWA**: Address validation
+- **Adressevælger**: Address validation
 - **SF1601**: Digital Post confirmation
 
 **Municipal Systems** (REST APIs):
@@ -677,7 +677,7 @@ Effective: Immediate
 1. Citizen logs in, submits new address
 2. MitID authentication (High)
 3. System retrieves current address from CPR (Bredgade 10)
-4. DAWA validates new address (Nørrebrogade 20)
+4. Adressevælger validates new address (Nørrebrogade 20)
 5. System updates (in parallel, ~30 seconds each):
    - Citizen Portal: New address saved
    - Property Tax: Billing address updated
@@ -692,7 +692,7 @@ Effective: Immediate
 ### Parallel Update Visualization
 
 ```
-DAWA Validation 
+Address Validation 
        │
        ▼
   ┌────────────┐
@@ -721,7 +721,7 @@ DAWA Validation
 
 ### Limitations
 
-- Requires DAWA API (Danish addresses only)
+- Requires Adressevælger API (Danish addresses only)
 - Municipal systems must have REST APIs
 - No address history (overwrites current)
 - Cannot undo (must submit new change)

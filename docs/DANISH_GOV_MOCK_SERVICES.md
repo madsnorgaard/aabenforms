@@ -113,7 +113,7 @@ danish-gov-mock-services/
 │   ├── test-data/
 │   │   ├── cpr-database.json      # Mock CPR data
 │   │   ├── cvr-database.json      # Mock CVR data
-│   │   └── addresses.json         # DAWA-compatible addresses
+│   │   └── addresses.json         # Adressevælger-compatible addresses
 │   └── README.md
 │
 ├── uni-login-mock/                # UNI-Login SAML Server
@@ -125,7 +125,7 @@ danish-gov-mock-services/
 │   │   └── students.json          # Test students
 │   └── README.md
 │
-├── dawa-mock/                     # DAWA Address API
+├── adressevaelger-mock/                     # Address API
 │   ├── Dockerfile
 │   ├── src/
 │   │   └── address-api.js         # REST API
@@ -347,7 +347,7 @@ serviceplatformen-mock:
 - Valid CPR numbers (modulus-11 compliant)
 - Valid CVR numbers (modulus-11 compliant)
 - Realistic Danish names (from statistics)
-- Real Danish addresses (from DAWA)
+- Real Danish addresses (from Adressevælger)
 - Family relations (parents, children)
 - Protected persons (name/address protection)
 
@@ -379,7 +379,7 @@ npx danish-test-data generate protected-person --output protected.json
     "street": "Testvej 42",
     "postal_code": "2100",
     "city": "København Ø",
-    "dawa_id": "0a3f5091-45b6-32b8-e044-0003ba298018"
+    "address_id": "0a3f5091-45b6-32b8-e044-0003ba298018"
   },
   "family": {
     "spouse": {
@@ -440,7 +440,7 @@ npx danish-test-data generate protected-person --output protected.json
 
 ---
 
-### 5. DAWA Mock (Address API)
+### 5. Adressevælger Mock (Address API)
 
 **Technology**: Node.js + Express
 
@@ -509,8 +509,8 @@ services:
       - ./mocks/cpr-database.json:/app/test-data/cpr-database.json
       - ./mocks/cvr-database.json:/app/test-data/cvr-database.json
 
-  dawa-mock:
-    image: os2community/dawa-mock:latest
+  adressevaelger-mock:
+    image: os2community/adressevaelger-mock:latest
     ports:
       - "8082:8082"
     volumes:
@@ -527,7 +527,7 @@ $config['aabenforms_mitid.settings']['oidc']['token_endpoint'] = 'http://localho
 $config['aabenforms_core.settings']['serviceplatformen']['endpoint'] = 'http://localhost:8081';
 $config['aabenforms_core.settings']['serviceplatformen']['mock_mode'] = TRUE;
 
-$config['aabenforms_dawa.settings']['api_url'] = 'http://localhost:8082';
+$config['aabenforms_adressevaelger.settings']['api_url'] = 'http://localhost:8082';
 ```
 
 **3. Start mocks**:
@@ -739,7 +739,7 @@ jobs:
 
 **Deliverables**:
 - UNI-Login Mock (SAML server)
-- DAWA Mock (address API)
+- Adressevælger Mock (address API)
 - Enhanced test data (families, protected persons)
 - Integration examples (Drupal, Node.js, Python)
 - CI/CD templates
@@ -1025,7 +1025,7 @@ module.exports = ServiceplatformenServer;
 os2community/mitid-mock:latest
 os2community/serviceplatformen-mock:latest
 os2community/uni-login-mock:latest
-os2community/dawa-mock:latest
+os2community/adressevaelger-mock:latest
 os2community/danish-gov-mocks:all-in-one
 ```
 

@@ -132,7 +132,7 @@ START: What type of approval do you need?
 **Choose**: **Address Change** template (perfect match)
 - Pre-configured parallel system updates
 - MitID authentication included
-- DAWA address validation built-in
+- Adressevælger address validation built-in
 
 #### Scenario 3: Company Registration Check
 **Requirement**: Verify person is authorized to act on behalf of company

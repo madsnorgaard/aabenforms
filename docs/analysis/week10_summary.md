@@ -41,12 +41,12 @@ Tests implemented:
 
 ---
 
-### 3. DawaAddressElementTest.php - 15 tests 
-**File**: `web/modules/custom/aabenforms_webform/tests/src/Unit/Plugin/WebformElement/DawaAddressElementTest.php`
+### 3. AddressElementTest.php - 15 tests 
+**File**: `web/modules/custom/aabenforms_webform/tests/src/Unit/Plugin/WebformElement/AddressElementTest.php`
 
 Tests implemented:
--  testAutocompleteWidget() - DAWA autocomplete configuration
--  testDawaApiIntegration() - API endpoint (api.dataforsyningen.dk)
+-  testAutocompleteWidget() - Adressevælger autocomplete configuration
+-  testAddressApiIntegration() - API endpoint (api.dataforsyningen.dk)
 -  testAddressSelection() - Composite fields configuration
 -  testGeolocationCapture() - ETRS89/UTM32 coordinates
 -  testManualEntry() - require_valid_address setting
@@ -58,10 +58,10 @@ Tests implemented:
 -  testElementCategory() - Danish Elements categorization
 -  testCompositeStructure() - 7-field structure documentation
 -  testPostalCodeValidation() - 4-digit Danish format
--  testDawaIdRequirement() - UUID requirement
+-  testAddressIdRequirement() - UUID requirement
 -  testTextFormatting() - Multi-line display format
 
-**Coverage**: 15 assertions, documents DAWA address element configuration
+**Coverage**: 15 assertions, documents Adressevælger address element configuration
 
 **Note**: Tests use documentation-style assertions due to static method constraints in WebformCompositeBase parent class. Full integration testing covered in functional test suite.
 
@@ -79,7 +79,7 @@ Status: PASSING (1 warning - array key in parent class)
 **Breakdown**:
 - CprFieldElementTest: 10 tests
 - CvrFieldElementTest: 11 tests  
-- DawaAddressElementTest: 15 tests
+- AddressElementTest: 15 tests
 - CprValidatorTest: 15 tests (existing)
 - CvrValidatorTest: 22 tests (existing)
 
@@ -103,8 +103,8 @@ Skipped: 6 (expected - require external services)
 2. **CvrFieldElementTest** (commit: d3b2a7f)
    - 267 lines, CVR company number validation
    
-3. **DawaAddressElementTest** (commit: 6abe23c)
-   - 178 lines, DAWA address autocomplete documentation
+3. **AddressElementTest** (commit: 6abe23c)
+   - 178 lines, Adressevælger address autocomplete documentation
 
 **Branch**: feature/phase-3-week-10-webform-tests
 
@@ -119,7 +119,7 @@ Skipped: 6 (expected - require external services)
 
 ### Coverage Areas:
 -  **Services**: CprValidator (15 tests), CvrValidator (22 tests)
--  **Elements**: CprField (10 tests), CvrField (11 tests), DawaAddress (15 tests)
+-  **Elements**: CprField (10 tests), CvrField (11 tests), Address (15 tests)
 -  **Gap**: Element rendering tests (requires Kernel tests with full Drupal bootstrap)
 
 ### Overall Project Coverage
@@ -137,8 +137,8 @@ Skipped: 6 (expected - require external services)
 - Mocked only essential services (CprValidator, CvrValidator)
 - Avoided calling `prepare()` method which requires full service container
 
-### 2. DawaAddressElement Static Method Conflict
-**Issue**: `getCompositeElements()` declared static in DawaAddressElement but non-static in WebformCompositeBase parent class - PHP Fatal Error
+### 2. AddressElement Static Method Conflict
+**Issue**: `getCompositeElements()` declared static in AddressElement but non-static in WebformCompositeBase parent class - PHP Fatal Error
 
 **Solution**:
 - Created documentation-style tests using `assertTrue()` assertions
@@ -160,7 +160,7 @@ Skipped: 6 (expected - require external services)
 
 - [x] Create CprFieldElementTest.php with 8+ tests (achieved: 10 tests)
 - [x] Create CvrFieldElementTest.php with 8+ tests (achieved: 11 tests)
-- [x] Create DawaAddressElementTest.php with 10+ tests (achieved: 15 tests)
+- [x] Create AddressElementTest.php with 10+ tests (achieved: 15 tests)
 - [x] All tests passing (208 total tests)
 - [x] Commit each file separately with clear messages
 - [x] Run tests to verify they pass
@@ -187,7 +187,7 @@ As per Phase 3 plan:
 web/modules/custom/aabenforms_webform/tests/src/Unit/Plugin/WebformElement/
 ├── CprFieldElementTest.php (NEW - 319 lines)
 ├── CvrFieldElementTest.php (NEW - 267 lines)
-└── DawaAddressElementTest.php (NEW - 178 lines)
+└── AddressElementTest.php (NEW - 178 lines)
 ```
 
 **Total Lines of Test Code**: 764 lines

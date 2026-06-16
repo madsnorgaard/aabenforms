@@ -12,7 +12,7 @@
   <bpmn:process id="address_change_process" name="Address Change Notification" isExecutable="true">
     <bpmn:documentation>[category: municipal]
 Process address change notifications with parallel system updates.
-Validates address with DAWA, authenticates with MitID, updates multiple municipal systems.</bpmn:documentation>
+Validates address with Adressevælger, authenticates with MitID, updates multiple municipal systems.</bpmn:documentation>
 
     <bpmn:startEvent id="StartEvent_1" name="Address Change Submitted">
       <bpmn:outgoing>Flow_1</bpmn:outgoing>
@@ -44,12 +44,12 @@ Validates address with DAWA, authenticates with MitID, updates multiple municipa
       <bpmn:outgoing>Flow_3</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:serviceTask id="Task_DAWAValidation" name="Validate Address (DAWA)">
-      
+    <bpmn:serviceTask id="Task_AddressValidation" name="Validate Address">
+
       <bpmn:extensionElements>
         <aabenforms:ecaAction plugin="aabenforms_audit_log">
-          <aabenforms:config key="event_type">address_change_dawa_validated</aabenforms:config>
-          <aabenforms:config key="message_template">Address validated via DAWA (stub)</aabenforms:config>
+          <aabenforms:config key="event_type">address_change_validated</aabenforms:config>
+          <aabenforms:config key="message_template">Address validated via Adressevælger (stub)</aabenforms:config>
         </aabenforms:ecaAction>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_3</bpmn:incoming>
@@ -136,8 +136,8 @@ Validates address with DAWA, authenticates with MitID, updates multiple municipa
 
     <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Task_MitIDAuth"/>
     <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_MitIDAuth" targetRef="Task_CPRLookup"/>
-    <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_CPRLookup" targetRef="Task_DAWAValidation"/>
-    <bpmn:sequenceFlow id="Flow_4" sourceRef="Task_DAWAValidation" targetRef="Gateway_ParallelUpdates"/>
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_CPRLookup" targetRef="Task_AddressValidation"/>
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Task_AddressValidation" targetRef="Gateway_ParallelUpdates"/>
     <bpmn:sequenceFlow id="Flow_Portal" sourceRef="Gateway_ParallelUpdates" targetRef="Task_UpdatePortal"/>
     <bpmn:sequenceFlow id="Flow_Tax" sourceRef="Gateway_ParallelUpdates" targetRef="Task_UpdateTax"/>
     <bpmn:sequenceFlow id="Flow_Waste" sourceRef="Gateway_ParallelUpdates" targetRef="Task_UpdateWaste"/>

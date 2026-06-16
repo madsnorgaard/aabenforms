@@ -15,7 +15,7 @@
 **Key Value Proposition**:
 - Open source: no per-form or per-integration licence fees, unlike proprietary alternatives
 - Visual workflow builder: the Workflow Modeler editor, no-code/low-code workflow creation
-- Danish-first: integrations with MitID, CPR, CVR, DAWA, Digital Post (against test/mock endpoints today)
+- Danish-first: integrations with MitID, CPR, CVR, Adressevælger, Digital Post (against test/mock endpoints today)
 - GDPR-minded: field-level CPR encryption (AES-256) and audit logging built in
 - Ready-made templates for common municipal services
 - Modern architecture: API-first, headless, JSON:API, no vendor lock-in
@@ -62,7 +62,7 @@ Built-in connectors for essential Danish services:
 **Data Services**:
 - SF1520: CPR lookup (person data)
 - SF1530: CVR lookup (company data)
-- DAWA: Danish address validation and autocomplete
+- Adressevælger: Danish address validation and autocomplete
 
 **Communication**:
 - SF1601: Digital Post (secure notifications)
@@ -100,7 +100,7 @@ Engage your Data Protection Officer for a full compliance assessment before any 
 
 ## Flagship Workflows
 
-Note on integration status: in the current POC, MitID sign-in, CPR/CVR lookup, DAWA validation,
+Note on integration status: in the current POC, MitID sign-in, CPR/CVR lookup, Adressevælger validation,
 and audit logging are real (against test/mock endpoints). Payment, SMS, GIS, and calendar/booking
 steps are demo mocks today. The "annual impact" estimates below are illustrative planning figures,
 not measured results from any deployment - there are no production deployments yet.
@@ -112,7 +112,7 @@ not measured results from any deployment - there are no production deployments y
 **Workflow Steps**:
 1. Citizen submits application with vehicle registration, address, duration
 2. Optional: MitID authentication for identity verification
-3. Address validation via DAWA
+3. Address validation via Adressevælger
 4. Automatic fee calculation based on zone and duration
 5. Payment processing via Nets Easy
 6. PDF permit generation with QR code
@@ -129,7 +129,7 @@ not measured results from any deployment - there are no production deployments y
 
 **Integration Points**:
 - MitID (optional authentication)
-- DAWA (address validation)
+- Adressevælger (address validation)
 - Nets Easy (payment)
 - SMS gateway
 - PDF generation
@@ -200,7 +200,7 @@ not measured results from any deployment - there are no production deployments y
 **Workflow Steps**:
 1. Applicant authenticates with MitID
 2. Identity verification via SF1520 CPR lookup
-3. Property address validation via DAWA
+3. Property address validation via Adressevælger
 4. Document upload (plans, drawings, specifications)
 5. Automated document validation (file types, sizes)
 6. Document completeness check
@@ -225,7 +225,7 @@ not measured results from any deployment - there are no production deployments y
 **Integration Points**:
 - MitID authentication
 - SF1520 CPR lookup
-- DAWA address validation
+- Adressevælger address validation
 - Document management system
 - SBSYS case creation
 - SF1601 Digital Post (official notifications)
@@ -301,7 +301,7 @@ modern JSON:API" - not a fabricated payback period.
 - Ownership structure
 - Contact information
 
-**DAWA Address Service**:
+**Address Service**:
 - Real-time address autocomplete
 - Address validation
 - Geolocation coordinates
@@ -755,7 +755,7 @@ Each template includes:
 
 **CVR**: Central Business Register - Danish company registration system
 
-**DAWA**: Danmarks Adresse Web API - official Danish address service
+**Adressevælger**: Danmarks Adresseregister - official Danish address service
 
 **ESDH**: Elektronisk Sags- og Dokument Håndtering - electronic case/document management
 

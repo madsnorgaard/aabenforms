@@ -875,6 +875,19 @@ $settings['migrate_node_migrate_type_classic'] = FALSE;
 # $settings['migrate_file_public_path'] = '';
 # $settings['migrate_file_private_path'] = '';
 
+/**
+ * Klimadatastyrelsen Adressevælger (address autocomplete) access.
+ *
+ * The token is an arbitrary public identifier today (KDS user management is
+ * expected ~late 2026). Set AABENFORMS_ADRESSEVAELGER_TOKEN to our own unique
+ * value so we are not throttled alongside the shared demo token; swap for a
+ * registered token when Brugerstyring launches.
+ */
+$settings['aabenforms_adressevaelger_token'] = getenv('AABENFORMS_ADRESSEVAELGER_TOKEN') ?: 'aabenforms-adr-2026';
+if (getenv('AABENFORMS_ADRESSEVAELGER_API_URL')) {
+  $settings['aabenforms_adressevaelger_api_url'] = getenv('AABENFORMS_ADRESSEVAELGER_API_URL');
+}
+
 // Automatically generated include for settings managed by ddev.
 if (getenv('IS_DDEV_PROJECT') == 'true' && file_exists(__DIR__ . '/settings.ddev.php')) {
   include __DIR__ . '/settings.ddev.php';

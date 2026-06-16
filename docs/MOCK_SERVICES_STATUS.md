@@ -11,7 +11,7 @@
 |---------|------|--------|---------|
 | **Keycloak** | 8080 | **RUNNING** | MitID authentication mock (OIDC) |
 | **WireMock** | 8081 | **RUNNING** | Serviceplatformen SOAP mocks (SF1520, SF1530, SF1601) |
-| **Prism** | 4010 | **DISABLED** | DAWA address API mock (OpenAPI) - Not needed yet |
+| **Prism** | 4010 | **DISABLED** | Adressevælger address API mock (OpenAPI) - Not needed yet |
 
 ---
 
@@ -78,17 +78,17 @@ curl -X POST http://localhost:8081/sf1520 \
 
 ## Disabled Service
 
-### 3. Prism (DAWA Address Mock) - Port 4010
+### 3. Prism (Address Mock) - Port 4010
 
 **Status**: Commented out in `.ddev/docker-compose.mocks.yaml`
 
 **Reason**:
 - OpenAPI spec file not created yet
 - Not critical for Phase 1 (MitID + Serviceplatformen)
-- Will add in Phase 3 when working on `aabenforms_dawa` module
+- Will add in Phase 3 when working on `aabenforms_webform` module
 
 **To Enable Later**:
-1. Create OpenAPI spec: `.ddev/mocks/prism/dawa-openapi.yaml`
+1. Create OpenAPI spec: `.ddev/mocks/prism/adressevaelger-openapi.yaml`
 2. Uncomment Prism service in docker-compose
 3. Restart: `ddev restart`
 
@@ -139,9 +139,9 @@ $config['aabenforms_core.settings']['serviceplatformen']['sf1530_path'] = '/sf15
 $config['aabenforms_core.settings']['serviceplatformen']['sf1601_path'] = '/sf1601';
 $config['aabenforms_core.settings']['serviceplatformen']['mock_mode'] = TRUE;
 
-// DAWA Mock (Prism - when enabled)
-// $config['aabenforms_dawa.settings']['endpoint'] = 'http://localhost:4010';
-// $config['aabenforms_dawa.settings']['mock_mode'] = TRUE;
+// Adressevælger Mock (Prism - when enabled)
+// $config['aabenforms_adressevaelger.settings']['endpoint'] = 'http://localhost:4010';
+// $config['aabenforms_adressevaelger.settings']['mock_mode'] = TRUE;
 ```
 
 ---
@@ -247,9 +247,9 @@ $config['aabenforms_core.settings']['serviceplatformen']['mock_mode'] = TRUE;
 4. Write first integration tests for `aabenforms_mitid`
 
 ### Medium-term (Phase 3)
-1. Create DAWA OpenAPI spec
+1. Create Adressevælger OpenAPI spec
 2. Enable Prism service
-3. Test address autocomplete with `aabenforms_dawa` module
+3. Test address autocomplete with `aabenforms_webform` module
 
 ---
 

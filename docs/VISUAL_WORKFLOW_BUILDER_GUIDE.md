@@ -225,7 +225,7 @@ The palette contains all elements you can add to your workflow:
 - Authenticate with MitID
 - CPR Lookup (SF1520)
 - CVR Lookup (SF1530)
-- Validate Address (DAWA)
+- Validate Address (Adressevælger)
 - Process Payment (Nets Easy)
 - Generate PDF
 - Send Email
@@ -403,9 +403,9 @@ Configuration:
 
 ### Data Validation Actions
 
-#### 4. Validate Address (DAWA)
+#### 4. Validate Address (Adressevælger)
 
-**What it does**: Validates Danish address using DAWA API
+**What it does**: Validates Danish address using Adressevælger API
 
 **Use case**: Ensure valid address before processing application
 
@@ -417,7 +417,7 @@ Configuration:
 **Example**:
 ```
 Name: Validate Property Address
-Action: aabenforms_dawa_validate
+Action: aabenforms_address_validate
 Configuration:
   - address_field: address
   - validate_only: false
@@ -1437,10 +1437,10 @@ Click any element → Properties Panel → Documentation field
 ```
 Task: Validate Address
 Documentation:
-Validates property address using DAWA API.
+Validates property address using Adressevælger API.
 Input: {address} field from webform
 Output: {address_valid} (boolean), {address_data} (object with GPS, municipality code)
-Error handling: If DAWA API fails, workflow continues but logs warning
+Error handling: If Adressevælger API fails, workflow continues but logs warning
 ```
 
 ---

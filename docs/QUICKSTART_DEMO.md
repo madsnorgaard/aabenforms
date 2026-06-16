@@ -15,7 +15,7 @@ real and which are illustrative mocks.
 - ECA workflow engine, the Workflow Modeler editor, and execution replay
 - MitID OIDC sign-in against a Keycloak mock IdP (fails closed by default; demo mode is opt-in)
 - CPR (SF1520) and CVR (SF1530) lookup clients (against test/WireMock; need client certs for live)
-- Custom webform elements with server-side validation: CPR (modulus-11), CVR, DAWA
+- Custom webform elements with server-side validation: CPR (modulus-11), CVR, Adressevælger
 - Field-level CPR encryption (AES-256) plus audit logging
 - Digital Post (SF1601) in fake_db / wiremock test modes (no live MeMo/SOAP or idempotency yet)
 

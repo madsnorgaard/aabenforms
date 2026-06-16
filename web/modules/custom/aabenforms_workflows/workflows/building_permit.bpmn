@@ -65,7 +65,7 @@ Demonstrates full Danish municipal workflow pattern with GDPR compliance.
       <bpmn:outgoing>Flow_3</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:serviceTask id="Task_ValidateAddress" name="Validate Address (DAWA)">
+    <bpmn:serviceTask id="Task_ValidateAddress" name="Validate Address">
       
       <bpmn:extensionElements>
         <aabenforms:ecaAction plugin="aabenforms_validate_zoning">

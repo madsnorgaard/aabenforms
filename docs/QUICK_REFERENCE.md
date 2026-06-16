@@ -244,7 +244,7 @@ Esc            Close modal/overlay
 ### ÅbenForms Custom Fields
 - **CPR Field**: Danish CPR number (encrypted)
 - **CVR Field**: Danish CVR number (validated)
-- **DAWA Address**: Address with autocomplete
+- **Address**: Address with autocomplete
 - **MitID Auth**: MitID authentication trigger
 
 ---
@@ -374,7 +374,7 @@ Check version at: `/admin/reports/status`
 **Case Worker**: Municipal employee who reviews submissions
 **CPR**: Central Person Registry (Danish social security number)
 **CVR**: Central Business Registry (Danish company number)
-**DAWA**: Danish Address Web API
+**Adressevælger**: Denmark Address Register
 **ECA**: Event-Condition-Action (workflow engine)
 **ESDH**: Electronic Document and Records Management
 **Gateway**: Decision point in workflow (if/else)

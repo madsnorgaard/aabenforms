@@ -83,7 +83,7 @@ This takes 2-3 days per application and consumes significant staff time. Citizen
 "ÅbenForms automates this entire process:
 - Citizens apply online 24/7
 - Automatic identity verification via MitID
-- Address validation via DAWA
+- Address validation via Adressevælger
 - Payment processing via Nets Easy
 - Instant PDF permit generation and email delivery
 - Complete audit trail for compliance
@@ -114,12 +114,12 @@ Processing time: 3 days → instant. Cost per application: 150 DKK → 5 DKK."
    - Email: lars.hansen@test.dk
    - Phone: +45 12 34 56 78
    - Vehicle registration: AB 12 345
-   - Address: "Åboulevard 23, 1635 København V" (DAWA autocomplete will appear)
+   - Address: "Åboulevard 23, 1635 København V" (Adressevælger autocomplete will appear)
    - Duration: 12 months
    - Zone: A (auto-calculated fee: 1,200 DKK)
 
 **Highlight Features**:
-- "Notice the address autocomplete - this is DAWA, the official Danish address service. It eliminates typos and ensures valid addresses."
+- "Notice the address autocomplete - this is Adressevælger, the official Danish address service. It eliminates typos and ensures valid addresses."
 - "The fee is calculated automatically based on zone and duration. No manual lookup needed."
 
 2. Optional MitID authentication:
@@ -282,13 +282,13 @@ Processing time: 3 days → instant. Cost per application: 150 DKK → 5 DKK."
 2. Zoom to show full workflow
 3. Highlight key elements:
    - Start event (green circle): "Citizen submits application"
-   - Service tasks (blue rectangles): "Validate Address (DAWA)", "Process Payment (Nets Easy)", "Generate PDF"
+   - Service tasks (blue rectangles): "Validate Address (Adressevælger)", "Process Payment (Nets Easy)", "Generate PDF"
    - Gateway (yellow diamond): "Payment Successful?" - branches to success or failure
    - End events (red circles): "Permit Issued" or "Payment Failed"
 
 **Talking Points**:
 "This is the parking permit workflow we just saw. Each box is an action:
-- DAWA address validation
+- Adressevælger address validation
 - Nets Easy payment processing
 - PDF generation
 - Email delivery
@@ -323,7 +323,7 @@ Your staff can modify these settings without calling IT support."
    - Authenticate with MitID
    - CPR Lookup (SF1520)
    - CVR Lookup (SF1530)
-   - Validate Address (DAWA)
+   - Validate Address (Adressevælger)
    - Process Payment (Nets Easy)
    - Send Digital Post (SF1601)
    - Send SMS
@@ -380,7 +380,7 @@ You can drag these actions onto the workflow canvas and connect them. It's like 
 2. Click on building permit task
 3. Show application details:
    - Applicant information (from CPR)
-   - Property address (validated via DAWA)
+   - Property address (validated via Adressevælger)
    - Uploaded documents (plans, drawings)
    - Automated checks (document completeness, zoning validation)
    - Recommendation: "Approve" (based on automated checks)
@@ -754,7 +754,7 @@ For critical production issues (platform down, data loss), we have 24/7 emergenc
    - Effort: 2-3 days development
 
 2. **GIS System**: Validate property boundaries for building permits
-   - Solution: API call to GIS system with coordinates from DAWA
+   - Solution: API call to GIS system with coordinates from Adressevælger
    - Effort: 3-5 days development
 
 3. **Legacy Database**: Check applicant history before approval

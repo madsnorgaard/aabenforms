@@ -264,13 +264,13 @@ $mapping = [
 
 **Why**: Validate REST API requests/responses.
 
-**Use Case**: DAWA mock (address API is JSON-based).
+**Use Case**: Adressevælger mock (address API is JSON-based).
 
 **Example**:
 ```json
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "DAWA Address",
+  "title": "Address",
   "type": "object",
   "properties": {
     "id": { "type": "string", "format": "uuid" },
@@ -290,20 +290,20 @@ $mapping = [
 **Official Spec**: https://swagger.io/specification/
 **Status**: Industry standard (Linux Foundation)
 
-**Why**: Document REST APIs (DAWA mock).
+**Why**: Document REST APIs (Adressevælger mock).
 
 **Existing Tools**:
 - **Prism** - OpenAPI mock server
 - **Swagger UI** - API documentation
 - **Redoc** - Alternative documentation
 
-**RECOMMENDATION**: Use **Prism** for DAWA mock.
+**RECOMMENDATION**: Use **Prism** for Adressevælger mock.
 
 **Example**:
 ```yaml
 openapi: 3.0.0
 info:
-  title: DAWA Mock API
+  title: Adressevælger Mock API
   version: 1.0.0
 paths:
   /adresser/autocomplete:
@@ -518,7 +518,7 @@ services:
 **Language**: Node.js
 **Maturity**: Production
 
-**Use Case**: DAWA address API mock
+**Use Case**: Adressevælger address API mock
 
 **Features**:
 - OpenAPI 3.0 support
@@ -531,11 +531,11 @@ services:
 services:
   prism:
     image: stoplight/prism:4
-    command: mock -h 0.0.0.0 /api/dawa-openapi.yaml
+    command: mock -h 0.0.0.0 /api/adressevaelger-openapi.yaml
     ports:
       - "8082:4010"
     volumes:
-      - ./openapi/dawa-openapi.yaml:/api/dawa-openapi.yaml
+      - ./openapi/adressevaelger-openapi.yaml:/api/adressevaelger-openapi.yaml
 ```
 
 ---
@@ -609,7 +609,7 @@ const cpr = generateCPR(new Date('1900-01-01')); // "0101001234"
 │                                             │
 │  ┌──────────────┐  ┌──────────────┐        │
 │  │  Prism       │  │  Test Data   │        │
-│  │  (DAWA API)  │  │  Generator   │        │
+│  │  (Adressevælger API)  │  │  Generator   │        │
 │  └──────────────┘  └──────────────┘        │
 │                                             │
 │         ┌────────────────────┐             │
@@ -628,7 +628,7 @@ const cpr = generateCPR(new Date('1900-01-01')); // "0101001234"
 | **SF1520 (CPR)** | WireMock | SOAP stubs + test CPR data | 1 week |
 | **SF1530 (CVR)** | WireMock | SOAP stubs + test CVR data | 1 week |
 | **SF1601 (Digital Post)** | WireMock | SOAP stubs + delivery status | 1 week |
-| **DAWA Address** | Prism | OpenAPI spec + Danish addresses | 1 week |
+| **Address** | Prism | OpenAPI spec + Danish addresses | 1 week |
 | **Test Data Generator** | Faker.js | CPR/CVR generators (modulus-11) | 1 week |
 | **Orchestration** | Docker Compose | Multi-service setup | 1 week |
 
@@ -721,14 +721,14 @@ services:
       - ./wiremock/mappings:/home/wiremock/mappings
       - ./wiremock/__files:/home/wiremock/__files
 
-  # DAWA Address API Mock
+  # Address API Mock
   prism:
     image: stoplight/prism:4
-    command: mock -h 0.0.0.0 /api/dawa-openapi.yaml
+    command: mock -h 0.0.0.0 /api/adressevaelger-openapi.yaml
     ports:
       - "8082:4010"
     volumes:
-      - ./openapi/dawa-openapi.yaml:/api/dawa-openapi.yaml
+      - ./openapi/adressevaelger-openapi.yaml:/api/adressevaelger-openapi.yaml
 
   # Test Data Generator API
   test-data-api:
@@ -776,7 +776,7 @@ services:
 **Tasks**:
 1. Setup Keycloak with "danish-gov-test" realm
 2. Configure WireMock with SOAP stubs
-3. Setup Prism with DAWA OpenAPI spec
+3. Setup Prism with Adressevælger OpenAPI spec
 4. Create Docker Compose orchestration
 
 **Deliverables**:

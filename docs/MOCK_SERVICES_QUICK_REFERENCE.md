@@ -1,7 +1,7 @@
 # ÅbenForms Mock Services - Quick Reference Card
 
 Quick reference for the local DDEV mock services. MitID is a Keycloak mock realm,
-Serviceplatformen (CPR/CVR) is a WireMock mock, and DAWA is mocked via Prism. None
+Serviceplatformen (CPR/CVR) is a WireMock mock, and Adressevælger is mocked via Prism. None
 of these talk to live Danish government endpoints.
 
 ---
@@ -22,7 +22,7 @@ ddev mocks-logs         # View logs
 |---------|-----|----------|
 | **Keycloak (MitID)** | http://localhost:8080 | http://localhost:8080/admin |
 | **WireMock (Serviceplatformen)** | http://localhost:8081 | http://localhost:8081/__admin |
-| **Prism (DAWA)** | http://localhost:8082 | http://localhost:8082 |
+| **Prism (Adressevælger)** | http://localhost:8082 | http://localhost:8082 |
 | **Drupal Backend** | https://aabenforms.ddev.site | - |
 | **Nuxt Frontend** | http://localhost:3000 | - |
 
@@ -70,7 +70,7 @@ curl -X POST http://localhost:8081/sf1520 \
   --data '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns="http://kombit.dk/xml/schemas/RequestPersonBaseDataExtended/1/"><soapenv:Body><ns:GetPersonBaseDataExtended><ns:CPRNumber>0101904521</ns:CPRNumber></ns:GetPersonBaseDataExtended></soapenv:Body></soapenv:Envelope>'
 ```
 
-### Test DAWA Address Search
+### Test Address Search
 ```bash
 curl "http://localhost:8082/adresser/autocomplete?q=frederiksberg"
 ```
@@ -97,9 +97,9 @@ $config['aabenforms_mitid.settings']['mock_mode'] = TRUE;
 $config['aabenforms_core.settings']['serviceplatformen']['endpoint'] = 'http://localhost:8081';
 $config['aabenforms_core.settings']['serviceplatformen']['mock_mode'] = TRUE;
 
-// DAWA Mock (Prism). DAWA address lookup is a webform element in
+// Adressevælger Mock (Prism). Adressevælger address lookup is a webform element in
 // aabenforms_webform, not a standalone module.
-$config['aabenforms_webform.settings']['dawa']['api_url'] = 'http://localhost:8082';
+$config['aabenforms_webform.settings']['adressevaelger']['api_url'] = 'http://localhost:8082';
 ```
 
 ---
@@ -184,7 +184,7 @@ SF1601 (Digital Post): POST http://localhost:8081/sf1601
 
 ---
 
-## DAWA API Endpoints
+## Adressevælger API Endpoints
 
 ```
 Autocomplete:  GET http://localhost:8082/adresser/autocomplete?q={query}
