@@ -22,13 +22,6 @@ elements: |
     '#type': textfield
     '#title': 'Barnets navn'
     '#required': true
-  household_income:
-    '#type': number
-    '#title': 'Husstandsindkomst (kr./år)'
-    '#required': true
-    '#min': 0
-    '#step': 1
-    '#description': 'Den samlede årlige husstandsindkomst. Udfyldes automatisk fra eIndkomst i produktion.'
 css: ''
 javascript: ''
 settings:
