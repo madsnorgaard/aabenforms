@@ -24,6 +24,7 @@ Real today:
 - Custom Danish webform elements with server-side validation: CPR (format and modulus-11), CVR, Adressevælger address autocomplete
 - Field-level CPR encryption and audit logging (in `aabenforms_core`)
 - Digital Post (SF1601) in `fake_db` and `wiremock` test modes
+- A persistent case (sag) engine: each case carries a lawful status lifecycle and a deadline (frist) clock, and every transition is recorded as an auditable revision. Two flows open and drive cases — a concern report (underretning) with a statutory 24-hour clock, and an economic free-place application (fripladstilskud) with an income-gated auto-decision branch — surfaced in a caseworker inbox
 
 Demo or mock, not production:
 
@@ -59,6 +60,7 @@ Local URLs: site at https://aabenforms.ddev.site, JSON:API at `/jsonapi`, mail a
 | `aabenforms_mitid` | Active | MitID OIDC sign-in, session management, CPR claim extraction |
 | `aabenforms_webform` | Active | Custom webform elements: CPR, CVR, Adressevælger address |
 | `aabenforms_tenant` | Active | Domain-based multi-tenancy (logical, single database) |
+| `aabenforms_case` | Active | Persistent case (sag) entity with a status lifecycle, deadline (frist) clock and audited transition revisions; ECA actions to open and transition cases; ships the underretning and fripladstilskud flows |
 | `aabenforms_digital_post` (+ `_eca`) | Partial | SF1601 Digital Post in `fake_db`/`wiremock`; real MeMo and SOAP transport are planned (issue #77) |
 | `aabenforms_nemlogin`, `aabenforms_sbsys`, `aabenforms_get_organized` | Planned | NemLog-in Erhverv and ESDH/case-system integrations (issues #79, #84-#86) |
 
@@ -72,6 +74,8 @@ A security pass in June 2026 fixed issues found by a local pressure test, where 
 - #69 audit integrity: token resolution so CPR/CVR lookups actually run; MitID validation fails closed; honest step statuses
 - #70 execution-replay PII: least-privilege plus a cron self-heal so an armed replay cannot record citizen CPR to a shared store
 - #71 [docs/PROMISES-VS-VERIFIED.md](docs/PROMISES-VS-VERIFIED.md): the claim-vs-verified table
+
+Also in June 2026 the case (sag) engine landed (`aabenforms_case`): a revisionable case entity with a lawful status lifecycle (modtaget → oplyst → partshøring → afgørelse → påklaget → lukket), a configurable per-area deadline (frist) clock, and ECA actions that open a case from a submission and advance it through audited transitions. Two flows run on it — underretning (statutory 24-hour clock) and fripladstilskud (income-gated auto-decision: at/under the threshold the case auto-advances to a decision, above it it waits for manual handling) — and a caseworker inbox lists cases at `/admin/aabenforms/cases` (backend) and `/cases/inbox` (frontend).
 
 ## Roadmap
 
