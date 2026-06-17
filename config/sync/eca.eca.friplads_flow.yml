@@ -4,6 +4,7 @@ status: true
 dependencies:
   module:
     - aabenforms_case
+    - aabenforms_digital_post_eca
     - eca_content
     - modeler_api
 third_party_settings:
@@ -94,6 +95,21 @@ actions:
       afgoerelse_type: medhold
       klagevejledning: ''
       klagefrist_uger: 4
+    successors:
+      -
+        id: send_decision_letter
+        condition: ''
+  send_decision_letter:
+    label: 'Send afgørelsesbrev (Digital Post)'
+    plugin: aabenforms_digital_post_send
+    configuration:
+      recipient_token: '[webform_submission:values:applicant_cpr:raw]'
+      recipient_type: cpr
+      sender_cvr_token: ''
+      subject_template: 'Afgørelse: økonomisk fripladstilskud'
+      body_template: '<p>Din ansøgning om økonomisk fripladstilskud er imødekommet (medhold).</p>'
+      type: 'Digital Post'
+      result_token: digital_post_result
     successors: {  }
   t_oplyst_manual:
     label: 'Oplys sag (manuel vurdering)'
