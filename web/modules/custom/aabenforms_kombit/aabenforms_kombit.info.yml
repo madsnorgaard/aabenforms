@@ -1,0 +1,11 @@
+name: 'ÅbenForms KOMBIT'
+type: module
+description: 'KOMBIT fælleskommunale connectors. SF2900 Fordelingskomponent distribution that hands a finished case to a fagsystem; the business receipt drives the case to closed. Demo unless a Serviceplatform certificate is configured.'
+package: 'ÅbenForms'
+core_version_requirement: ^11
+php: ^8.3
+
+dependencies:
+  - aabenforms_core:aabenforms_core
+  - aabenforms_case:aabenforms_case
+  - eca:eca

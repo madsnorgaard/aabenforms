@@ -1,0 +1,3 @@
+services:
+  aabenforms_kombit.sf2900_distribution:
+    class: Drupal\aabenforms_kombit\Service\Sf2900DistributionService
