@@ -1,6 +1,7 @@
 _core:
   default_config_hash: 4GIX5Esnc_umpXUBj4IIocRX7Mt5fPhm4AgXfE3E56E
 module:
+  aabenforms_case: 0
   aabenforms_core: 0
   aabenforms_digital_post: 0
   aabenforms_digital_post_eca: 0

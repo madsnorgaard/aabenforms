@@ -1,0 +1,15 @@
+_core:
+  default_config_hash: jBwrXX5YgTee5LvU3BViXR70O27P33-P12RFySTdd1c
+frister:
+  underretning:
+    unit: hours
+    amount: 24
+  underretning_anerkend:
+    unit: hverdage
+    amount: 6
+  friplads:
+    unit: straks
+    amount: 0
+  default:
+    unit: hverdage
+    amount: 28
