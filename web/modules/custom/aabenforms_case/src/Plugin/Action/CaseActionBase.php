@@ -123,6 +123,17 @@ abstract class CaseActionBase extends ConfigurableActionBase {
     if (is_scalar($value)) {
       return (string) $value;
     }
+    // ECA wraps scalars set via addTokenData() in a DataTransferObject, so a
+    // bare token name resolves to an object here, not a string. Honour its
+    // scalar representation before giving up (matches AabenFormsActionBase).
+    if (is_object($value)) {
+      if (method_exists($value, '__toString')) {
+        return (string) $value;
+      }
+      if (method_exists($value, 'getString')) {
+        return (string) $value->getString();
+      }
+    }
     return $default;
   }
 
