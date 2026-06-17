@@ -1,8 +1,8 @@
 # AabenForms Digital Post
 
-Send SF1601 Digital Post from any modern Drupal 11 site, without the OS2-ecosystem dependency maze that makes `os2forms_digital_post` painful to adopt.
+Send SF1601 Digital Post from any modern Drupal 11 site, with minimal dependencies and no heavy ecosystem to adopt.
 
-- Hard Drupal dependencies: `drupal:key`, `aabenforms_core`. No webform, no OS2 ecosystem, no os2web_*. The webform handler is its own optional submodule.
+- Hard Drupal dependencies: `drupal:key`, `aabenforms_core`. No webform and no heavy ecosystem modules required. The webform handler is its own optional submodule.
 - One composer library dependency: `itk-dev/serviceplatformen` (bundled MeMo and Fjernprint types included).
 - Four test modes: `fake_db` (default, zero-config), `wiremock`, `live_test`, `live`.
 - Public API is a single value object and a single service call; no webform coupling in the core module.
