@@ -49,6 +49,14 @@ actions:
       case_type: friplads
       case_id_token: case_id
     successors:
+      - id: journal_case
+        condition: ''
+  journal_case:
+    label: 'Journalisér sag (SF1470)'
+    plugin: aabenforms_case_journal
+    configuration:
+      case_id_token: '[case_id]'
+    successors:
       - id: income_lookup
         condition: ''
   income_lookup:
