@@ -24,7 +24,7 @@ Real today:
 - Custom Danish webform elements with server-side validation: CPR (format and modulus-11), CVR, Adressevælger address autocomplete
 - Field-level CPR encryption and audit logging (in `aabenforms_core`)
 - Digital Post (SF1601) in `fake_db` and `wiremock` test modes
-- A persistent case (sag) engine: each case carries a lawful status lifecycle and a deadline (frist) clock, and every transition is recorded as an auditable revision. Two flows open and drive cases — a concern report (underretning) with a statutory 24-hour clock, and an economic free-place application (fripladstilskud) with an income-gated auto-decision branch — surfaced in a caseworker inbox
+- A persistent case (sag) engine: each case carries a lawful status lifecycle and a deadline (frist) clock, and every transition is an auditable revision. The full loop is wired end to end — open a case, journalise it (SF1470), decide it lawfully (FVL §19 partshøring gate + §25 mandatory klagevejledning), send the decision via Digital Post, handle an appeal (genvurdering), and distribute the finished case to a fagsystem via SF2900 where the business receipt closes it. Two flows drive it: a concern report (underretning, statutory 24-hour clock) and an economic free-place application (fripladstilskud, income fetched from CPR → auto-decision → decision letter → SF2900). Cases surface in a caseworker inbox
 
 Demo or mock, not production:
 
@@ -60,7 +60,8 @@ Local URLs: site at https://aabenforms.ddev.site, JSON:API at `/jsonapi`, mail a
 | `aabenforms_mitid` | Active | MitID OIDC sign-in, session management, CPR claim extraction |
 | `aabenforms_webform` | Active | Custom webform elements: CPR, CVR, Adressevælger address |
 | `aabenforms_tenant` | Active | Domain-based multi-tenancy (logical, single database) |
-| `aabenforms_case` | Active | Persistent case (sag) entity with a status lifecycle, deadline (frist) clock and audited transition revisions; ECA actions to open and transition cases; ships the underretning and fripladstilskud flows |
+| `aabenforms_case` | Active | Persistent case (sag) entity with a status lifecycle, deadline (frist) clock and audited transition revisions; ECA actions to open, journalise (SF1470 demo), decide (FVL §19/§25), appeal and transition cases; ships the underretning, fripladstilskud and klage flows |
+| `aabenforms_kombit` | Active | KOMBIT connectors. SF2900 Fordelingskomponent distribution (demo): hands a decided case to a fagsystem and closes it on the business receipt; real SOAP/STS/OCES3/SFTP behind the same contract later |
 | `aabenforms_digital_post` (+ `_eca`) | Partial | SF1601 Digital Post in `fake_db`/`wiremock`; real MeMo and SOAP transport are planned (issue #77) |
 | `aabenforms_nemlogin`, `aabenforms_sbsys`, `aabenforms_get_organized` | Planned | NemLog-in Erhverv and ESDH/case-system integrations (issues #79, #84-#86) |
 
@@ -76,6 +77,8 @@ A security pass in June 2026 fixed issues found by a local pressure test, where 
 - #71 [docs/PROMISES-VS-VERIFIED.md](docs/PROMISES-VS-VERIFIED.md): the claim-vs-verified table
 
 Also in June 2026 the case (sag) engine landed (`aabenforms_case`): a revisionable case entity with a lawful status lifecycle (modtaget → oplyst → partshøring → afgørelse → påklaget → lukket), a configurable per-area deadline (frist) clock, and ECA actions that open a case from a submission and advance it through audited transitions. Two flows run on it — underretning (statutory 24-hour clock) and fripladstilskud (income-gated auto-decision: at/under the threshold the case auto-advances to a decision, above it it waits for manual handling) — and a caseworker inbox lists cases at `/admin/aabenforms/cases` (backend) and `/cases/inbox` (frontend).
+
+The casework loop was then closed: SF1470 journaling, a lawful decision step (FVL §19 partshøring gate + §25 mandatory klagevejledning with a computed klagefrist), the decision letter via Digital Post, an appeal/genvurdering flow (the `paaklaget` state, lodged via a `klage` form), and `aabenforms_kombit`'s SF2900 distribution where the receiving fagsystem's business receipt closes the case. A low-income fripladstilskud now runs the whole lifecycle `modtaget → journaliseret → oplyst → afgørelse → lukket` as audited revisions. All external integrations are demo behind production-shaped contracts (no live certs/SOAP/SFTP).
 
 ## Roadmap
 
