@@ -76,7 +76,7 @@ Thumbs.db
 # Reports and planning documents (internal)
 /reports/
 
-# OS2Forms reference repositories (for studying patterns, not our code)
+# Reference repositories (for studying patterns, not our code)
 /reference/
 data/*
 !data/private/
