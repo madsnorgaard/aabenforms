@@ -5,6 +5,7 @@ dependencies:
   module:
     - aabenforms_case
     - aabenforms_digital_post_eca
+    - aabenforms_kombit
     - eca_content
     - modeler_api
 third_party_settings:
@@ -103,6 +104,14 @@ actions:
       body_template: '<p>Din ansøgning om økonomisk fripladstilskud er imødekommet (medhold).</p>'
       type: 'Digital Post'
       result_token: digital_post_result
+    successors:
+      - id: sf2900_distribute
+        condition: ''
+  sf2900_distribute:
+    label: 'Distribuér til fagsystem (SF2900)'
+    plugin: aabenforms_case_sf2900_distribute
+    configuration:
+      case_id_token: '[case_id]'
     successors: {  }
   t_oplyst_manual:
     label: 'Oplys sag (manuel vurdering)'
