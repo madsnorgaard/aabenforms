@@ -8,6 +8,9 @@ frister:
   friplads:
     unit: straks
     amount: 0
+  merudgifter:
+    unit: hverdage
+    amount: 20
   default:
     unit: hverdage
     amount: 28
