@@ -1,0 +1,33 @@
+uuid: 8d7c6b5a-4e3f-4d2c-9b8a-1c2d3e4f5a6b
+langcode: da
+status: true
+dependencies:
+  module:
+    - aabenforms_case
+    - eca_content
+    - modeler_api
+third_party_settings:
+  modeler_api:
+    modeler_id: workflow_modeler
+    label: klage_flow
+id: klage_flow
+weight: null
+template: null
+events:
+  on_submission:
+    plugin: 'content_entity:insert'
+    configuration:
+      type: 'webform_submission klage'
+    successors:
+      - id: appeal_case
+        condition: ''
+conditions: {  }
+gateways: {  }
+actions:
+  appeal_case:
+    label: 'Registrér klage (genvurdering)'
+    plugin: aabenforms_case_appeal
+    configuration:
+      case_id_token: '[webform_submission:values:case_id]'
+      grounds_token: '[webform_submission:values:klage_begrundelse]'
+    successors: {  }
