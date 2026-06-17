@@ -1,0 +1,205 @@
+uuid: 1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d
+langcode: da
+status: true
+dependencies:
+  module:
+    - aabenforms_case
+    - aabenforms_digital_post_eca
+    - aabenforms_kombit
+    - aabenforms_workflows
+    - eca_content
+    - modeler_api
+third_party_settings:
+  modeler_api:
+    modeler_id: workflow_modeler
+    label: merudgifter_flow
+id: merudgifter_flow
+weight: null
+template: null
+events:
+  on_submission:
+    plugin: 'content_entity:insert'
+    configuration:
+      type: 'webform_submission merudgifter'
+    successors:
+      - id: mitid_validate
+        condition: ''
+conditions:
+  gate_mitid_ok:
+    plugin: eca_scalar
+    configuration:
+      negate: false
+      left: '[merudgift_mitid_valid_status]'
+      right: verified
+      operator: equal
+      type: value
+      case: false
+  gate_mitid_deny:
+    plugin: eca_scalar
+    configuration:
+      negate: true
+      left: '[merudgift_mitid_valid_status]'
+      right: verified
+      operator: equal
+      type: value
+      case: false
+  gate_eligible:
+    plugin: eca_scalar
+    configuration:
+      negate: false
+      left: '[webform_submission:values:maanedlig_merudgift]'
+      right: '1000'
+      operator: atleast
+      type: numeric
+      case: false
+  gate_ineligible:
+    plugin: eca_scalar
+    configuration:
+      negate: true
+      left: '[webform_submission:values:maanedlig_merudgift]'
+      right: '1000'
+      operator: atleast
+      type: numeric
+      case: false
+gateways: {  }
+actions:
+  mitid_validate:
+    label: 'Validér MitID-session'
+    plugin: aabenforms_mitid_validate
+    configuration:
+      workflow_id_token: workflow_id_merudgift
+      result_token: merudgift_mitid_valid
+      session_data_token: merudgift_session
+    successors:
+      - id: cpr_lookup
+        condition: gate_mitid_ok
+      - id: deny_identity
+        condition: gate_mitid_deny
+  deny_identity:
+    label: 'Afvis: identitet ikke bekræftet'
+    plugin: aabenforms_workflow_deny
+    configuration:
+      event_type: merudgifter_denied
+      step_label: 'Identitet ikke bekræftet'
+      message: 'Ansøgningen blev ikke behandlet, fordi din identitet ikke kunne bekræftes med MitID. Log ind med MitID og prøv igen.'
+    successors: {  }
+  cpr_lookup:
+    label: 'CPR-opslag (SF1520)'
+    plugin: aabenforms_cpr_lookup
+    configuration:
+      cpr_token: '[webform_submission:values:applicant_cpr:raw]'
+      result_token: citizen_data
+      use_cache: true
+    successors:
+      - id: open_case
+        condition: ''
+  open_case:
+    label: 'Åbn sag (merudgifter)'
+    plugin: aabenforms_case_open
+    configuration:
+      case_type: merudgifter
+      case_id_token: case_id
+    successors:
+      - id: journal_case
+        condition: ''
+  journal_case:
+    label: 'Journalisér sag (SF1470)'
+    plugin: aabenforms_case_journal
+    configuration:
+      case_id_token: '[case_id]'
+    successors:
+      - id: income_lookup
+        condition: ''
+  income_lookup:
+    label: 'Hent husstandsindkomst (eIndkomst)'
+    plugin: aabenforms_case_income_lookup
+    configuration:
+      cpr_token: '[webform_submission:values:applicant_cpr:raw]'
+      result_token: merudgift_income
+    successors:
+      - id: transition_oplyst
+        condition: ''
+  transition_oplyst:
+    label: 'Oplys sag'
+    plugin: aabenforms_case_transition
+    configuration:
+      case_id_token: '[case_id]'
+      target_status: oplyst
+      log_message: 'Sag oplyst: identitet bekræftet, journaliseret, indkomst hentet.'
+    successors:
+      - id: decide_medhold
+        condition: gate_eligible
+      - id: partshoering_open
+        condition: gate_ineligible
+  decide_medhold:
+    label: 'Afgørelse: medhold'
+    plugin: aabenforms_case_decide
+    configuration:
+      case_id_token: '[case_id]'
+      afgoerelse_type: medhold
+      klagevejledning: ''
+      klagefrist_uger: 4
+    successors:
+      - id: letter_medhold
+        condition: ''
+  letter_medhold:
+    label: 'Send afgørelsesbrev (medhold)'
+    plugin: aabenforms_digital_post_send
+    configuration:
+      recipient_token: '[webform_submission:values:applicant_cpr:raw]'
+      recipient_type: cpr
+      sender_cvr_token: ''
+      subject_template: 'Afgørelse: merudgiftsydelse (servicelovens §41)'
+      body_template: '<p>Din ansøgning om dækning af merudgifter er imødekommet (medhold).</p>'
+      type: 'Digital Post'
+      result_token: digital_post_result
+    successors:
+      - id: sf2900_distribute
+        condition: ''
+  sf2900_distribute:
+    label: 'Distribuér til fagsystem (SF2900)'
+    plugin: aabenforms_case_sf2900_distribute
+    configuration:
+      case_id_token: '[case_id]'
+    successors: {  }
+  partshoering_open:
+    label: 'Åbn partshøring (FVL §19)'
+    plugin: aabenforms_case_partshoering
+    configuration:
+      case_id_token: '[case_id]'
+      state: afventer
+    successors:
+      - id: partshoering_close
+        condition: ''
+  partshoering_close:
+    label: 'Afslut partshøring'
+    plugin: aabenforms_case_partshoering
+    configuration:
+      case_id_token: '[case_id]'
+      state: afsluttet
+    successors:
+      - id: decide_afslag
+        condition: ''
+  decide_afslag:
+    label: 'Afgørelse: afslag'
+    plugin: aabenforms_case_decide
+    configuration:
+      case_id_token: '[case_id]'
+      afgoerelse_type: afslag
+      klagevejledning: 'Du kan klage over afgørelsen til Ankestyrelsen. Klagen skal være modtaget senest 4 uger efter, du har fået afgørelsen.'
+      klagefrist_uger: 4
+    successors:
+      - id: letter_afslag
+        condition: ''
+  letter_afslag:
+    label: 'Send afgørelsesbrev (afslag + klagevejledning)'
+    plugin: aabenforms_digital_post_send
+    configuration:
+      recipient_token: '[webform_submission:values:applicant_cpr:raw]'
+      recipient_type: cpr
+      sender_cvr_token: ''
+      subject_template: 'Afgørelse: merudgiftsydelse (servicelovens §41)'
+      body_template: '<p>Din ansøgning om dækning af merudgifter er ikke imødekommet (afslag). Se vedlagte klagevejledning.</p>'
+      type: 'Digital Post'
+      result_token: digital_post_result
+    successors: {  }
