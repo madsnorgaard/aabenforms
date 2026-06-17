@@ -1,0 +1,33 @@
+uuid: 4f8b2c1d-6e3a-4b9c-9d7e-0a1b2c3d4e5f
+langcode: da
+status: true
+dependencies:
+  module:
+    - aabenforms_case
+    - eca_content
+    - modeler_api
+third_party_settings:
+  modeler_api:
+    modeler_id: workflow_modeler
+    label: underretning_flow
+id: underretning_flow
+weight: null
+template: null
+events:
+  on_submission:
+    plugin: 'content_entity:insert'
+    configuration:
+      type: 'webform_submission underretning'
+    successors:
+      - id: open_case
+        condition: ''
+conditions: {  }
+gateways: {  }
+actions:
+  open_case:
+    label: 'Åbn sag (underretning)'
+    plugin: aabenforms_case_open
+    configuration:
+      case_type: underretning
+      case_id_token: case_id
+    successors: {  }

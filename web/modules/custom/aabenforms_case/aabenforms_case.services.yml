@@ -1,0 +1,5 @@
+services:
+  aabenforms_case.frist_clock:
+    class: Drupal\aabenforms_case\Service\FristClock
+    arguments:
+      - '@config.factory'
