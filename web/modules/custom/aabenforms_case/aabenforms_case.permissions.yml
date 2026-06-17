@@ -1,0 +1,9 @@
+view aabenforms_case:
+  title: 'View ÅbenForms cases'
+  description: 'Caseworkers with this permission can read cases (incl. via JSON:API).'
+  restrict access: true
+
+administer aabenforms_case:
+  title: 'Administer ÅbenForms cases'
+  description: 'Create, edit, transition and delete cases.'
+  restrict access: true

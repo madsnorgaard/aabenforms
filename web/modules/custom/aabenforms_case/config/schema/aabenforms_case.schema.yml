@@ -1,0 +1,17 @@
+aabenforms_case.settings:
+  type: config_object
+  label: 'ÅbenForms Case settings'
+  mapping:
+    frister:
+      type: sequence
+      label: 'Per-area deadlines'
+      sequence:
+        type: mapping
+        label: 'Deadline definition'
+        mapping:
+          unit:
+            type: string
+            label: 'Unit (hours, hverdage, straks)'
+          amount:
+            type: integer
+            label: 'Amount'

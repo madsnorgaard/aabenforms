@@ -1,0 +1,11 @@
+name: 'ÅbenForms Case'
+type: module
+description: 'Persistent case (sag) entity with a lawful lifecycle and a deadline (frist) clock, opened from webform submissions via ECA. Foundation for municipal casework.'
+package: 'ÅbenForms'
+core_version_requirement: ^11
+php: ^8.3
+
+dependencies:
+  - aabenforms_core:aabenforms_core
+  - eca:eca
+  - webform:webform

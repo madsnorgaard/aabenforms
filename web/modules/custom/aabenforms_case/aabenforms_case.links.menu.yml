@@ -1,0 +1,6 @@
+entity.aabenforms_case.collection:
+  title: 'Cases'
+  description: 'Caseworker inbox: open cases and their deadlines.'
+  route_name: entity.aabenforms_case.collection
+  parent: system.admin_content
+  weight: 10
