@@ -26,7 +26,7 @@ conditions:
     plugin: eca_scalar
     configuration:
       negate: false
-      left: '[webform_submission:values:household_income]'
+      left: '[friplads_income]'
       right: '200000'
       operator: atmost
       type: numeric
@@ -35,7 +35,7 @@ conditions:
     plugin: eca_scalar
     configuration:
       negate: true
-      left: '[webform_submission:values:household_income]'
+      left: '[friplads_income]'
       right: '200000'
       operator: atmost
       type: numeric
@@ -48,6 +48,15 @@ actions:
     configuration:
       case_type: friplads
       case_id_token: case_id
+    successors:
+      - id: income_lookup
+        condition: ''
+  income_lookup:
+    label: 'Hent husstandsindkomst (eIndkomst)'
+    plugin: aabenforms_case_income_lookup
+    configuration:
+      cpr_token: '[webform_submission:values:applicant_cpr:raw]'
+      result_token: friplads_income
     successors:
       - id: t_oplyst_auto
         condition: gate_eligible
