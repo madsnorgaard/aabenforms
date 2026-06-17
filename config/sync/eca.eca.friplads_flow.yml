@@ -68,12 +68,13 @@ actions:
         id: t_afgoerelse
         condition: ''
   t_afgoerelse:
-    label: 'Automatisk afgørelse'
-    plugin: aabenforms_case_transition
+    label: 'Automatisk afgørelse (medhold)'
+    plugin: aabenforms_case_decide
     configuration:
       case_id_token: '[case_id]'
-      target_status: afgoerelse
-      log_message: 'Automatisk afgørelse: friplads bevilget.'
+      afgoerelse_type: medhold
+      klagevejledning: ''
+      klagefrist_uger: 4
     successors: {  }
   t_oplyst_manual:
     label: 'Oplys sag (manuel vurdering)'
