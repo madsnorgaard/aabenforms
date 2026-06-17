@@ -1,0 +1,81 @@
+uuid: 6b5d4c3e-2a1f-4e8d-9c7b-3f2e1d0c9b8a
+langcode: da
+status: true
+dependencies:
+  module:
+    - aabenforms_case
+    - eca_content
+    - modeler_api
+third_party_settings:
+  modeler_api:
+    modeler_id: workflow_modeler
+    label: friplads_flow
+id: friplads_flow
+weight: null
+template: null
+events:
+  on_submission:
+    plugin: 'content_entity:insert'
+    configuration:
+      type: 'webform_submission friplads'
+    successors:
+      - id: open_case
+        condition: ''
+conditions:
+  gate_eligible:
+    plugin: eca_scalar
+    configuration:
+      negate: false
+      left: '[webform_submission:values:household_income]'
+      right: '200000'
+      operator: atmost
+      type: numeric
+      case: false
+  gate_manual:
+    plugin: eca_scalar
+    configuration:
+      negate: true
+      left: '[webform_submission:values:household_income]'
+      right: '200000'
+      operator: atmost
+      type: numeric
+      case: false
+gateways: {  }
+actions:
+  open_case:
+    label: 'Åbn sag (fripladstilskud)'
+    plugin: aabenforms_case_open
+    configuration:
+      case_type: friplads
+      case_id_token: case_id
+    successors:
+      - id: t_oplyst_auto
+        condition: gate_eligible
+      - id: t_oplyst_manual
+        condition: gate_manual
+  t_oplyst_auto:
+    label: 'Oplys sag (straksbehandling)'
+    plugin: aabenforms_case_transition
+    configuration:
+      case_id_token: '[case_id]'
+      target_status: oplyst
+      log_message: 'Indkomst ≤ fripladsgrænse - straksbehandling.'
+    successors:
+      - id: t_afgoerelse
+        condition: ''
+  t_afgoerelse:
+    label: 'Automatisk afgørelse'
+    plugin: aabenforms_case_transition
+    configuration:
+      case_id_token: '[case_id]'
+      target_status: afgoerelse
+      log_message: 'Automatisk afgørelse: friplads bevilget.'
+    successors: {  }
+  t_oplyst_manual:
+    label: 'Oplys sag (manuel vurdering)'
+    plugin: aabenforms_case_transition
+    configuration:
+      case_id_token: '[case_id]'
+      target_status: oplyst
+      log_message: 'Indkomst > grænse - sendt til manuel vurdering.'
+    successors: {  }
