@@ -62,6 +62,24 @@ conditions:
       operator: atleast
       type: numeric
       case: false
+  gate_letter_ok:
+    plugin: eca_scalar
+    configuration:
+      negate: false
+      left: '[digital_post_result_status]'
+      right: success
+      operator: equal
+      type: value
+      case: false
+  gate_letter_fail:
+    plugin: eca_scalar
+    configuration:
+      negate: true
+      left: '[digital_post_result_status]'
+      right: success
+      operator: equal
+      type: value
+      case: false
 gateways: {  }
 actions:
   mitid_validate:
@@ -166,7 +184,18 @@ actions:
     successors:
       -
         id: sf2900_distribute
-        condition: ''
+        condition: gate_letter_ok
+      -
+        id: letter_failed
+        condition: gate_letter_fail
+  letter_failed:
+    label: 'Brev ikke afsendt - sag afventer'
+    plugin: aabenforms_workflow_deny
+    configuration:
+      event_type: merudgifter_letter_failed
+      step_label: 'Afgørelsesbrev ikke afsendt'
+      message: 'Afgørelsen er truffet, men afgørelsesbrevet kunne ikke afsendes. Sagen forbliver åben og afventer fornyet afsendelse - den er ikke lukket, og klagefristen er ikke startet.'
+    successors: {  }
   sf2900_distribute:
     label: 'Distribuér til fagsystem (SF2900)'
     plugin: aabenforms_case_sf2900_distribute
@@ -216,4 +245,17 @@ actions:
       body_template: '<p>Din ansøgning om dækning af merudgifter er ikke imødekommet (afslag). Se vedlagte klagevejledning.</p>'
       type: 'Digital Post'
       result_token: digital_post_result
+    successors:
+      -
+        id: set_klagefrist
+        condition: gate_letter_ok
+      -
+        id: letter_failed
+        condition: gate_letter_fail
+  set_klagefrist:
+    label: 'Start klagefrist (brev afsendt)'
+    plugin: aabenforms_case_set_klagefrist
+    configuration:
+      case_id_token: '[case_id]'
+      klagefrist_uger: 4
     successors: {  }

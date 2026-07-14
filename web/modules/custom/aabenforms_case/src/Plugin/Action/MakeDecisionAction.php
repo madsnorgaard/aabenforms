@@ -169,15 +169,15 @@ class MakeDecisionAction extends CaseActionBase {
 
       $now = $this->time->getRequestTime();
       $case->set('afgoerelse_type', $type);
-      if ($adverse) {
-        $case->set('klagefrist', $now + ($uger * 7 * 86400));
-      }
+      // The klagefrist clock is NOT started here: it runs from when the citizen
+      // is notified (FVL meddelelseskrav), so aabenforms_case_set_klagefrist
+      // stamps it on the branch where the decision letter is confirmed sent.
       $case->setStatus('afgoerelse');
       $case->setNewRevision(TRUE);
       $logParts = [sprintf('Afgørelse: %s.', $type)];
       if ($adverse) {
         $logParts[] = 'Klagevejledning: ' . $klagevejledning;
-        $logParts[] = sprintf('Klagefrist: %d uger.', $uger);
+        $logParts[] = sprintf('Klagefrist: %d uger (startes ved brevafsendelse).', $uger);
         if ((string) $case->get('partshoering_state')->value !== 'afsluttet' && $exemption !== '') {
           $logParts[] = 'Partshøring undladt (FVL §19 stk. 2): ' . $exemption;
         }

@@ -386,6 +386,11 @@ class SendDigitalPostAction extends AabenFormsActionBase {
       'reason_code' => $reasonCode,
       'message' => $message,
     ]);
+    // Status-token companion so an eca_scalar gate can branch on the outcome
+    // (a DTO token cannot be compared directly). A flow MUST route the case
+    // close only on '[<result_token>_status]' == 'success'; anything else
+    // leaves the case open. See the status-token contract.
+    $this->setTokenValue($name . '_status', $success ? 'success' : 'failed');
   }
 
 }

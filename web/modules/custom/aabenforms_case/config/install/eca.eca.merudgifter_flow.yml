@@ -22,7 +22,8 @@ events:
     configuration:
       type: 'webform_submission merudgifter'
     successors:
-      - id: mitid_validate
+      -
+        id: mitid_validate
         condition: ''
 conditions:
   gate_mitid_ok:
@@ -61,6 +62,24 @@ conditions:
       operator: atleast
       type: numeric
       case: false
+  gate_letter_ok:
+    plugin: eca_scalar
+    configuration:
+      negate: false
+      left: '[digital_post_result_status]'
+      right: success
+      operator: equal
+      type: value
+      case: false
+  gate_letter_fail:
+    plugin: eca_scalar
+    configuration:
+      negate: true
+      left: '[digital_post_result_status]'
+      right: success
+      operator: equal
+      type: value
+      case: false
 gateways: {  }
 actions:
   mitid_validate:
@@ -71,9 +90,11 @@ actions:
       result_token: merudgift_mitid_valid
       session_data_token: merudgift_session
     successors:
-      - id: cpr_lookup
+      -
+        id: cpr_lookup
         condition: gate_mitid_ok
-      - id: deny_identity
+      -
+        id: deny_identity
         condition: gate_mitid_deny
   deny_identity:
     label: 'Afvis: identitet ikke bekræftet'
@@ -91,7 +112,8 @@ actions:
       result_token: citizen_data
       use_cache: true
     successors:
-      - id: open_case
+      -
+        id: open_case
         condition: ''
   open_case:
     label: 'Åbn sag (merudgifter)'
@@ -100,7 +122,8 @@ actions:
       case_type: merudgifter
       case_id_token: case_id
     successors:
-      - id: journal_case
+      -
+        id: journal_case
         condition: ''
   journal_case:
     label: 'Journalisér sag (SF1470)'
@@ -108,7 +131,8 @@ actions:
     configuration:
       case_id_token: '[case_id]'
     successors:
-      - id: income_lookup
+      -
+        id: income_lookup
         condition: ''
   income_lookup:
     label: 'Hent husstandsindkomst (eIndkomst)'
@@ -117,7 +141,8 @@ actions:
       cpr_token: '[webform_submission:values:applicant_cpr:raw]'
       result_token: merudgift_income
     successors:
-      - id: transition_oplyst
+      -
+        id: transition_oplyst
         condition: ''
   transition_oplyst:
     label: 'Oplys sag'
@@ -127,9 +152,11 @@ actions:
       target_status: oplyst
       log_message: 'Sag oplyst: identitet bekræftet, journaliseret, indkomst hentet.'
     successors:
-      - id: decide_medhold
+      -
+        id: decide_medhold
         condition: gate_eligible
-      - id: partshoering_open
+      -
+        id: partshoering_open
         condition: gate_ineligible
   decide_medhold:
     label: 'Afgørelse: medhold'
@@ -140,7 +167,8 @@ actions:
       klagevejledning: ''
       klagefrist_uger: 4
     successors:
-      - id: letter_medhold
+      -
+        id: letter_medhold
         condition: ''
   letter_medhold:
     label: 'Send afgørelsesbrev (medhold)'
@@ -154,8 +182,20 @@ actions:
       type: 'Digital Post'
       result_token: digital_post_result
     successors:
-      - id: sf2900_distribute
-        condition: ''
+      -
+        id: sf2900_distribute
+        condition: gate_letter_ok
+      -
+        id: letter_failed
+        condition: gate_letter_fail
+  letter_failed:
+    label: 'Brev ikke afsendt - sag afventer'
+    plugin: aabenforms_workflow_deny
+    configuration:
+      event_type: merudgifter_letter_failed
+      step_label: 'Afgørelsesbrev ikke afsendt'
+      message: 'Afgørelsen er truffet, men afgørelsesbrevet kunne ikke afsendes. Sagen forbliver åben og afventer fornyet afsendelse - den er ikke lukket, og klagefristen er ikke startet.'
+    successors: {  }
   sf2900_distribute:
     label: 'Distribuér til fagsystem (SF2900)'
     plugin: aabenforms_case_sf2900_distribute
@@ -169,7 +209,8 @@ actions:
       case_id_token: '[case_id]'
       state: afventer
     successors:
-      - id: partshoering_close
+      -
+        id: partshoering_close
         condition: ''
   partshoering_close:
     label: 'Afslut partshøring'
@@ -178,7 +219,8 @@ actions:
       case_id_token: '[case_id]'
       state: afsluttet
     successors:
-      - id: decide_afslag
+      -
+        id: decide_afslag
         condition: ''
   decide_afslag:
     label: 'Afgørelse: afslag'
@@ -189,7 +231,8 @@ actions:
       klagevejledning: 'Du kan klage over afgørelsen til Ankestyrelsen. Klagen skal være modtaget senest 4 uger efter, du har fået afgørelsen.'
       klagefrist_uger: 4
     successors:
-      - id: letter_afslag
+      -
+        id: letter_afslag
         condition: ''
   letter_afslag:
     label: 'Send afgørelsesbrev (afslag + klagevejledning)'
@@ -202,4 +245,17 @@ actions:
       body_template: '<p>Din ansøgning om dækning af merudgifter er ikke imødekommet (afslag). Se vedlagte klagevejledning.</p>'
       type: 'Digital Post'
       result_token: digital_post_result
+    successors:
+      -
+        id: set_klagefrist
+        condition: gate_letter_ok
+      -
+        id: letter_failed
+        condition: gate_letter_fail
+  set_klagefrist:
+    label: 'Start klagefrist (brev afsendt)'
+    plugin: aabenforms_case_set_klagefrist
+    configuration:
+      case_id_token: '[case_id]'
+      klagefrist_uger: 4
     successors: {  }

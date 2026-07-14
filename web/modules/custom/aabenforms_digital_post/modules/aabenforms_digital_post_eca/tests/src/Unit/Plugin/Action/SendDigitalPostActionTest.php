@@ -174,6 +174,8 @@ class SendDigitalPostActionTest extends UnitTestCase {
 
     $this->assertSame(TRUE, $writtenTokens['digital_post_result']['success']);
     $this->assertSame('tx-1', $writtenTokens['digital_post_result']['transaction_id']);
+    // The status-token companion an eca_scalar gate branches on.
+    $this->assertSame('success', $writtenTokens['digital_post_result_status']);
   }
 
   /**
@@ -220,6 +222,7 @@ class SendDigitalPostActionTest extends UnitTestCase {
 
     $this->assertSame(FALSE, $writtenTokens['digital_post_result']['success']);
     $this->assertSame('RECIPIENT_EMPTY', $writtenTokens['digital_post_result']['reason_code']);
+    $this->assertSame('failed', $writtenTokens['digital_post_result_status'], 'A failed send sets the status companion to failed so the flow does not close the case');
   }
 
   /**
