@@ -81,3 +81,6 @@ Thumbs.db
 data/*
 !data/private/
 !data/private/.gitkeep
+
+# Proprietary workflow-builder skill kept local-only (not distributed)
+.claude/skills/aabenforms-workflow-builder/SKILL.md
