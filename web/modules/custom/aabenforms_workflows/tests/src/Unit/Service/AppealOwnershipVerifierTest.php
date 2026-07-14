@@ -24,8 +24,10 @@ use Psr\Log\LoggerInterface;
 class AppealOwnershipVerifierTest extends UnitTestCase {
 
   /**
-   * Builds a verifier where the session returns $sessionCpr and the case's
-   * submission holds $caseCpr (already "decrypted" by the CprAccess stub).
+   * Builds a verifier with a stubbed session CPR and case applicant CPR.
+   *
+   * The session returns $sessionCpr; the case's submission holds $caseCpr
+   * (already "decrypted" by the CprAccess stub).
    *
    * @param string|null $sessionCpr
    *   CPR the MitID session returns (NULL = no session).
