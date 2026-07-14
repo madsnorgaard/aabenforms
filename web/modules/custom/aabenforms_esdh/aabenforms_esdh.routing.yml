@@ -1,0 +1,7 @@
+aabenforms_esdh.settings:
+  path: '/admin/config/aabenforms/esdh'
+  defaults:
+    _form: 'Drupal\aabenforms_esdh\Form\SettingsForm'
+    _title: 'ÅbenForms ESDH'
+  requirements:
+    _permission: 'administer aabenforms_case'

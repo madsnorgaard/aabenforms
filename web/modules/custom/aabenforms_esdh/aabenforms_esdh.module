@@ -1,0 +1,43 @@
+<?php
+
+/**
+ * @file
+ * ÅbenForms ESDH module hooks.
+ */
+
+declare(strict_types=1);
+
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+
+/**
+ * Implements hook_entity_base_field_info().
+ *
+ * Adds the ESDH reference fields to the case entity without coupling the
+ * aabenforms_case module to any ESDH concept - ESDH stays an optional add-on.
+ * A queryable esdh_ref (not just a revision-log string) is what makes the
+ * journalising idempotent and auditable.
+ */
+function aabenforms_esdh_entity_base_field_info(EntityTypeInterface $entity_type): array {
+  if ($entity_type->id() !== 'aabenforms_case') {
+    return [];
+  }
+
+  $fields = [];
+  $fields['esdh_ref'] = BaseFieldDefinition::create('string')
+    ->setLabel(new TranslatableMarkup('ESDH reference'))
+    ->setDescription(new TranslatableMarkup('The case reference (sagsnummer/recordId) in the kommune ESDH.'))
+    ->setRevisionable(TRUE)
+    ->setSetting('max_length', 128)
+    ->setDisplayConfigurable('view', TRUE);
+
+  $fields['esdh_system'] = BaseFieldDefinition::create('string')
+    ->setLabel(new TranslatableMarkup('ESDH system'))
+    ->setDescription(new TranslatableMarkup('The connector that journalised the case (e.g. sbsys, workzone).'))
+    ->setRevisionable(TRUE)
+    ->setSetting('max_length', 32)
+    ->setDisplayConfigurable('view', TRUE);
+
+  return $fields;
+}

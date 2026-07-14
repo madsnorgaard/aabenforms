@@ -1,0 +1,11 @@
+name: 'ÅbenForms ESDH'
+type: module
+description: 'ESDH connectors (system of record) for AabenForms cases: SBSYS, KMD WorkZone, Formpipe Acadre, GetOrganized. Journalises a case into the kommune ESDH via a pluggable driver; demo unless a connector is configured. Complements SF1470 (the fælleskommunale index).'
+package: 'ÅbenForms'
+core_version_requirement: ^11
+php: ^8.3
+
+dependencies:
+  - aabenforms_core:aabenforms_core
+  - aabenforms_case:aabenforms_case
+  - eca:eca
