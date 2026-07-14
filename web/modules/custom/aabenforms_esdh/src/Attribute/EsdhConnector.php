@@ -15,6 +15,8 @@ use Drupal\Component\Plugin\Attribute\Plugin;
 final class EsdhConnector extends Plugin {
 
   /**
+   * Constructs an EsdhConnector attribute.
+   *
    * @param string $id
    *   The connector machine id (matches the settings "active_connector").
    * @param string $label

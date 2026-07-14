@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\aabenforms_esdh;
 
+use Drupal\aabenforms_case\Entity\AabenformsCase;
 use Drupal\Core\Plugin\PluginBase;
 
 /**
@@ -42,7 +43,7 @@ abstract class EsdhConnectorBase extends PluginBase implements EsdhConnectorInte
    * @return array<string, string>
    *   Case fields safe to send to an ESDH.
    */
-  protected function caseSummary(\Drupal\aabenforms_case\Entity\AabenformsCase $case): array {
+  protected function caseSummary(AabenformsCase $case): array {
     return [
       'title' => (string) ($case->get('title')->value ?? ''),
       'case_type' => $case->getCaseType(),
