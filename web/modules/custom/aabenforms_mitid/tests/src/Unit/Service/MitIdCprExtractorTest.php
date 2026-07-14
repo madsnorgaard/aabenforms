@@ -365,6 +365,26 @@ class MitIdCprExtractorTest extends UnitTestCase {
   }
 
   /**
+   * A present-but-unrecognised acr fails closed to 'unknown', not 'substantial'.
+   *
+   * @covers ::getAssuranceLevel
+   */
+  public function testGetAssuranceLevelUnrecognisedFailsClosed(): void {
+    $token = $this->createTestJwt(['acr' => 'urn:some:unexpected:value']);
+    $this->assertEquals('unknown', $this->cprExtractor->getAssuranceLevel($token));
+  }
+
+  /**
+   * The real NemLog-in NSIS LoA URI maps to substantial.
+   *
+   * @covers ::getAssuranceLevel
+   */
+  public function testGetAssuranceLevelNsisSubstantial(): void {
+    $token = $this->createTestJwt(['acr' => 'https://data.gov.dk/concept/core/nsis/loa/Substantial']);
+    $this->assertEquals('substantial', $this->cprExtractor->getAssuranceLevel($token));
+  }
+
+  /**
    * Tests JWT parsing with invalid format.
    *
    * @covers ::extractCpr
@@ -447,16 +467,16 @@ class MitIdCprExtractorTest extends UnitTestCase {
   }
 
   /**
-   * Tests assurance level falls back to 'substantial' for unmapped non-unknown ACR.
+   * An unmapped ACR fails closed to 'unknown' (never 'substantial').
    *
    * @covers ::getAssuranceLevel
    */
-  public function testGetAssuranceLevelDefaultsToSubstantialForUnmappedAcr(): void {
+  public function testGetAssuranceLevelUnmappedAcrFailsClosed(): void {
     $token = $this->createTestJwt([
       'acr' => 'http://example.org/some/custom/loa',
     ]);
 
-    $this->assertSame('substantial', $this->cprExtractor->getAssuranceLevel($token));
+    $this->assertSame('unknown', $this->cprExtractor->getAssuranceLevel($token));
   }
 
   /**
