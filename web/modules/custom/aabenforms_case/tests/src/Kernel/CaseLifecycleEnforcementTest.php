@@ -74,7 +74,7 @@ class CaseLifecycleEnforcementTest extends KernelTestBase {
    */
   public function testIllegalTransitionThrows(): void {
     $case = $this->reload((int) $this->caseIn('modtaget')->id());
-    // modtaget may only reach oplyst or lukket - never afgoerelse directly.
+    // Modtaget may only reach oplyst or lukket - never afgoerelse directly.
     $case->setStatus('afgoerelse');
     $this->expectException(EntityStorageException::class);
     $case->save();
