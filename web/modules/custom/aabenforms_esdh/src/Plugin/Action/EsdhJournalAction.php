@@ -6,7 +6,6 @@ namespace Drupal\aabenforms_esdh\Plugin\Action;
 
 use Drupal\aabenforms_case\Entity\AabenformsCase;
 use Drupal\aabenforms_case\Plugin\Action\CaseActionBase;
-use Drupal\aabenforms_esdh\Model\EsdhResult;
 use Drupal\aabenforms_esdh\Service\EsdhConnectorResolver;
 use Drupal\Core\Action\Attribute\Action;
 use Drupal\Core\Form\FormStateInterface;

@@ -21,6 +21,8 @@ final class EsdhResult {
   public const STATUS_REJECTED = 'rejected';
 
   /**
+   * Constructs an EsdhResult.
+   *
    * @param string $esdhSystem
    *   The connector id that produced this result (e.g. "sbsys", "workzone").
    * @param string $reference

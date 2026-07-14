@@ -14,6 +14,8 @@ namespace Drupal\aabenforms_esdh\Model;
 final class EsdhDocument {
 
   /**
+   * Constructs an EsdhDocument.
+   *
    * @param string $title
    *   The document title as it should appear in the ESDH.
    * @param string $mimeType
