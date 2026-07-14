@@ -125,8 +125,9 @@ class MakeDecisionActionTest extends KernelTestBase {
   }
 
   /**
-   * FVL §19: an adverse decision is blocked when no hearing was held and no
-   * exemption is given - the silent-skip path is closed.
+   * FVL §19: an adverse decision needs a hearing or a recorded exemption.
+   *
+   * The silent-skip path (no hearing, no exemption) is closed.
    */
   public function testAdverseWithoutHearingOrExemptionBlocked(): void {
     $case = $this->caseInOplyst();
