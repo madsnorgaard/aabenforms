@@ -1,0 +1,41 @@
+<?php
+
+/**
+ * @file
+ * Install/update hooks for ÅbenForms ESDH.
+ */
+
+declare(strict_types=1);
+
+/**
+ * Installs the ESDH base fields on the case entity if not already present.
+ *
+ * The fields are declared in aabenforms_esdh_entity_base_field_info(). Some
+ * install paths (a config-import-driven module enable, a fresh profile install)
+ * do not automatically create storage for base fields contributed to another
+ * module's entity type, so install them explicitly and idempotently.
+ */
+function _aabenforms_esdh_install_case_fields(): void {
+  $update_manager = \Drupal::entityDefinitionUpdateManager();
+  $entity_type = \Drupal::entityTypeManager()->getDefinition('aabenforms_case');
+  $fields = aabenforms_esdh_entity_base_field_info($entity_type);
+  foreach ($fields as $name => $definition) {
+    if ($update_manager->getFieldStorageDefinition($name, 'aabenforms_case') === NULL) {
+      $update_manager->installFieldStorageDefinition($name, 'aabenforms_case', 'aabenforms_esdh', $definition);
+    }
+  }
+}
+
+/**
+ * Implements hook_install().
+ */
+function aabenforms_esdh_install(): void {
+  _aabenforms_esdh_install_case_fields();
+}
+
+/**
+ * Ensures the ESDH base fields exist on sites enabled before the install hook.
+ */
+function aabenforms_esdh_update_10001(): void {
+  _aabenforms_esdh_install_case_fields();
+}
