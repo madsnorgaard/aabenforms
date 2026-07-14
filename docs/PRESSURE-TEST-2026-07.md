@@ -103,6 +103,15 @@ findings.
   (module `config/install`, not in deployed `config/sync`) are structurally dead
   (dead `eca_scalar` + `successors` on conditions). Redesign against the current
   contract and test end-to-end, or remove.
+- **Parent-approval chain trigger (verify).** The three restored install flows
+  (`caseworker_review_flow`, `parent1/2_approval_flow`) now carry the valid
+  `eca_scalar` contract, but a Drupal review flagged that nothing observed in
+  this repo dispatches the `content_entity:custom` events they subscribe to, nor
+  writes the `parent1_status`/`parent2_status` fields the caseworker gate reads
+  (these may be populated by the webform/frontend outside this repo). The
+  restoration is still strictly correct (fresh installs no longer ship a
+  schema-invalid flow); confirm the chain fires end-to-end on a fresh install
+  before relying on it, or document it inert.
 
 ## Verification
 
