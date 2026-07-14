@@ -110,6 +110,25 @@ class OpenCaseAction extends CaseActionBase {
       );
 
       $storage = $this->entityTypeManager->getStorage('aabenforms_case');
+
+      // Idempotency: never open a second case for the same submission. A
+      // content_entity:insert event can fire more than once (retry, re-save,
+      // resubmission), and a duplicate case would mean two frist clocks, two
+      // ambiguous [case_id] tokens, and double journalising/distribution.
+      if ($submissionId !== NULL) {
+        $existingIds = $storage->getQuery()
+          ->accessCheck(FALSE)
+          ->condition('submission_ref', $submissionId)
+          ->range(0, 1)
+          ->execute();
+        if ($existingIds !== []) {
+          $existingId = (string) reset($existingIds);
+          $this->setTokenValue($resultToken, $existingId);
+          $this->recordStep('Sag findes', sprintf('Sag #%s findes allerede for indsendelse #%s.', $existingId, $submissionId));
+          return;
+        }
+      }
+
       $case = $storage->create([
         'title' => $title,
         'case_type' => $caseType,
@@ -117,8 +136,13 @@ class OpenCaseAction extends CaseActionBase {
         'submission_ref' => $submissionId,
         'modtagelsesdato' => $now,
         'frist_due' => $due,
-        'revision_log_message' => 'Sag oprettet fra indsendelse.',
       ]);
+      // Attribute the founding revision (who opened the case), like every
+      // transition revision does.
+      $case->setNewRevision(TRUE);
+      $case->setRevisionLogMessage('Sag oprettet fra indsendelse.');
+      $case->setRevisionCreationTime($now);
+      $case->setRevisionUserId((int) $this->currentUser->id());
       $case->save();
 
       $this->setTokenValue($resultToken, (string) $case->id());

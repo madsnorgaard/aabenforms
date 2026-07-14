@@ -32,7 +32,11 @@ final class Sf1601ClientFactory {
       ->get('aabenforms_digital_post.settings')
       ->get('test_mode');
     return match ($mode) {
-      'fake_db', '' => $this->fakeDbClient,
+      // Fail closed on empty/unset: a wiped or missing config must NEVER
+      // silently fall back to the fake transport (that would turn undelivered
+      // official letters into fake successes). An explicit mode is required.
+      '' => throw new DigitalPostException('Digital Post test_mode is not configured; refusing to send. Set it explicitly (fake_db in dev).'),
+      'fake_db' => $this->fakeDbClient,
       'wiremock' => $this->wireMockClient,
       'live_test', 'live' => throw new DigitalPostException(sprintf(
         'test_mode "%s" is not supported in session 1. Use fake_db or wiremock.',

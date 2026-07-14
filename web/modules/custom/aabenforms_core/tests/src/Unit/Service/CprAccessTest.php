@@ -92,13 +92,14 @@ class CprAccessTest extends UnitTestCase {
   }
 
   /**
-   * A misconfigured key never silently corrupts: protect keeps the value.
+   * A misconfigured key fails hard: protect throws rather than store plaintext.
    *
    * @covers ::protect
    */
-  public function testProtectFailsSafe(): void {
+  public function testProtectFailsHardWhenEncryptionUnavailable(): void {
     $this->encryption->method('encrypt')->willThrowException(new \RuntimeException('no key'));
-    $this->assertSame('0101901234', $this->cprAccess->protect('0101901234'));
+    $this->expectException(\RuntimeException::class);
+    $this->cprAccess->protect('0101901234');
   }
 
 }

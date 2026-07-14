@@ -89,6 +89,16 @@ class SetPartshoeringAction extends CaseActionBase {
         return;
       }
 
+      // A hearing only makes sense while the case is being informed. Refuse to
+      // touch partshøring on a decided, appealed, or closed case (that would
+      // rewrite the record after the fact and, unguarded, was the path that
+      // normalised skipping FVL §19).
+      $status = $case->getStatus();
+      if (!in_array($status, ['oplyst', 'partshoering'], TRUE)) {
+        $this->recordStep('Partshøring', sprintf('Sag #%s kan ikke partshøres i status "%s".', $caseId, $status), 'failed');
+        return;
+      }
+
       $now = $this->time->getRequestTime();
       $case->set('partshoering_state', $state);
       $case->setNewRevision(TRUE);

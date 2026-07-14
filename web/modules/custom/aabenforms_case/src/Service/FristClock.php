@@ -12,12 +12,28 @@ use Drupal\Core\Config\ConfigFactoryInterface;
  * Deadlines are driven by per-area configuration in aabenforms_case.settings
  * (key "frister"), so a new casework area only needs config, not code. Each
  * area defines a duration as either calendar hours or working days
- * (hverdage), the latter skipping weekends per RSL/forvaltningslov practice.
+ * (hverdage), the latter skipping weekends AND Danish public holidays per
+ * RSL/forvaltningslov practice.
  *
- * NOTE: Danish public holidays are not yet subtracted from working-day math
- * (TODO: add a holiday calendar). Weekends are handled.
+ * Working-day math runs in Europe/Copenhagen (not UTC), so the weekday of a
+ * receipt logged near local midnight is classified correctly, and the due
+ * moment is normalised to end-of-day (23:59:59 local) on the final working
+ * day - the citizen-favourable reading (the authority has the whole day).
+ *
+ * Danish public holidays subtracted: nytårsdag, skærtorsdag, langfredag,
+ * 2. påskedag, Kristi himmelfartsdag, 2. pinsedag, juledag, 2. juledag.
+ * Store bededag is deliberately NOT included: it was abolished as a public
+ * holiday from 2024 (lov nr. 214 af 13/03/2023). Grundlovsdag and juleaften
+ * are not statutory helligdage and are left out of the statutory clock; a
+ * kommune that also closes those days can extend the set via the
+ * "ekstra_lukkedage" config key (list of MM-DD strings).
  */
 class FristClock {
+
+  /**
+   * The timezone all working-day math is evaluated in.
+   */
+  protected const TZ = 'Europe/Copenhagen';
 
   public function __construct(
     protected ConfigFactoryInterface $configFactory,
@@ -83,26 +99,103 @@ class FristClock {
   }
 
   /**
-   * Adds N working days (Mon-Fri) to a timestamp.
+   * Adds N working days to a timestamp, skipping weekends and Danish holidays.
    *
-   * The time-of-day of the receipt is preserved; only whole working days are
-   * counted forward, skipping Saturdays and Sundays.
+   * Evaluated in Europe/Copenhagen. The due moment is the end of the final
+   * working day (23:59:59 local), so a "20 hverdage" frist expires at the
+   * close of the 20th working day rather than at the receipt's time-of-day.
    */
   protected function addWorkingDays(int $receiptTs, int $days): int {
     if ($days <= 0) {
       return $receiptTs;
     }
-    $ts = $receiptTs;
+    $tz = new \DateTimeZone(self::TZ);
+    $date = (new \DateTimeImmutable('@' . $receiptTs))->setTimezone($tz);
+
     $added = 0;
     while ($added < $days) {
-      $ts += 86400;
-      $weekday = (int) gmdate('N', $ts);
-      // N: 1 (Mon) .. 7 (Sun); count only 1-5.
-      if ($weekday <= 5) {
+      $date = $date->modify('+1 day');
+      if ($this->isWorkingDay($date)) {
         $added++;
       }
     }
-    return $ts;
+
+    // Normalise to end-of-day local so "day" boundaries do not drift with the
+    // receipt's time-of-day.
+    return (int) $date->setTime(23, 59, 59)->getTimestamp();
+  }
+
+  /**
+   * TRUE when the date is a Danish working day (Mon-Fri, not a helligdag).
+   */
+  protected function isWorkingDay(\DateTimeInterface $date): bool {
+    // N: 1 (Mon) .. 7 (Sun).
+    if ((int) $date->format('N') >= 6) {
+      return FALSE;
+    }
+    return !$this->isHoliday($date);
+  }
+
+  /**
+   * TRUE when the date is a Danish public holiday or configured lukkedag.
+   */
+  protected function isHoliday(\DateTimeInterface $date): bool {
+    $year = (int) $date->format('Y');
+    $md = $date->format('m-d');
+    if (in_array($md, $this->holidayMonthDays($year), TRUE)) {
+      return TRUE;
+    }
+    // Kommune-specific extra closing days (e.g. grundlovsdag, juleaften).
+    $extra = $this->configFactory->get('aabenforms_case.settings')->get('ekstra_lukkedage') ?? [];
+    return in_array($md, array_map('strval', $extra), TRUE);
+  }
+
+  /**
+   * Returns the Danish public holidays for a year as MM-DD strings.
+   *
+   * @return string[]
+   *   Holiday dates formatted as "m-d" in the Copenhagen calendar year.
+   */
+  protected function holidayMonthDays(int $year): array {
+    $easter = $this->easterSunday($year);
+    $days = [
+      // Fixed helligdage.
+      '01-01',
+      '12-25',
+      '12-26',
+    ];
+    // Moveable feasts relative to Easter Sunday.
+    foreach ([-3, -2, 1, 39, 50] as $offset) {
+      // -3 skærtorsdag, -2 langfredag, +1 2. påskedag,
+      // +39 Kristi himmelfart, +50 2. pinsedag.
+      $days[] = $easter->modify(sprintf('%+d days', $offset))->format('m-d');
+    }
+    return $days;
+  }
+
+  /**
+   * Computes Easter Sunday for a Gregorian year (Anonymous Gregorian algorithm).
+   */
+  protected function easterSunday(int $year): \DateTimeImmutable {
+    $a = $year % 19;
+    $b = intdiv($year, 100);
+    $c = $year % 100;
+    $d = intdiv($b, 4);
+    $e = $b % 4;
+    $f = intdiv($b + 8, 25);
+    $g = intdiv($b - $f + 1, 3);
+    $h = (19 * $a + $b - $d - $g + 15) % 30;
+    $i = intdiv($c, 4);
+    $k = $c % 4;
+    $l = (32 + 2 * $e + 2 * $i - $h - $k) % 7;
+    $m = intdiv($a + 11 * $h + 22 * $l, 451);
+    $month = intdiv($h + $l - 7 * $m + 114, 31);
+    $day = (($h + $l - 7 * $m + 114) % 31) + 1;
+
+    return new \DateTimeImmutable(
+      sprintf('%04d-%02d-%02d', $year, $month, $day),
+      new \DateTimeZone(self::TZ)
+    );
   }
 
 }

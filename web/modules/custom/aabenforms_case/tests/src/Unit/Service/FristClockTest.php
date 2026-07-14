@@ -26,15 +26,31 @@ class FristClockTest extends UnitTestCase {
    *
    * @param array<string, array{unit:string, amount:int}> $frister
    *   The per-area deadline config.
+   * @param string[] $extraClosingDays
+   *   Kommune-specific extra closing days as "m-d" strings.
    */
-  protected function clock(array $frister): FristClock {
+  protected function clock(array $frister, array $extraClosingDays = []): FristClock {
     $config = $this->createMock(ImmutableConfig::class);
-    $config->method('get')->with('frister')->willReturn($frister);
+    $config->method('get')->willReturnMap([
+      ['frister', $frister],
+      ['ekstra_lukkedage', $extraClosingDays],
+    ]);
 
     $factory = $this->createMock(ConfigFactoryInterface::class);
     $factory->method('get')->with('aabenforms_case.settings')->willReturn($config);
 
     return new FristClock($factory);
+  }
+
+  /**
+   * Formats a due timestamp as a Copenhagen "Y-m-d H:i:s" string.
+   */
+  protected function due(FristClock $clock, string $receiptCph, string $area): string {
+    $receipt = new \DateTimeImmutable($receiptCph, new \DateTimeZone('Europe/Copenhagen'));
+    $ts = $clock->computeDue($receipt->getTimestamp(), $area);
+    return (new \DateTimeImmutable('@' . $ts))
+      ->setTimezone(new \DateTimeZone('Europe/Copenhagen'))
+      ->format('Y-m-d H:i:s');
   }
 
   /**
@@ -49,15 +65,83 @@ class FristClockTest extends UnitTestCase {
   }
 
   /**
+   * Working days skip weekends and land at end-of-day (Copenhagen).
+   *
    * @covers ::computeDue
    * @covers ::addWorkingDays
    */
-  public function testComputeDueWorkingDaysSkipsWeekend(): void {
-    $clock = $this->clock(['anerkend' => ['unit' => 'hverdage', 'amount' => 6]]);
-    // From Monday, 6 working days lands on the next Tuesday (8 calendar days),
-    // skipping the intervening Saturday and Sunday.
-    $expected = self::MONDAY_0900 + (8 * 86400);
-    $this->assertSame($expected, $clock->computeDue(self::MONDAY_0900, 'anerkend'));
+  public function testWorkingDaysSkipWeekendEndOfDay(): void {
+    $clock = $this->clock(['x' => ['unit' => 'hverdage', 'amount' => 5]]);
+    // Mon 2025-03-03 10:00 + 5 hverdage: Tue/Wed/Thu/Fri, skip Sat/Sun, Mon.
+    $this->assertSame('2025-03-10 23:59:59', $this->due($clock, '2025-03-03 10:00:00', 'x'));
+  }
+
+  /**
+   * Danish public holidays around Easter are not counted as working days.
+   *
+   * @covers ::addWorkingDays
+   */
+  public function testEasterHolidaysSkipped(): void {
+    $clock = $this->clock(['x' => ['unit' => 'hverdage', 'amount' => 3]]);
+    // Easter 2025-04-20. Receipt Wed 04-16; skærtorsdag 04-17, langfredag
+    // 04-18, weekend, 2. påskedag 04-21 are all skipped, so 3 hverdage lands
+    // Thu 04-24 (eight calendar days later).
+    $this->assertSame('2025-04-24 23:59:59', $this->due($clock, '2025-04-16 09:00:00', 'x'));
+  }
+
+  /**
+   * Christmas holidays (25-26 Dec) are skipped.
+   *
+   * @covers ::addWorkingDays
+   */
+  public function testChristmasHolidaysSkipped(): void {
+    $clock = $this->clock(['x' => ['unit' => 'hverdage', 'amount' => 2]]);
+    // Receipt Wed 2025-12-24; juledag 12-25 + 2. juledag 12-26 + weekend
+    // skipped, so 2 hverdage lands Tue 2025-12-30.
+    $this->assertSame('2025-12-30 23:59:59', $this->due($clock, '2025-12-24 09:00:00', 'x'));
+  }
+
+  /**
+   * Store bededag is NOT a holiday (abolished 2024): it counts as a working day.
+   *
+   * @covers ::addWorkingDays
+   */
+  public function testStoreBededagIsAWorkingDay(): void {
+    $clock = $this->clock(['x' => ['unit' => 'hverdage', 'amount' => 1]]);
+    // 4th Friday after Easter 2025 = 2025-05-16 (former store bededag).
+    // Receipt Thu 2025-05-15 + 1 hverdag must land on that Friday, not skip it.
+    $this->assertSame('2025-05-16 23:59:59', $this->due($clock, '2025-05-15 09:00:00', 'x'));
+  }
+
+  /**
+   * Kommune-specific extra closing days (e.g. grundlovsdag) are honoured.
+   *
+   * @covers ::isHoliday
+   */
+  public function testExtraClosingDaysSkipped(): void {
+    // Grundlovsdag 2025-06-05 is a Thursday, not a statutory helligdag.
+    $withExtra = $this->clock(['x' => ['unit' => 'hverdage', 'amount' => 1]], ['06-05']);
+    $this->assertSame('2025-06-06 23:59:59', $this->due($withExtra, '2025-06-04 09:00:00', 'x'));
+
+    $withoutExtra = $this->clock(['x' => ['unit' => 'hverdage', 'amount' => 1]]);
+    $this->assertSame('2025-06-05 23:59:59', $this->due($withoutExtra, '2025-06-04 09:00:00', 'x'));
+  }
+
+  /**
+   * Weekday is computed in Copenhagen time, not UTC.
+   *
+   * @covers ::addWorkingDays
+   */
+  public function testWeekdayComputedInCopenhagenTimezone(): void {
+    $clock = $this->clock(['x' => ['unit' => 'hverdage', 'amount' => 1]]);
+    // 2025-01-05 23:30 UTC is Monday 2025-01-06 00:30 CET. In UTC the weekday
+    // would be Sunday; in Copenhagen it is Monday, so 1 hverdag lands Tue 01-07.
+    $receipt = new \DateTimeImmutable('2025-01-05 23:30:00', new \DateTimeZone('UTC'));
+    $ts = $clock->computeDue($receipt->getTimestamp(), 'x');
+    $due = (new \DateTimeImmutable('@' . $ts))
+      ->setTimezone(new \DateTimeZone('Europe/Copenhagen'))
+      ->format('Y-m-d');
+    $this->assertSame('2025-01-07', $due);
   }
 
   /**
