@@ -106,7 +106,7 @@ class FristClockTest extends UnitTestCase {
    *
    * @covers ::addWorkingDays
    */
-  public function testStoreBededagIsAWorkingDay(): void {
+  public function testStoreBededagCountsAsWorkingDay(): void {
     $clock = $this->clock(['x' => ['unit' => 'hverdage', 'amount' => 1]]);
     // 4th Friday after Easter 2025 = 2025-05-16 (former store bededag).
     // Receipt Thu 2025-05-15 + 1 hverdag must land on that Friday, not skip it.
