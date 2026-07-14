@@ -6,6 +6,7 @@ dependencies:
     - aabenforms_case
     - aabenforms_digital_post_eca
     - aabenforms_kombit
+    - aabenforms_workflows
     - eca_content
     - modeler_api
 third_party_settings:
@@ -22,9 +23,27 @@ events:
       type: 'webform_submission friplads'
     successors:
       -
-        id: open_case
+        id: mitid_validate
         condition: ''
 conditions:
+  gate_mitid_ok:
+    plugin: eca_scalar
+    configuration:
+      negate: false
+      left: '[friplads_mitid_valid_status]'
+      right: verified
+      operator: equal
+      type: value
+      case: false
+  gate_mitid_deny:
+    plugin: eca_scalar
+    configuration:
+      negate: true
+      left: '[friplads_mitid_valid_status]'
+      right: verified
+      operator: equal
+      type: value
+      case: false
   gate_eligible:
     plugin: eca_scalar
     configuration:
@@ -45,6 +64,28 @@ conditions:
       case: false
 gateways: {  }
 actions:
+  mitid_validate:
+    label: 'Validér MitID-session'
+    plugin: aabenforms_mitid_validate
+    configuration:
+      workflow_id_token: workflow_id_friplads
+      result_token: friplads_mitid_valid
+      session_data_token: friplads_session
+    successors:
+      -
+        id: open_case
+        condition: gate_mitid_ok
+      -
+        id: deny_identity
+        condition: gate_mitid_deny
+  deny_identity:
+    label: 'Afvis: identitet ikke bekræftet'
+    plugin: aabenforms_workflow_deny
+    configuration:
+      event_type: friplads_denied
+      step_label: 'Identitet ikke bekræftet'
+      message: 'Ansøgningen blev ikke behandlet, fordi din identitet ikke kunne bekræftes med MitID. Log ind med MitID og prøv igen.'
+    successors: {  }
   open_case:
     label: 'Åbn sag (fripladstilskud)'
     plugin: aabenforms_case_open

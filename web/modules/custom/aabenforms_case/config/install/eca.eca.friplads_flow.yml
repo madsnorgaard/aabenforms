@@ -6,6 +6,7 @@ dependencies:
     - aabenforms_case
     - aabenforms_digital_post_eca
     - aabenforms_kombit
+    - aabenforms_workflows
     - eca_content
     - modeler_api
 third_party_settings:
@@ -21,9 +22,28 @@ events:
     configuration:
       type: 'webform_submission friplads'
     successors:
-      - id: open_case
+      -
+        id: mitid_validate
         condition: ''
 conditions:
+  gate_mitid_ok:
+    plugin: eca_scalar
+    configuration:
+      negate: false
+      left: '[friplads_mitid_valid_status]'
+      right: verified
+      operator: equal
+      type: value
+      case: false
+  gate_mitid_deny:
+    plugin: eca_scalar
+    configuration:
+      negate: true
+      left: '[friplads_mitid_valid_status]'
+      right: verified
+      operator: equal
+      type: value
+      case: false
   gate_eligible:
     plugin: eca_scalar
     configuration:
@@ -44,6 +64,28 @@ conditions:
       case: false
 gateways: {  }
 actions:
+  mitid_validate:
+    label: 'Validér MitID-session'
+    plugin: aabenforms_mitid_validate
+    configuration:
+      workflow_id_token: workflow_id_friplads
+      result_token: friplads_mitid_valid
+      session_data_token: friplads_session
+    successors:
+      -
+        id: open_case
+        condition: gate_mitid_ok
+      -
+        id: deny_identity
+        condition: gate_mitid_deny
+  deny_identity:
+    label: 'Afvis: identitet ikke bekræftet'
+    plugin: aabenforms_workflow_deny
+    configuration:
+      event_type: friplads_denied
+      step_label: 'Identitet ikke bekræftet'
+      message: 'Ansøgningen blev ikke behandlet, fordi din identitet ikke kunne bekræftes med MitID. Log ind med MitID og prøv igen.'
+    successors: {  }
   open_case:
     label: 'Åbn sag (fripladstilskud)'
     plugin: aabenforms_case_open
@@ -51,7 +93,8 @@ actions:
       case_type: friplads
       case_id_token: case_id
     successors:
-      - id: journal_case
+      -
+        id: journal_case
         condition: ''
   journal_case:
     label: 'Journalisér sag (SF1470)'
@@ -59,7 +102,8 @@ actions:
     configuration:
       case_id_token: '[case_id]'
     successors:
-      - id: income_lookup
+      -
+        id: income_lookup
         condition: ''
   income_lookup:
     label: 'Hent husstandsindkomst (eIndkomst)'
@@ -68,9 +112,11 @@ actions:
       cpr_token: '[webform_submission:values:applicant_cpr:raw]'
       result_token: friplads_income
     successors:
-      - id: t_oplyst_auto
+      -
+        id: t_oplyst_auto
         condition: gate_eligible
-      - id: t_oplyst_manual
+      -
+        id: t_oplyst_manual
         condition: gate_manual
   t_oplyst_auto:
     label: 'Oplys sag (straksbehandling)'
@@ -80,7 +126,8 @@ actions:
       target_status: oplyst
       log_message: 'Indkomst ≤ fripladsgrænse - straksbehandling.'
     successors:
-      - id: t_afgoerelse
+      -
+        id: t_afgoerelse
         condition: ''
   t_afgoerelse:
     label: 'Automatisk afgørelse (medhold)'
@@ -91,7 +138,8 @@ actions:
       klagevejledning: ''
       klagefrist_uger: 4
     successors:
-      - id: send_decision_letter
+      -
+        id: send_decision_letter
         condition: ''
   send_decision_letter:
     label: 'Send afgørelsesbrev (Digital Post)'
@@ -105,7 +153,8 @@ actions:
       type: 'Digital Post'
       result_token: digital_post_result
     successors:
-      - id: sf2900_distribute
+      -
+        id: sf2900_distribute
         condition: ''
   sf2900_distribute:
     label: 'Distribuér til fagsystem (SF2900)'
