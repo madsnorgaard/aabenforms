@@ -298,16 +298,24 @@ class MitIdCprExtractor {
       $claims = $this->parseJwt($id_token);
       $acr = $claims['acr'] ?? 'unknown';
 
-      // Map MitID ACR values to NSIS levels
-      // https://www.digst.dk/it-loesninger/nemlog-in/
+      // Map MitID / NemLog-in ACR values to NSIS levels. NemLog-in asserts the
+      // NSIS LoA URIs; the eIDAS URIs and bare words cover brokers/mocks.
+      // https://digst.dk/it-loesninger/standarder/nsis/
       $mapping = [
+        'https://data.gov.dk/concept/core/nsis/loa/Low' => 'low',
+        'https://data.gov.dk/concept/core/nsis/loa/Substantial' => 'substantial',
+        'https://data.gov.dk/concept/core/nsis/loa/High' => 'high',
         'http://eidas.europa.eu/LoA/low' => 'low',
         'http://eidas.europa.eu/LoA/substantial' => 'substantial',
         'http://eidas.europa.eu/LoA/high' => 'high',
         'urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport' => 'low',
+        'low' => 'low',
+        'substantial' => 'substantial',
+        'high' => 'high',
       ];
 
-      return $mapping[$acr] ?? ($acr === 'unknown' ? 'unknown' : 'substantial');
+      // Fail closed: an unrecognised acr is 'unknown', never 'substantial'.
+      return $mapping[$acr] ?? 'unknown';
 
     }
     catch (\InvalidArgumentException $e) {
