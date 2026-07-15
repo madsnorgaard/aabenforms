@@ -4,6 +4,7 @@ status: true
 dependencies:
   module:
     - aabenforms_case
+    - aabenforms_workflows
     - eca_content
     - modeler_api
 third_party_settings:
@@ -19,15 +20,96 @@ events:
     configuration:
       type: 'webform_submission klage'
     successors:
-      - id: appeal_case
+      -
+        id: mitid_validate
         condition: ''
-conditions: {  }
+conditions:
+  gate_mitid_ok:
+    plugin: eca_scalar
+    configuration:
+      negate: false
+      left: '[klage_mitid_valid_status]'
+      right: verified
+      operator: equal
+      type: value
+      case: false
+  gate_mitid_deny:
+    plugin: eca_scalar
+    configuration:
+      negate: true
+      left: '[klage_mitid_valid_status]'
+      right: verified
+      operator: equal
+      type: value
+      case: false
+  gate_owner_ok:
+    plugin: eca_scalar
+    configuration:
+      negate: false
+      left: '[appeal_ownership_status]'
+      right: verified
+      operator: equal
+      type: value
+      case: false
+  gate_owner_deny:
+    plugin: eca_scalar
+    configuration:
+      negate: true
+      left: '[appeal_ownership_status]'
+      right: verified
+      operator: equal
+      type: value
+      case: false
 gateways: {  }
 actions:
+  mitid_validate:
+    label: 'Validér MitID-session'
+    plugin: aabenforms_mitid_validate
+    configuration:
+      workflow_id_token: workflow_id_klage
+      result_token: klage_mitid_valid
+      session_data_token: klage_session
+    successors:
+      -
+        id: verify_ownership
+        condition: gate_mitid_ok
+      -
+        id: deny_identity
+        condition: gate_mitid_deny
+  verify_ownership:
+    label: 'Verificér klageberettigelse'
+    plugin: aabenforms_verify_appeal_ownership
+    configuration:
+      case_id_token: '[webform_submission:values:case_id]'
+      workflow_id_token: workflow_id_klage
+      result_token: appeal_ownership
+    successors:
+      -
+        id: appeal_case
+        condition: gate_owner_ok
+      -
+        id: deny_ownership
+        condition: gate_owner_deny
   appeal_case:
     label: 'Registrér klage (genvurdering)'
     plugin: aabenforms_case_appeal
     configuration:
       case_id_token: '[webform_submission:values:case_id]'
       grounds_token: '[webform_submission:values:klage_begrundelse]'
+    successors: {  }
+  deny_identity:
+    label: 'Afvis: identitet ikke bekræftet'
+    plugin: aabenforms_workflow_deny
+    configuration:
+      event_type: klage_denied_identity
+      step_label: 'Identitet ikke bekræftet'
+      message: 'Klagen blev ikke behandlet, fordi din identitet ikke kunne bekræftes med MitID. Log ind med MitID og prøv igen.'
+    successors: {  }
+  deny_ownership:
+    label: 'Afvis: ikke klageberettiget'
+    plugin: aabenforms_workflow_deny
+    configuration:
+      event_type: klage_denied_ownership
+      step_label: 'Ikke part i sagen'
+      message: 'Klagen blev ikke behandlet, fordi du ikke er part i den angivne sag. Kun sagens part kan klage over afgørelsen.'
     successors: {  }

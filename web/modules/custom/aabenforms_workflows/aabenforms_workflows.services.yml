@@ -40,6 +40,15 @@ services:
       - '@logger.factory'
       - '@aabenforms_core.cpr_access'
 
+  aabenforms_workflows.appeal_ownership_verifier:
+    class: Drupal\aabenforms_workflows\Service\AppealOwnershipVerifier
+    arguments:
+      - '@aabenforms_mitid.session_manager'
+      - '@aabenforms_core.audit_logger'
+      - '@logger.factory'
+      - '@aabenforms_core.cpr_access'
+      - '@entity_type.manager'
+
   aabenforms_workflows.payment_service:
     class: Drupal\aabenforms_workflows\Service\PaymentService
     arguments:
