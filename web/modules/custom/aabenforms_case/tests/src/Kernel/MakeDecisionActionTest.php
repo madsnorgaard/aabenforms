@@ -105,11 +105,14 @@ class MakeDecisionActionTest extends KernelTestBase {
   }
 
   /**
-   * An adverse decision with a klagevejledning sets the appeal deadline.
+   * An adverse decision records the outcome but does NOT start the klagefrist.
    *
-   * A §19 stk. 2 exemption is supplied because no partshøring was held.
+   * The klagefrist runs from notification (FVL meddelelseskrav), so the decide
+   * step leaves it unset; aabenforms_case_set_klagefrist starts it once the
+   * letter is confirmed sent. A §19 stk. 2 exemption is supplied here because
+   * no partshøring was held.
    */
-  public function testAdverseWithKlagevejledningSetsKlagefrist(): void {
+  public function testAdverseDecisionDefersKlagefristToDispatch(): void {
     $case = $this->caseInOplyst();
     $now = $this->container->get('datetime.time')->getRequestTime();
     $this->invoke('aabenforms_case_decide', [
@@ -118,10 +121,14 @@ class MakeDecisionActionTest extends KernelTestBase {
       'klagefrist_uger' => 4,
       'partshoering_exemption' => 'Afgørelsen bygger alene på borgerens egne oplysninger (FVL §19 stk. 2).',
     ]);
-    $reloaded = $this->reload((int) $case->id());
-    $this->assertSame('afgoerelse', $reloaded->getStatus());
-    $this->assertSame('afslag', (string) $reloaded->get('afgoerelse_type')->value);
-    $this->assertSame($now + (4 * 7 * 86400), (int) $reloaded->get('klagefrist')->value);
+    $decided = $this->reload((int) $case->id());
+    $this->assertSame('afgoerelse', $decided->getStatus());
+    $this->assertSame('afslag', (string) $decided->get('afgoerelse_type')->value);
+    $this->assertNull($decided->get('klagefrist')->value, 'Klagefrist is not started at decide time');
+
+    // The dispatch step starts the clock.
+    $this->invoke('aabenforms_case_set_klagefrist', ['klagefrist_uger' => 4]);
+    $this->assertSame($now + (4 * 7 * 86400), (int) $this->reload((int) $case->id())->get('klagefrist')->value);
   }
 
   /**
