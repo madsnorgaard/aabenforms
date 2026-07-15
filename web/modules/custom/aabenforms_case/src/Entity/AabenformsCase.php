@@ -7,6 +7,8 @@ namespace Drupal\aabenforms_case\Entity;
 use Drupal\aabenforms_case\AabenformsCaseInterface;
 use Drupal\Core\Entity\Attribute\ContentEntityType;
 use Drupal\Core\Entity\EntityChangedTrait;
+use Drupal\Core\Entity\EntityStorageException;
+use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Form\DeleteMultipleForm;
 use Drupal\Core\Entity\Routing\AdminHtmlRouteProvider;
@@ -128,6 +130,65 @@ class AabenformsCase extends RevisionableContentEntityBase implements Aabenforms
 
   /**
    * {@inheritdoc}
+   *
+   * Enforces the lawful lifecycle at the storage layer so no save path - not
+   * the admin edit form, JSON:API, Views Bulk Operations, nor a stray
+   * programmatic write - can reach a state the ECA actions would refuse. A
+   * closed case is immutable, an illegal transition throws, and every mutation
+   * is forced to a new audited revision (the compliance backbone must never
+   * silently overwrite history via a default entity-form save).
+   */
+  public function preSave(EntityStorageInterface $storage): void {
+    parent::preSave($storage);
+
+    // Nothing to guard on the founding save.
+    if ($this->isNew()) {
+      return;
+    }
+
+    $original = $this->originalStatus();
+    if ($original !== NULL) {
+      // A closed case is terminal: no field on it may change.
+      if ($original === 'lukket') {
+        throw new EntityStorageException(sprintf('Sag %s er lukket og kan ikke ændres.', (string) $this->id()));
+      }
+      $new = $this->getStatus();
+      if ($new !== $original && !in_array($new, self::allowedTransitions()[$original] ?? [], TRUE)) {
+        throw new EntityStorageException(sprintf('Ulovlig statusovergang på sag %s: %s → %s.', (string) $this->id(), $original, $new));
+      }
+    }
+
+    // Every change to a case is an audited revision. ECA actions set a
+    // meaningful log message; a bare entity-form save gets a default one.
+    $this->setNewRevision(TRUE);
+    if ((string) ($this->getRevisionLogMessage() ?? '') === '') {
+      $this->setRevisionLogMessage('Sag opdateret.');
+    }
+    $this->setRevisionCreationTime(\Drupal::time()->getRequestTime());
+    $this->setRevisionUserId((int) \Drupal::currentUser()->id());
+  }
+
+  /**
+   * Reads the persisted status from before this save, if available.
+   *
+   * @return string|null
+   *   The original status, or NULL when there is no loaded original.
+   */
+  protected function originalStatus(): ?string {
+    $original = NULL;
+    if (method_exists($this, 'getOriginal')) {
+      // Drupal >= 11.2.
+      $original = $this->getOriginal();
+    }
+    elseif (isset($this->original)) {
+      // @phpstan-ignore-line - deprecated property fallback for Drupal < 11.2.
+      $original = $this->original;
+    }
+    return $original instanceof AabenformsCaseInterface ? $original->getStatus() : NULL;
+  }
+
+  /**
+   * {@inheritdoc}
    */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type): array {
     /** @var \Drupal\Core\Field\BaseFieldDefinition[] $fields */
@@ -158,7 +219,10 @@ class AabenformsCase extends RevisionableContentEntityBase implements Aabenforms
       ->setDefaultValue('modtaget')
       ->setSetting('allowed_values', self::statusOptions())
       ->setDisplayConfigurable('view', TRUE)
-      ->setDisplayConfigurable('form', TRUE);
+      // Status is only ever changed through the lawful, audited transition
+      // actions (aabenforms_case_transition / _decide / _appeal / _sf2900),
+      // never freely via the entity form - preSave() enforces this.
+      ->setDisplayConfigurable('form', FALSE);
 
     $fields['submission_ref'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(new TranslatableMarkup('Webform submission'))

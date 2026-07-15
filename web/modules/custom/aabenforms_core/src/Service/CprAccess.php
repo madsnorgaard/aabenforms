@@ -73,8 +73,14 @@ class CprAccess {
    *
    * @return string
    *   The prefixed ciphertext, or the original value if empty/already
-   *   protected, or - if encryption is misconfigured - the original value
-   *   with an error logged (so a submission is never lost).
+   *   protected.
+   *
+   * @throws \RuntimeException
+   *   When encryption is misconfigured (missing profile/key). Fails hard so a
+   *   CPR is NEVER written in plaintext: it is safer to reject the submission
+   *   than to store personal data unencrypted (databeskyttelsesloven). The
+   *   sole caller (the webform-submission presave hook) lets this abort the
+   *   save; the error message carries no CPR.
    */
   public function protect(string $cpr): string {
     if ($cpr === '' || $this->isProtected($cpr)) {
@@ -84,8 +90,8 @@ class CprAccess {
       return self::PREFIX . base64_encode($this->encryption->encrypt($cpr));
     }
     catch (\Throwable $e) {
-      $this->logger->error('CPR encryption failed; value stored unencrypted: {error}', ['error' => $e->getMessage()]);
-      return $cpr;
+      $this->logger->error('CPR encryption failed; refusing to store plaintext: {error}', ['error' => $e->getMessage()]);
+      throw new \RuntimeException('CPR-kryptering er ikke konfigureret; indsendelsen blev afvist for at undgå at gemme CPR i klartekst.', 0, $e);
     }
   }
 

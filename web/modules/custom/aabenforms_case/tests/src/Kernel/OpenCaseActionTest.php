@@ -112,4 +112,34 @@ class OpenCaseActionTest extends KernelTestBase {
     );
   }
 
+  /**
+   * A re-fired insert event must not open a second case for one submission.
+   */
+  public function testOpenCaseIsIdempotent(): void {
+    Webform::create(['id' => 'underretning', 'title' => 'Underretning'])->save();
+    $submission = WebformSubmission::create([
+      'webform_id' => 'underretning',
+      'data' => ['concern_details' => 'Bekymring.'],
+    ]);
+    $submission->save();
+
+    $tokenService = $this->container->get('eca.token_services');
+    $tokenService->addTokenData('webform_submission', $submission);
+    $actionManager = $this->container->get('plugin.manager.action');
+
+    $run = fn() => $actionManager
+      ->createInstance('aabenforms_case_open', ['case_type' => 'underretning', 'case_id_token' => 'case_id'])
+      ->execute();
+
+    $run();
+    $firstId = (string) $tokenService->getTokenData('case_id');
+    // Simulate the content_entity:insert event firing a second time.
+    $run();
+    $secondId = (string) $tokenService->getTokenData('case_id');
+
+    $storage = $this->container->get('entity_type.manager')->getStorage('aabenforms_case');
+    $this->assertCount(1, $storage->loadMultiple(), 'Only one case exists for the submission');
+    $this->assertSame($firstId, $secondId, 'The second run reuses the same case id');
+  }
+
 }

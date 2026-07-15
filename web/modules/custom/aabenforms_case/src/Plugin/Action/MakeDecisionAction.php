@@ -48,6 +48,7 @@ class MakeDecisionAction extends CaseActionBase {
       'afgoerelse_type' => '',
       'klagevejledning' => '',
       'klagefrist_uger' => 4,
+      'partshoering_exemption' => '',
     ] + parent::defaultConfiguration();
   }
 
@@ -86,6 +87,13 @@ class MakeDecisionAction extends CaseActionBase {
       '#default_value' => $this->configuration['klagefrist_uger'],
       '#required' => TRUE,
     ];
+    $form['partshoering_exemption'] = [
+      '#type' => 'textarea',
+      '#title' => $this->t('Partshøring exemption (FVL §19 stk. 2)'),
+      '#description' => $this->t('Only for an adverse decision where partshøring was lawfully NOT required (FVL §19 stk. 2). State the reason; it is recorded on the case. Leave empty when a partshøring must have been concluded first.'),
+      '#default_value' => $this->configuration['partshoering_exemption'],
+      '#rows' => 2,
+    ];
     return parent::buildConfigurationForm($form, $form_state);
   }
 
@@ -97,6 +105,7 @@ class MakeDecisionAction extends CaseActionBase {
     $this->configuration['afgoerelse_type'] = $form_state->getValue('afgoerelse_type');
     $this->configuration['klagevejledning'] = $form_state->getValue('klagevejledning');
     $this->configuration['klagefrist_uger'] = $form_state->getValue('klagefrist_uger');
+    $this->configuration['partshoering_exemption'] = $form_state->getValue('partshoering_exemption');
     parent::submitConfigurationForm($form, $form_state);
   }
 
@@ -126,11 +135,23 @@ class MakeDecisionAction extends CaseActionBase {
       }
 
       $adverse = in_array($type, self::ADVERSE, TRUE);
+      $exemption = trim((string) ($this->configuration['partshoering_exemption'] ?? ''));
 
-      // FVL §19: partshøring must be concluded before an adverse decision.
-      if ($adverse && (string) $case->get('partshoering_state')->value === 'afventer') {
-        $this->recordStep('Afgørelse afvist', 'Partshøring er ikke afsluttet (FVL §19).', 'failed');
-        return;
+      // FVL §19: a party must be heard before an adverse decision. A concluded
+      // hearing (afsluttet) satisfies it; an open hearing (afventer) blocks it;
+      // and skipping the hearing (ikke_paakraevet / unset) is only lawful under
+      // an explicit §19 stk. 2 exemption whose reason is recorded on the case -
+      // never a silent default.
+      if ($adverse) {
+        $partshoering = (string) $case->get('partshoering_state')->value;
+        if ($partshoering === 'afventer') {
+          $this->recordStep('Afgørelse afvist', 'Partshøring er ikke afsluttet (FVL §19).', 'failed');
+          return;
+        }
+        if ($partshoering !== 'afsluttet' && $exemption === '') {
+          $this->recordStep('Afgørelse afvist', 'Partshøring mangler: angiv enten en afsluttet partshøring eller en begrundet §19 stk. 2-undtagelse.', 'failed');
+          return;
+        }
       }
 
       // FVL §25: a klagevejledning is mandatory on an adverse outcome.
@@ -148,15 +169,18 @@ class MakeDecisionAction extends CaseActionBase {
 
       $now = $this->time->getRequestTime();
       $case->set('afgoerelse_type', $type);
-      if ($adverse) {
-        $case->set('klagefrist', $now + ($uger * 7 * 86400));
-      }
+      // The klagefrist clock is NOT started here: it runs from when the citizen
+      // is notified (FVL meddelelseskrav), so aabenforms_case_set_klagefrist
+      // stamps it on the branch where the decision letter is confirmed sent.
       $case->setStatus('afgoerelse');
       $case->setNewRevision(TRUE);
       $logParts = [sprintf('Afgørelse: %s.', $type)];
       if ($adverse) {
         $logParts[] = 'Klagevejledning: ' . $klagevejledning;
-        $logParts[] = sprintf('Klagefrist: %d uger.', $uger);
+        $logParts[] = sprintf('Klagefrist: %d uger (startes ved brevafsendelse).', $uger);
+        if ((string) $case->get('partshoering_state')->value !== 'afsluttet' && $exemption !== '') {
+          $logParts[] = 'Partshøring undladt (FVL §19 stk. 2): ' . $exemption;
+        }
       }
       $case->setRevisionLogMessage(implode(' ', $logParts));
       $case->setRevisionCreationTime($now);
