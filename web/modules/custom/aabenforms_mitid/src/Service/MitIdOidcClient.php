@@ -296,7 +296,40 @@ class MitIdOidcClient {
     // forged or tampered token must never reach claim extraction.
     $this->tokenVerifier->verify($id_token);
 
+    // Enforce the eIDAS assurance level (NSIS LoA): a signature-valid token at
+    // a level below the flow's requirement must be rejected, not merely logged.
+    $this->enforceAssuranceLevel($id_token);
+
     return $this->cprExtractor->extractPersonData($id_token);
+  }
+
+  /**
+   * Rejects a token whose assurance level is below the configured requirement.
+   *
+   * Ranks unknown < low < substantial < high; the municipal norm is
+   * Betydelig/Substantial. Fails closed - an unrecognised acr maps to
+   * 'unknown' and never satisfies a substantial/high requirement.
+   *
+   * @param string $id_token
+   *   The (already signature-verified) ID token.
+   *
+   * @throws \RuntimeException
+   *   When the asserted level is below the requirement.
+   */
+  private function enforceAssuranceLevel(string $id_token): void {
+    $ranks = ['unknown' => 0, 'low' => 1, 'substantial' => 2, 'high' => 3];
+    $required = (string) ($this->configFactory->get('aabenforms_mitid.settings')
+      ->get('security.required_assurance_level') ?: 'substantial');
+    $requiredRank = $ranks[$required] ?? 2;
+    $actual = $this->cprExtractor->getAssuranceLevel($id_token);
+    $actualRank = $ranks[$actual] ?? 0;
+    if ($actualRank < $requiredRank) {
+      $this->logger->warning('MitID assurance level too low: got {actual}, required {required}.', [
+        'actual' => $actual,
+        'required' => $required,
+      ]);
+      throw new \RuntimeException(sprintf('MitID assurance level "%s" is below the required "%s".', $actual, $required));
+    }
   }
 
   /**
