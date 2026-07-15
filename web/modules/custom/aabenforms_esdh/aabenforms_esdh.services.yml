@@ -1,0 +1,10 @@
+services:
+  plugin.manager.aabenforms_esdh_connector:
+    class: Drupal\aabenforms_esdh\EsdhConnectorManager
+    parent: default_plugin_manager
+
+  aabenforms_esdh.connector_resolver:
+    class: Drupal\aabenforms_esdh\Service\EsdhConnectorResolver
+    arguments:
+      - '@plugin.manager.aabenforms_esdh_connector'
+      - '@config.factory'
